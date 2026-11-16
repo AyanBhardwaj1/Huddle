@@ -78,8 +78,23 @@ function loadOrCreateKeypair(path: string, what: string): { keypair: Keypair; cr
   return { keypair, created: true };
 }
 
+/** Retry a read a few times: public devnet RPC drops requests now and then. */
+async function retry<T>(what: string, fn: () => Promise<T>): Promise<T> {
+  let last: unknown;
+  for (let attempt = 1; attempt <= 4; attempt++) {
+    try {
+      return await fn();
+    } catch (e) {
+      last = e;
+      await sleep(1500 * attempt);
+    }
+  }
+  throw new Error(`${what} failed after 4 tries: ${last instanceof Error ? last.message.split('\n')[0] : String(last)}`);
+}
+
 async function ensureSol(conn: Connection, treasury: PublicKey, minSol: number): Promise<number> {
-  let balance = (await conn.getBalance(treasury, 'confirmed')) / LAMPORTS_PER_SOL;
+  const read = () => retry('reading the treasury balance', async () => (await conn.getBalance(treasury, 'confirmed')) / LAMPORTS_PER_SOL);
+  let balance = await read();
   if (balance >= minSol) return balance;
   for (let attempt = 1; attempt <= 4 && balance < minSol; attempt++) {
     const want = Math.min(2, Math.max(1, Math.ceil(minSol - balance)));
@@ -89,11 +104,16 @@ async function ensureSol(conn: Connection, treasury: PublicKey, minSol: number):
       const bh = await conn.getLatestBlockhash('confirmed');
       await conn.confirmTransaction({ signature: sig, ...bh }, 'confirmed');
     } catch (e) {
-      const msg = e instanceof Error ? e.message : String(e);
-      log(`  airdrop failed: ${msg.split('\n')[0]?.slice(0, 160)}`);
+      const msg = (e instanceof Error ? e.message : String(e)).split('\n')[0] ?? '';
+      if (/410|faucet is closed/i.test(msg)) {
+        // The public devnet RPC no longer serves airdrops at all: retrying cannot help.
+        log('  airdrop refused: the RPC faucet is closed on this cluster (use the web faucet, see below).');
+        break;
+      }
+      log(`  airdrop failed: ${msg.slice(0, 160)}`);
       await sleep(2000 * attempt);
     }
-    balance = (await conn.getBalance(treasury, 'confirmed')) / LAMPORTS_PER_SOL;
+    balance = await read();
   }
   return balance;
 }
@@ -126,7 +146,7 @@ async function main(): Promise<void> {
   const lowSol = sol < minSol;
   if (lowSol) {
     log(
-      `\n  !! The devnet faucet is rate limited. Send devnet SOL to the treasury by hand:\n` +
+      `\n  !! Could not airdrop (faucet closed or rate limited). Send devnet SOL to the treasury by hand:\n` +
         `     https://faucet.solana.com  ->  ${treasury.publicKey.toBase58()}  (ask for ${Math.ceil(minSol - sol)}+ SOL)\n` +
         `     then run this script again.\n`,
     );
@@ -195,7 +215,11 @@ async function main(): Promise<void> {
   upsertEnv(target, { ...publicLines, ...secretLines });
 
   log(`\nWrote ${Object.keys({ ...publicLines, ...secretLines }).join(', ')} to ${target}`);
-  log(existsSync(envPath) ? '(.env is gitignored.)' : '(gitignored. Copy these lines into .env, which is gitignored too.)');
+  log(
+    existsSync(envPath)
+      ? '(.env is gitignored.)'
+      : `(${keysDir.startsWith(ROOT) ? 'gitignored' : 'outside the repo'}. Copy these lines into .env, which is gitignored.)`,
+  );
   log('\nNon-secret values, for reference:');
   for (const [k, v] of Object.entries(publicLines)) log(`  ${k}=${k === 'SOLANA_RPC_URL' && !/api\.devnet\.solana\.com/.test(v) ? '<your RPC URL>' : v}`);
   if (!deployed) log(`  HUDDLE_PROGRAM_ID=   # set after the deploy (expected: ${programId})`);
