@@ -125,6 +125,7 @@ export class HuddleClient {
       this.handle(msg);
     };
     ws.onclose = () => {
+      if (this.ws !== ws) return; // a stale socket from before close()/connect(): never reconnect for it
       for (const [, p] of this.pending) {
         clearTimeout(p.timer);
         p.reject(new Error('connection closed'));
@@ -145,7 +146,24 @@ export class HuddleClient {
 
   close(): void {
     this.closedByUser = true;
-    this.ws?.close();
+    const ws = this.ws;
+    this.ws = null;
+    if (ws) {
+      ws.onmessage = null;
+      ws.onclose = null;
+      ws.onerror = null;
+      try {
+        ws.close();
+      } catch {
+        /* already closed */
+      }
+    }
+    for (const [, p] of this.pending) {
+      clearTimeout(p.timer);
+      p.reject(new Error('connection closed'));
+    }
+    this.pending.clear();
+    this.set({ status: 'closed' });
   }
 
   /** Send a request and wait for its ack. Rejects with RequestError when the engine says no. */
