@@ -207,7 +207,7 @@ export class PartyRuntime {
     let party = false;
     let leaderboard = false;
     let scorecard = false;
-    let led: LedPattern | null = null;
+    const leds: LedPattern[] = [];
     for (const e of effects) {
       if (e.t === 'market') markets.add(e.id);
       else if (e.t === 'price') prices.add(e.id);
@@ -217,7 +217,7 @@ export class PartyRuntime {
       else if (e.t === 'party') party = true;
       else if (e.t === 'leaderboard') leaderboard = true;
       else if (e.t === 'scorecard') scorecard = true;
-      else if (e.t === 'led') led = e.pattern;
+      else if (e.t === 'led' && leds.at(-1) !== e.pattern) leds.push(e.pattern);
     }
     if (party) this.broadcast({ type: 'party_update', party: core.party });
     for (const id of markets) {
@@ -264,7 +264,7 @@ export class PartyRuntime {
     if (leaderboard) this.broadcast({ type: 'leaderboard', players: core.players() });
     if (scorecard) this.broadcast({ type: 'scorecard', scorecard: core.scorecard });
     for (const e of effects) if (e.t === 'announce') this.announce(e.event);
-    if (led) this.led(led);
+    for (const pattern of leds) this.led(pattern);
   }
 
   broadcast(msg: ServerMessage): void {
