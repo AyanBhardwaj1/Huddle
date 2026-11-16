@@ -13,6 +13,7 @@ import {
   type Fill,
   type Market,
   type PartyConfig,
+  type PlayerPublic,
   type Position,
 } from '@huddle/shared';
 
@@ -353,4 +354,11 @@ export function friendlyError(err: unknown): string {
   const msg = (err as Error | null)?.message ?? '';
   if (/timed out|not connected|connection closed/i.test(msg)) return "Couldn't reach the party. Check your connection.";
   return "Couldn't do that. Try again.";
+}
+
+// ---------------------------------------------------------------- leaderboard
+
+/** Players ranked by P&L (the house account is never on the board). */
+export function rankPlayers(players: PlayerPublic[]): PlayerPublic[] {
+  return players.filter((p) => !p.isHouse).sort((a, b) => b.pnl - a.pnl || a.name.localeCompare(b.name));
 }

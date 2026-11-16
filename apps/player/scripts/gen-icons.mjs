@@ -1,5 +1,6 @@
 // Generates the PWA PNG icons (same design as public/icon.svg) with no dependencies.
 // Usage: node scripts/gen-icons.mjs
+/* global Buffer, console */
 import { writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';

@@ -1,0 +1,51 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    color-scheme: dark;
+  }
+  body {
+    @apply bg-pitch-950 font-sans text-pitch-50 antialiased;
+    min-height: 100dvh;
+    -webkit-tap-highlight-color: transparent;
+    overscroll-behavior-y: none;
+    background-image: radial-gradient(120% 60% at 50% -10%, rgba(212, 255, 58, 0.06), transparent 60%);
+    background-attachment: fixed;
+  }
+  /* 16px+ inputs: iOS Safari never zooms on focus. */
+  input,
+  select,
+  textarea {
+    font-size: max(16px, 1em);
+  }
+  button {
+    -webkit-user-select: none;
+    user-select: none;
+    touch-action: manipulation;
+  }
+  button:focus-visible,
+  a:focus-visible,
+  input:focus-visible {
+    outline: 2px solid #d4ff3a;
+    outline-offset: 2px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+@layer utilities {
+  .tnum {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: 'tnum' 1;
+  }
+}
