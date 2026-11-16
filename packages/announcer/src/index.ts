@@ -1,6 +1,6 @@
 import type { Announcer, LlmClient } from '@huddle/shared';
 import { HuddleAnnouncer, type AnnouncerOptions } from './announcer';
-import { createLlmClient, type LlmOptions } from './llm';
+import { createLlmClient } from './llm';
 import type { Env } from './log';
 
 export type { Env, FetchLike, Logger } from './log';

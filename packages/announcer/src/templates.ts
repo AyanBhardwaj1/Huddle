@@ -92,12 +92,6 @@ function seconds(n: number): { S: string; s: string; unit: string } {
   return { S: capitalize(words), s: words, unit: whole === 1 ? 'second' : 'seconds' };
 }
 
-function joinNames(names: string[]): string {
-  if (names.length <= 1) return names[0] ?? '';
-  if (names.length === 2) return `${names[0]} and ${names[1]}`;
-  return `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`;
-}
-
 /** Only read a void reason aloud when it is a short human sentence, not an internal code. */
 function speakableReason(reason: string | undefined): string | null {
   if (!reason) return null;

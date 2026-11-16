@@ -1,0 +1,125 @@
+{
+  "$comment": "ElevenLabs Agents server (webhook) tools for the Huddle announcer. Each entry of `tools` is one `tool_config` for the create-tool endpoint (POST /v1/convai/tools). The engine URL and the shared secret are placeholders that scripts/setup-agent.ts fills in from the environment; never commit real values. `session_token` is bound to the conversation's dynamic variable, so the model never sees or chooses it.",
+  "tools": [
+    {
+      "type": "webhook",
+      "name": "get_party_state",
+      "description": "Get the live state of this watch party: score, game clock, every open market with its id, question, outcomes and current room prices, and the leaderboard. Call this first whenever the player asks about the score, the clock, what is open, who is winning, or before any other tool when you do not yet know a market_id. Read-only.",
+      "response_timeout_secs": 8,
+      "api_schema": {
+        "url": "__PUBLIC_ENGINE_URL__/agent-tools/get_party_state",
+        "method": "POST",
+        "request_headers": {
+          "x-huddle-secret": "__AGENT_TOOLS_SECRET__"
+        },
+        "request_body_schema": {
+          "type": "object",
+          "description": "Identifies the party. Filled in automatically.",
+          "properties": {
+            "session_token": {
+              "type": "string",
+              "dynamic_variable": "session_token"
+            }
+          },
+          "required": ["session_token"]
+        }
+      }
+    },
+    {
+      "type": "webhook",
+      "name": "get_market",
+      "description": "Get one market in detail: current room price for each outcome, total volume, state (open or locked), and the Gemini prediction-market price for comparison when there is one. Use it to answer 'what are the odds on ...' for a specific market. Read-only.",
+      "response_timeout_secs": 8,
+      "api_schema": {
+        "url": "__PUBLIC_ENGINE_URL__/agent-tools/get_market",
+        "method": "POST",
+        "request_headers": {
+          "x-huddle-secret": "__AGENT_TOOLS_SECRET__"
+        },
+        "request_body_schema": {
+          "type": "object",
+          "description": "Which market to look up.",
+          "properties": {
+            "session_token": {
+              "type": "string",
+              "dynamic_variable": "session_token"
+            },
+            "market_id": {
+              "type": "string",
+              "description": "The id of the market, exactly as returned by get_party_state. Never guess an id."
+            }
+          },
+          "required": ["session_token", "market_id"]
+        }
+      }
+    },
+    {
+      "type": "webhook",
+      "name": "explain_odds",
+      "description": "Get a plain-language explanation of why a market is priced the way it is: the model behind the opening price and how the room has moved it. Use it when the player asks 'why is it that price', 'how did you get that', or 'explain the odds'. Read-only.",
+      "response_timeout_secs": 8,
+      "api_schema": {
+        "url": "__PUBLIC_ENGINE_URL__/agent-tools/explain_odds",
+        "method": "POST",
+        "request_headers": {
+          "x-huddle-secret": "__AGENT_TOOLS_SECRET__"
+        },
+        "request_body_schema": {
+          "type": "object",
+          "description": "Which market to explain.",
+          "properties": {
+            "session_token": {
+              "type": "string",
+              "dynamic_variable": "session_token"
+            },
+            "market_id": {
+              "type": "string",
+              "description": "The id of the market, exactly as returned by get_party_state. Never guess an id."
+            }
+          },
+          "required": ["session_token", "market_id"]
+        }
+      }
+    },
+    {
+      "type": "webhook",
+      "name": "draft_bet",
+      "description": "Create a DRAFT bet for a player. This never places a bet and never moves money: the player must confirm the draft with one tap in the Huddle app. Only call it when you know the player, the market, the outcome and the amount; ask a short question if any of them is unclear. After it succeeds, tell the player to confirm it in the app.",
+      "response_timeout_secs": 8,
+      "api_schema": {
+        "url": "__PUBLIC_ENGINE_URL__/agent-tools/draft_bet",
+        "method": "POST",
+        "request_headers": {
+          "x-huddle-secret": "__AGENT_TOOLS_SECRET__"
+        },
+        "request_body_schema": {
+          "type": "object",
+          "description": "The draft bet to create.",
+          "properties": {
+            "session_token": {
+              "type": "string",
+              "dynamic_variable": "session_token"
+            },
+            "player": {
+              "type": "string",
+              "description": "Name of the player the draft is for, exactly as it appears on the leaderboard. Use the name of the person you are talking to; if you are talking to the whole room, ask who is speaking first."
+            },
+            "market_id": {
+              "type": "string",
+              "description": "The id of an OPEN market, exactly as returned by get_party_state. Never guess an id."
+            },
+            "outcome": {
+              "type": "string",
+              "description": "The id of the outcome to back, exactly as listed for that market by get_party_state (for example 'yes', 'no', 'home', 'away')."
+            },
+            "amount": {
+              "type": "number",
+              "description": "Stake in USDC as a plain number, for example 5 for five dollars or 0.5 for fifty cents. In points mode this is the number of points."
+            }
+          },
+          "required": ["session_token", "player", "market_id", "outcome", "amount"]
+        }
+      }
+    }
+  ]
+}

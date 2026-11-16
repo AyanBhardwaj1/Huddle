@@ -42,13 +42,14 @@ export function sfxFor(event: AnnouncerEvent, ctx: Pick<RoomContext, 'sport'>): 
     case 'market_resolved': {
       const biggestLoss = Math.max(0, ...event.losers.map((l) => l.amount));
       const biggestWin = Math.max(0, ...event.winners.map((w) => w.amount));
-      // Nobody won, or one player's loss dwarfs every win: that is the story.
-      if (event.losers.length > 0 && (event.winners.length === 0 || (biggestLoss >= BIG_LOSS && biggestLoss > biggestWin))) {
-        return 'sad_trombone';
-      }
+      // Everybody who bet got it wrong.
+      if (event.losers.length > 0 && event.winners.length === 0) return 'sad_trombone';
+      // A goal or a touchdown is the moment itself.
       const scored =
         SCORING_WORDS.test(`${event.market.question} ${event.market.templateId ?? ''}`) && !NEGATIVE_OUTCOME.test(event.outcomeLabel.trim());
       if (scored) return ctx.sport === 'soccer' ? 'goal_horn' : 'crowd_roar';
+      // One player's big loss outweighs every win: that is the story.
+      if (biggestLoss >= BIG_LOSS && biggestLoss > biggestWin) return 'sad_trombone';
       if (event.winners.length > 0) return 'cash_register';
       return 'crowd_roar';
     }
