@@ -137,7 +137,16 @@ function OutcomeTrader({ market, live }: { market: Market; live: boolean }) {
               )}
             >
               <div className="flex items-center justify-between gap-1">
-                <span className={cx('truncate font-display text-lg font-bold uppercase tracking-wide', selected ? '' : tone.text)}>{o.label}</span>
+                <span
+                  className={cx(
+                    'font-display font-bold uppercase leading-tight tracking-wide',
+                    // Three or more outcomes share the row: let long labels wrap at a smaller size instead of cutting them off.
+                    market.outcomes.length > 2 ? 'line-clamp-2 text-[15px]' : 'truncate text-lg',
+                    selected ? '' : tone.text,
+                  )}
+                >
+                  {o.label}
+                </span>
                 {won && <Icon name="check" size={18} className="text-volt" />}
               </div>
               <Ticker value={p} format={formatPct} className="font-display text-[34px] font-bold leading-none" />

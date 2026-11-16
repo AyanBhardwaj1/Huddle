@@ -112,12 +112,15 @@ function MarketRow({ m }: { m: Market }) {
 }
 
 function CustomMarket() {
-  const { act } = useParty();
+  const { act, view } = useParty();
   const [q, setQ] = useState('');
   const [outcomes, setOutcomes] = useState(['Yes', 'No']);
   const [secs, setSecs] = useState(45);
   const valid = q.trim().length >= 3 && outcomes.filter((o) => o.trim()).length >= 2;
-  const presets = ['Goal in the next 5 minutes?', 'Will the next shot be on target?', 'Another card before half time?'];
+  const presets =
+    view.snapshot?.game.sport === 'nfl'
+      ? ['Score on this drive?', 'First down on this play?', 'Turnover before the quarter ends?']
+      : ['Goal in the next 5 minutes?', 'Will the next shot be on target?', 'Another card before half time?'];
   return (
     <Section title="Ask your own question">
       <div className="flex flex-wrap gap-1.5">
