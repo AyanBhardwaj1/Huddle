@@ -1,0 +1,112 @@
+{
+ "leagues": [
+  {
+   "slug": "eng.1",
+   "name": "English Premier League"
+  }
+ ],
+ "events": [
+  {
+   "id": "401879241",
+   "date": "2026-11-07T15:00Z",
+   "name": "Newcastle United at Fulham",
+   "shortName": "NEW @ FUL",
+   "status": {
+    "clock": 5400.0,
+    "displayClock": "90'+8'",
+    "period": 2,
+    "type": {
+     "name": "STATUS_FULL_TIME",
+     "state": "post",
+     "completed": true,
+     "detail": "FT"
+    }
+   },
+   "competitions": [
+    {
+     "id": "401879241",
+     "date": "2026-11-07T15:00Z",
+     "competitors": [
+      {
+       "id": "370",
+       "homeAway": "home",
+       "score": "1",
+       "team": {
+        "id": "370",
+        "abbreviation": "FUL",
+        "displayName": "Fulham",
+        "shortDisplayName": "Fulham",
+        "name": "Fulham",
+        "color": "ffffff"
+       }
+      },
+      {
+       "id": "361",
+       "homeAway": "away",
+       "score": "1",
+       "team": {
+        "id": "361",
+        "abbreviation": "NEW",
+        "displayName": "Newcastle United",
+        "shortDisplayName": "Newcastle",
+        "name": "Newcastle United",
+        "color": "000000"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "401878757",
+   "date": "2026-11-07T17:30Z",
+   "name": "Manchester City at Nottingham Forest",
+   "shortName": "MNC @ NFO",
+   "status": {
+    "clock": 5400.0,
+    "displayClock": "90'+6'",
+    "period": 2,
+    "type": {
+     "name": "STATUS_FULL_TIME",
+     "state": "post",
+     "completed": true,
+     "detail": "FT"
+    }
+   },
+   "competitions": [
+    {
+     "id": "401878757",
+     "date": "2026-11-07T17:30Z",
+     "competitors": [
+      {
+       "id": "393",
+       "homeAway": "home",
+       "score": "3",
+       "team": {
+        "id": "393",
+        "abbreviation": "NFO",
+        "displayName": "Nottingham Forest",
+        "shortDisplayName": "Nottm Forest",
+        "name": "Nottingham Forest",
+        "color": "c8102e"
+       }
+      },
+      {
+       "id": "382",
+       "homeAway": "away",
+       "score": "1",
+       "team": {
+        "id": "382",
+        "abbreviation": "MNC",
+        "displayName": "Manchester City",
+        "shortDisplayName": "Man City",
+        "name": "Manchester City",
+        "color": "99c5ea"
+       }
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

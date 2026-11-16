@@ -1,0 +1,75 @@
+{
+ "id": "440321",
+ "title": "San Francisco vs Dallas",
+ "slug": "san-francisco-vs-dallas",
+ "type": "categorical",
+ "category": "Sports",
+ "ticker": "NFL-2611152125-SF-DAL-M",
+ "status": "settled",
+ "startTime": "2026-11-15T21:25:00.000Z",
+ "expiryDate": "2026-11-17T09:25:00.000Z",
+ "isLive": false,
+ "participants": [
+  {
+   "id": "442",
+   "name": "Dallas Cowboys",
+   "abbreviation": "DAL",
+   "side": "home"
+  },
+  {
+   "id": "456",
+   "name": "San Francisco 49ers",
+   "abbreviation": "SF",
+   "side": "away"
+  }
+ ],
+ "tags": [
+  "Pro Football"
+ ],
+ "volume": "218643.13",
+ "resolvedAt": "2026-11-16T00:48:10.455Z",
+ "sportsMarket": {
+  "sport": "american_football",
+  "type": "moneyline",
+  "subject": "contest",
+  "scope": {
+   "type": "full_contest"
+  }
+ },
+ "contracts": [
+  {
+   "id": "440321-1063048",
+   "label": "San Francisco",
+   "prices": {
+    "buy": {},
+    "sell": {}
+   },
+   "status": "settled",
+   "ticker": "SF",
+   "instrumentSymbol": "GEMI-NFL-2611152125-SF-DAL-M-SF",
+   "marketState": "closed",
+   "abbreviatedName": "SF",
+   "sportsSide": "away",
+   "expiryDate": "2026-11-17T09:25:00.000Z",
+   "resolutionSide": "yes",
+   "sortOrder": 1
+  },
+  {
+   "id": "440321-1063065",
+   "label": "Dallas",
+   "prices": {
+    "buy": {},
+    "sell": {}
+   },
+   "status": "settled",
+   "ticker": "DAL",
+   "instrumentSymbol": "GEMI-NFL-2611152125-SF-DAL-M-DAL",
+   "marketState": "closed",
+   "abbreviatedName": "DAL",
+   "sportsSide": "home",
+   "expiryDate": "2026-11-17T09:25:00.000Z",
+   "resolutionSide": "no",
+   "sortOrder": 2
+  }
+ ]
+}

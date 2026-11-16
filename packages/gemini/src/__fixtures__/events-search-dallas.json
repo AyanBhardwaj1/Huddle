@@ -1,0 +1,1205 @@
+{
+ "data": [
+  {
+   "id": "462529",
+   "title": "Central Arkansas vs Oklahoma State",
+   "slug": "central-arkansas-vs-oklahoma-state",
+   "type": "categorical",
+   "category": "Sports",
+   "ticker": "NCAAM-2611170100-UCA-OKST-M",
+   "status": "active",
+   "startTime": "2026-11-17T01:00:00.000Z",
+   "expiryDate": "2026-11-19T01:00:00.000Z",
+   "isLive": false,
+   "participants": [
+    {
+     "id": "726",
+     "name": "Oklahoma State Cowboys",
+     "abbreviation": "OKST",
+     "side": "home"
+    },
+    {
+     "id": "810",
+     "name": "Central Arkansas Bears",
+     "abbreviation": "UCA",
+     "side": "away"
+    }
+   ],
+   "tags": [
+    "College Basketball"
+   ],
+   "volume": "0",
+   "sportsMarket": {
+    "sport": "basketball",
+    "type": "moneyline",
+    "subject": "contest",
+    "scope": {
+     "type": "full_contest"
+    }
+   },
+   "contracts": [
+    {
+     "id": "462529-1150926",
+     "label": "Oklahoma State",
+     "prices": {
+      "buy": {
+       "yes": "0.97",
+       "no": "0.04"
+      },
+      "sell": {
+       "yes": "0.96",
+       "no": "0.03"
+      },
+      "bestBid": "0.96",
+      "bestAsk": "0.97"
+     },
+     "status": "active",
+     "ticker": "OKST",
+     "instrumentSymbol": "GEMI-NCAAM-2611170100-UCA-OKST-M-OKST",
+     "marketState": "open",
+     "abbreviatedName": "OKST",
+     "sportsSide": "home",
+     "expiryDate": "2026-11-19T01:00:00.000Z",
+     "sortOrder": 2
+    },
+    {
+     "id": "462529-1150924",
+     "label": "Central Arkansas",
+     "prices": {
+      "buy": {
+       "yes": "0.04",
+       "no": "0.97"
+      },
+      "sell": {
+       "yes": "0.03",
+       "no": "0.96"
+      },
+      "bestBid": "0.03",
+      "bestAsk": "0.04"
+     },
+     "status": "active",
+     "ticker": "UCA",
+     "instrumentSymbol": "GEMI-NCAAM-2611170100-UCA-OKST-M-UCA",
+     "marketState": "open",
+     "abbreviatedName": "UCA",
+     "sportsSide": "away",
+     "expiryDate": "2026-11-19T01:00:00.000Z",
+     "sortOrder": 1
+    }
+   ]
+  },
+  {
+   "id": "468092",
+   "title": "Sam Houston vs Wyoming",
+   "slug": "sam-houston-vs-wyoming",
+   "type": "categorical",
+   "category": "Sports",
+   "ticker": "NCAAM-2611180130-SHSU-WYO-M",
+   "status": "active",
+   "startTime": "2026-11-18T01:30:00.000Z",
+   "expiryDate": "2026-11-20T01:30:00.000Z",
+   "isLive": false,
+   "participants": [
+    {
+     "id": "881",
+     "name": "Wyoming Cowboys",
+     "abbreviation": "WYO",
+     "side": "home"
+    },
+    {
+     "id": "772",
+     "name": "Sam Houston State Bearkats",
+     "abbreviation": "SHSU",
+     "side": "away"
+    }
+   ],
+   "tags": [
+    "College Basketball"
+   ],
+   "volume": "0",
+   "sportsMarket": {
+    "sport": "basketball",
+    "type": "moneyline",
+    "subject": "contest",
+    "scope": {
+     "type": "full_contest"
+    }
+   },
+   "contracts": [
+    {
+     "id": "468092-1167297",
+     "label": "Wyoming",
+     "prices": {
+      "buy": {
+       "yes": "0.85",
+       "no": "0.23"
+      },
+      "sell": {
+       "yes": "0.77",
+       "no": "0.15"
+      },
+      "bestBid": "0.77",
+      "bestAsk": "0.85"
+     },
+     "status": "active",
+     "ticker": "WYO",
+     "instrumentSymbol": "GEMI-NCAAM-2611180130-SHSU-WYO-M-WYO",
+     "marketState": "open",
+     "abbreviatedName": "WYO",
+     "sportsSide": "home",
+     "expiryDate": "2026-11-20T01:30:00.000Z",
+     "sortOrder": 2
+    },
+    {
+     "id": "468092-1167294",
+     "label": "Sam Houston",
+     "prices": {
+      "buy": {
+       "yes": "0.22",
+       "no": "0.85"
+      },
+      "sell": {
+       "yes": "0.15",
+       "no": "0.78"
+      },
+      "bestBid": "0.15",
+      "bestAsk": "0.22"
+     },
+     "status": "active",
+     "ticker": "SHSU",
+     "instrumentSymbol": "GEMI-NCAAM-2611180130-SHSU-WYO-M-SHSU",
+     "marketState": "open",
+     "abbreviatedName": "SHSU",
+     "sportsSide": "away",
+     "expiryDate": "2026-11-20T01:30:00.000Z",
+     "sortOrder": 1
+    }
+   ]
+  },
+  {
+   "id": "467989",
+   "title": "Tennessee vs Dallas",
+   "slug": "tennessee-vs-dallas",
+   "type": "categorical",
+   "category": "Sports",
+   "ticker": "NFL-2611221800-TEN-DAL-M",
+   "status": "active",
+   "startTime": "2026-11-22T18:00:00.000Z",
+   "expiryDate": "2026-11-24T06:00:00.000Z",
+   "isLive": false,
+   "participants": [
+    {
+     "id": "442",
+     "name": "Dallas Cowboys",
+     "abbreviation": "DAL",
+     "side": "home"
+    },
+    {
+     "id": "437",
+     "name": "Tennessee Titans",
+     "abbreviation": "TEN",
+     "side": "away"
+    }
+   ],
+   "tags": [
+    "Pro Football"
+   ],
+   "volume": "111.76",
+   "sportsMarket": {
+    "sport": "american_football",
+    "type": "moneyline",
+    "subject": "contest",
+    "scope": {
+     "type": "full_contest"
+    }
+   },
+   "contracts": [
+    {
+     "id": "467989-1167049",
+     "label": "Dallas",
+     "prices": {
+      "buy": {
+       "yes": "0.8",
+       "no": "0.21"
+      },
+      "sell": {
+       "yes": "0.79",
+       "no": "0.2"
+      },
+      "bestBid": "0.79",
+      "bestAsk": "0.8",
+      "lastTradePrice": "0.79"
+     },
+     "status": "active",
+     "ticker": "DAL",
+     "instrumentSymbol": "GEMI-NFL-2611221800-TEN-DAL-M-DAL",
+     "marketState": "open",
+     "abbreviatedName": "DAL",
+     "sportsSide": "home",
+     "expiryDate": "2026-11-24T06:00:00.000Z",
+     "sortOrder": 2
+    },
+    {
+     "id": "467989-1167032",
+     "label": "Tennessee",
+     "prices": {
+      "buy": {
+       "yes": "0.21",
+       "no": "0.8"
+      },
+      "sell": {
+       "yes": "0.2",
+       "no": "0.79"
+      },
+      "bestBid": "0.2",
+      "bestAsk": "0.21"
+     },
+     "status": "active",
+     "ticker": "TEN",
+     "instrumentSymbol": "GEMI-NFL-2611221800-TEN-DAL-M-TEN",
+     "marketState": "open",
+     "abbreviatedName": "TEN",
+     "sportsSide": "away",
+     "expiryDate": "2026-11-24T06:00:00.000Z",
+     "sortOrder": 1
+    }
+   ]
+  },
+  {
+   "id": "468469",
+   "title": "Tennessee vs Dallas: Total Points",
+   "slug": "tennessee-vs-dallas-total-points",
+   "type": "categorical",
+   "category": "Sports",
+   "ticker": "NFL-2611221800-TEN-DAL-T",
+   "status": "active",
+   "startTime": "2026-11-22T18:00:00.000Z",
+   "expiryDate": "2026-11-24T06:00:00.000Z",
+   "isLive": false,
+   "participants": [
+    {
+     "id": "442",
+     "name": "Dallas Cowboys",
+     "abbreviation": "DAL",
+     "side": "home"
+    },
+    {
+     "id": "437",
+     "name": "Tennessee Titans",
+     "abbreviation": "TEN",
+     "side": "away"
+    }
+   ],
+   "tags": [
+    "Pro Football"
+   ],
+   "volume": "0",
+   "sportsMarket": {
+    "sport": "american_football",
+    "type": "total",
+    "subject": "contest",
+    "scope": {
+     "type": "full_contest"
+    },
+    "metric": "points"
+   },
+   "contracts": [
+    {
+     "id": "468469-1169341",
+     "label": "More than 53.5 points scored",
+     "prices": {
+      "buy": {
+       "yes": "0.54",
+       "no": "0.54"
+      },
+      "sell": {
+       "yes": "0.46",
+       "no": "0.46"
+      },
+      "bestBid": "0.46",
+      "bestAsk": "0.54"
+     },
+     "status": "active",
+     "ticker": "O53",
+     "instrumentSymbol": "GEMI-NFL-2611221800-TEN-DAL-T-O53",
+     "marketState": "open",
+     "expiryDate": "2026-11-24T06:00:00.000Z",
+     "sortOrder": 18
+    },
+    {
+     "id": "468469-1169289",
+     "label": "More than 54.5 points scored",
+     "prices": {
+      "buy": {},
+      "sell": {}
+     },
+     "status": "active",
+     "ticker": "O54",
+     "instrumentSymbol": "GEMI-NFL-2611221800-TEN-DAL-T-O54",
+     "marketState": "open",
+     "expiryDate": "2026-11-24T06:00:00.000Z",
+     "sortOrder": 0
+    },
+    {
+     "id": "468469-1169291",
+     "label": "More than 70.5 points scored",
+     "prices": {
+      "buy": {},
+      "sell": {}
+     },
+     "status": "active",
+     "ticker": "O70",
+     "instrumentSymbol": "GEMI-NFL-2611221800-TEN-DAL-T-O70",
+     "marketState": "open",
+     "expiryDate": "2026-11-24T06:00:00.000Z",
+     "sortOrder": 1
+    },
+    {
+     "id": "468469-1169293",
+     "label": "More than 46.5 points scored",
+     "prices": {
+      "buy": {},
+      "sell": {}
+     },
+     "status": "active",
+     "ticker": "O46",
+     "instrumentSymbol": "GEMI-NFL-2611221800-TEN-DAL-T-O46",
+     "marketState": "open",
+     "expiryDate": "2026-11-24T06:00:00.000Z",
+     "sortOrder": 2
+    },
+    {
+     "id": "468469-1169295",
+     "label": "More than 49.5 points scored",
+     "prices": {
+      "buy": {},
+      "sell": {}
+     },
+     "status": "active",
+     "ticker": "O49",
+     "instrumentSymbol": "GEMI-NFL-2611221800-TEN-DAL-T-O49",
+     "marketState": "open",
+     "expiryDate": "2026-11-24T06:00:00.000Z",
+     "sortOrder": 3
+    },
+    {
+     "id": "468469-1169299",
+     "label": "More than 61.5 points scored",
+     "prices": {
+      "buy": {},
+      "sell": {}
+     },
+     "status": "active",
+     "ticker": "O61",
+     "instrumentSymbol": "GEMI-NFL-2611221800-TEN-DAL-T-O61",
+     "marketState": "open",
+     "expiryDate": "2026-11-24T06:00:00.000Z",
+     "sortOrder": 4
+    }
+   ]
+  },
+  {
+   "id": "468467",
+   "title": "Tennessee vs Dallas: Point Spread",
+   "slug": "tennessee-vs-dallas-point-spread",
+   "type": "categorical",
+   "category": "Sports",
+   "ticker": "NFL-2611221800-TEN-DAL-S",
+   "status": "active",
+   "startTime": "2026-11-22T18:00:00.000Z",
+   "expiryDate": "2026-11-24T06:00:00.000Z",
+   "isLive": false,
+   "participants": [
+    {
+     "id": "442",
+     "name": "Dallas Cowboys",
+     "abbreviation": "DAL",
+     "side": "home"
+    },
+    {
+     "id": "437",
+     "name": "Tennessee Titans",
+     "abbreviation": "TEN",
+     "side": "away"
+    }
+   ],
+   "tags": [
+    "Pro Football"
+   ],
+   "volume": "0",
+   "sportsMarket": {
+    "sport": "american_football",
+    "type": "spread",
+    "subject": "team",
+    "scope": {
+     "type": "full_contest"
+    },
+    "metric": "points"
+   },
+   "contracts": [
+    {
+     "id": "468467-1169277",
+     "label": "Dallas wins by more than 7.5 points",
+     "prices": {
+      "buy": {
+       "yes": "0.56",
+       "no": "0.53"
+      },
+      "sell": {
+       "yes": "0.47",
+       "no": "0.44"
+      },
+      "bestBid": "0.47",
+      "bestAsk": "0.56"
+     },
+     "status": "active",
+     "ticker": "DAL7",
+     "instrumentSymbol": "GEMI-NFL-2611221800-TEN-DAL-S-DAL7",
+     "marketState": "open",
+     "abbreviatedName": "Dallas",
+     "expiryDate": "2026-11-24T06:00:00.000Z",
+     "sortOrder": 22
+    },
+    {
+     "id": "468467-1169222",
+     "label": "Dallas wins by more than 14.5 points",
+     "prices": {
+      "buy": {},
+      "sell": {}
+     },
+     "status": "active",
+     "ticker": "DAL14",
+     "instrumentSymbol": "GEMI-NFL-2611221800-TEN-DAL-S-DAL14",
+     "marketState": "open",
+     "abbreviatedName": "Dallas",
+     "expiryDate": "2026-11-24T06:00:00.000Z",
+     "sortOrder": 0
+    },
+    {
+     "id": "468467-1169225",
+     "label": "Dallas wins by more than 27.5 points",
+     "prices": {
+      "buy": {},
+      "sell": {}
+     },
+     "status": "active",
+     "ticker": "DAL27",
+     "instrumentSymbol": "GEMI-NFL-2611221800-TEN-DAL-S-DAL27",
+     "marketState": "open",
+     "abbreviatedName": "Dallas",
+     "expiryDate": "2026-11-24T06:00:00.000Z",
+     "sortOrder": 1
+    },
+    {
+     "id": "468467-1169227",
+     "label": "Dallas wins by more than 16.5 points",
+     "prices": {
+      "buy": {},
+      "sell": {}
+     },
+     "status": "active",
+     "ticker": "DAL16",
+     "instrumentSymbol": "GEMI-NFL-2611221800-TEN-DAL-S-DAL16",
+     "marketState": "open",
+     "abbreviatedName": "Dallas",
+     "expiryDate": "2026-11-24T06:00:00.000Z",
+     "sortOrder": 2
+    },
+    {
+     "id": "468467-1169230",
+     "label": "Tennessee wins by more than 10.5 points",
+     "prices": {
+      "buy": {},
+      "sell": {}
+     },
+     "status": "active",
+     "ticker": "TEN10",
+     "instrumentSymbol": "GEMI-NFL-2611221800-TEN-DAL-S-TEN10",
+     "marketState": "open",
+     "abbreviatedName": "Tennessee",
+     "expiryDate": "2026-11-24T06:00:00.000Z",
+     "sortOrder": 3
+    },
+    {
+     "id": "468467-1169232",
+     "label": "Tennessee wins by more than 7.5 points",
+     "prices": {
+      "buy": {},
+      "sell": {}
+     },
+     "status": "active",
+     "ticker": "TEN7",
+     "instrumentSymbol": "GEMI-NFL-2611221800-TEN-DAL-S-TEN7",
+     "marketState": "open",
+     "abbreviatedName": "Tennessee",
+     "expiryDate": "2026-11-24T06:00:00.000Z",
+     "sortOrder": 4
+    }
+   ]
+  },
+  {
+   "id": "468003",
+   "title": "Tennessee vs Dallas: 2nd Quarter Moneyline",
+   "slug": "tennessee-vs-dallas-2nd-quarter-moneyline",
+   "type": "categorical",
+   "category": "Sports",
+   "ticker": "NFL-2611221800-TEN-DAL-2QM",
+   "status": "active",
+   "startTime": "2026-11-22T18:00:00.000Z",
+   "expiryDate": "2026-11-24T06:00:00.000Z",
+   "isLive": false,
+   "participants": [
+    {
+     "id": "d26a1ca5-722d-4274-8f97-c92e49c96315",
+     "name": "Tennessee",
+     "abbreviation": "TEN",
+     "side": "away"
+    },
+    {
+     "id": "e627eec7-bbae-4fa4-8e73-8e1d6bc5c060",
+     "name": "Dallas",
+     "abbreviation": "DAL",
+     "side": "home"
+    }
+   ],
+   "tags": [
+    "Pro Football"
+   ],
+   "volume": "0",
+   "sportsMarket": {
+    "sport": "american_football",
+    "type": "moneyline",
+    "subject": "contest",
+    "scope": {
+     "type": "quarter",
+     "ordinal": 2
+    }
+   },
+   "contracts": [
+    {
+     "id": "468003-1167063",
+     "label": "Tennessee wins 2nd Quarter",
+     "prices": {
+      "buy": {},
+      "sell": {}
+     },
+     "status": "active",
+     "ticker": "TEN",
+     "instrumentSymbol": "GEMI-NFL-2611221800-TEN-DAL-2QM-TEN",
+     "marketState": "open",
+     "abbreviatedName": "TEN",
+     "sportsSide": "away",
+     "expiryDate": "2026-11-24T06:00:00.000Z"
+    },
+    {
+     "id": "468003-1167069",
+     "label": "Dallas wins 2nd Quarter",
+     "prices": {
+      "buy": {},
+      "sell": {}
+     },
+     "status": "active",
+     "ticker": "DAL",
+     "instrumentSymbol": "GEMI-NFL-2611221800-TEN-DAL-2QM-DAL",
+     "marketState": "open",
+     "abbreviatedName": "DAL",
+     "sportsSide": "home",
+     "expiryDate": "2026-11-24T06:00:00.000Z"
+    },
+    {
+     "id": "468003-1167072",
+     "label": "Tie in 2nd Quarter",
+     "prices": {
+      "buy": {},
+      "sell": {}
+     },
+     "status": "active",
+     "ticker": "D",
+     "instrumentSymbol": "GEMI-NFL-2611221800-TEN-DAL-2QM-D",
+     "marketState": "open",
+     "sportsSide": "tie",
+     "expiryDate": "2026-11-24T06:00:00.000Z"
+    }
+   ]
+  },
+  {
+   "id": "468002",
+   "title": "Tennessee vs Dallas: 2nd Half Moneyline",
+   "slug": "tennessee-vs-dallas-2nd-half-moneyline",
+   "type": "categorical",
+   "category": "Sports",
+   "ticker": "NFL-2611221800-TEN-DAL-2HM",
+   "status": "active",
+   "startTime": "2026-11-22T18:00:00.000Z",
+   "expiryDate": "2026-11-24T06:00:00.000Z",
+   "isLive": false,
+   "participants": [
+    {
+     "id": "d26a1ca5-722d-4274-8f97-c92e49c96315",
+     "name": "Tennessee",
+     "abbreviation": "TEN",
+     "side": "away"
+    },
+    {
+     "id": "e627eec7-bbae-4fa4-8e73-8e1d6bc5c060",
+     "name": "Dallas",
+     "abbreviation": "DAL",
+     "side": "home"
+    }
+   ],
+   "tags": [
+    "Pro Football"
+   ],
+   "volume": "0",
+   "sportsMarket": {
+    "sport": "american_football",
+    "type": "moneyline",
+    "subject": "contest",
+    "scope": {
+     "type": "half",
+     "ordinal": 2
+    }
+   },
+   "contracts": [
+    {
+     "id": "468002-1167062",
+     "label": "Tennessee wins 2nd Half",
+     "prices": {
+      "buy": {},
+      "sell": {}
+     },
+     "status": "active",
+     "ticker": "TEN",
+     "instrumentSymbol": "GEMI-NFL-2611221800-TEN-DAL-2HM-TEN",
+     "marketState": "open",
+     "abbreviatedName": "TEN",
+     "sportsSide": "away",
+     "expiryDate": "2026-11-24T06:00:00.000Z"
+    },
+    {
+     "id": "468002-1167068",
+     "label": "Dallas wins 2nd Half",
+     "prices": {
+      "buy": {},
+      "sell": {}
+     },
+     "status": "active",
+     "ticker": "DAL",
+     "instrumentSymbol": "GEMI-NFL-2611221800-TEN-DAL-2HM-DAL",
+     "marketState": "open",
+     "abbreviatedName": "DAL",
+     "sportsSide": "home",
+     "expiryDate": "2026-11-24T06:00:00.000Z"
+    },
+    {
+     "id": "468002-1167071",
+     "label": "Tie in 2nd Half",
+     "prices": {
+      "buy": {},
+      "sell": {}
+     },
+     "status": "active",
+     "ticker": "D",
+     "instrumentSymbol": "GEMI-NFL-2611221800-TEN-DAL-2HM-D",
+     "marketState": "open",
+     "sportsSide": "tie",
+     "expiryDate": "2026-11-24T06:00:00.000Z"
+    }
+   ]
+  },
+  {
+   "id": "468001",
+   "title": "Tennessee vs Dallas: 1st Half Moneyline",
+   "slug": "tennessee-vs-dallas-1st-half-moneyline",
+   "type": "categorical",
+   "category": "Sports",
+   "ticker": "NFL-2611221800-TEN-DAL-1HM",
+   "status": "active",
+   "startTime": "2026-11-22T18:00:00.000Z",
+   "expiryDate": "2026-11-24T06:00:00.000Z",
+   "isLive": false,
+   "participants": [
+    {
+     "id": "d26a1ca5-722d-4274-8f97-c92e49c96315",
+     "name": "Tennessee",
+     "abbreviation": "TEN",
+     "side": "away"
+    },
+    {
+     "id": "e627eec7-bbae-4fa4-8e73-8e1d6bc5c060",
+     "name": "Dallas",
+     "abbreviation": "DAL",
+     "side": "home"
+    }
+   ],
+   "tags": [
+    "Pro Football"
+   ],
+   "volume": "0",
+   "sportsMarket": {
+    "sport": "american_football",
+    "type": "moneyline",
+    "subject": "contest",
+    "scope": {
+     "type": "half",
+     "ordinal": 1
+    }
+   },
+   "contracts": [
+    {
+     "id": "468001-1167061",
+     "label": "Tennessee wins 1st Half",
+     "prices": {
+      "buy": {},
+      "sell": {}
+     },
+     "status": "active",
+     "ticker": "TEN",
+     "instrumentSymbol": "GEMI-NFL-2611221800-TEN-DAL-1HM-TEN",
+     "marketState": "open",
+     "abbreviatedName": "TEN",
+     "sportsSide": "away",
+     "expiryDate": "2026-11-24T06:00:00.000Z"
+    },
+    {
+     "id": "468001-1167067",
+     "label": "Dallas wins 1st Half",
+     "prices": {
+      "buy": {},
+      "sell": {}
+     },
+     "status": "active",
+     "ticker": "DAL",
+     "instrumentSymbol": "GEMI-NFL-2611221800-TEN-DAL-1HM-DAL",
+     "marketState": "open",
+     "abbreviatedName": "DAL",
+     "sportsSide": "home",
+     "expiryDate": "2026-11-24T06:00:00.000Z"
+    },
+    {
+     "id": "468001-1167070",
+     "label": "Tie in 1st Half",
+     "prices": {
+      "buy": {},
+      "sell": {}
+     },
+     "status": "active",
+     "ticker": "D",
+     "instrumentSymbol": "GEMI-NFL-2611221800-TEN-DAL-1HM-D",
+     "marketState": "open",
+     "sportsSide": "tie",
+     "expiryDate": "2026-11-24T06:00:00.000Z"
+    }
+   ]
+  },
+  {
+   "id": "467999",
+   "title": "Tennessee vs Dallas: 3rd Quarter Moneyline",
+   "slug": "tennessee-vs-dallas-3rd-quarter-moneyline",
+   "type": "categorical",
+   "category": "Sports",
+   "ticker": "NFL-2611221800-TEN-DAL-3QM",
+   "status": "active",
+   "startTime": "2026-11-22T18:00:00.000Z",
+   "expiryDate": "2026-11-24T06:00:00.000Z",
+   "isLive": false,
+   "participants": [
+    {
+     "id": "d26a1ca5-722d-4274-8f97-c92e49c96315",
+     "name": "Tennessee",
+     "abbreviation": "TEN",
+     "side": "away"
+    },
+    {
+     "id": "e627eec7-bbae-4fa4-8e73-8e1d6bc5c060",
+     "name": "Dallas",
+     "abbreviation": "DAL",
+     "side": "home"
+    }
+   ],
+   "tags": [
+    "Pro Football"
+   ],
+   "volume": "0",
+   "sportsMarket": {
+    "sport": "american_football",
+    "type": "moneyline",
+    "subject": "contest",
+    "scope": {
+     "type": "quarter",
+     "ordinal": 3
+    }
+   },
+   "contracts": [
+    {
+     "id": "467999-1167056",
+     "label": "Tennessee wins 3rd Quarter",
+     "prices": {
+      "buy": {},
+      "sell": {}
+     },
+     "status": "active",
+     "ticker": "TEN",
+     "instrumentSymbol": "GEMI-NFL-2611221800-TEN-DAL-3QM-TEN",
+     "marketState": "open",
+     "abbreviatedName": "TEN",
+     "sportsSide": "away",
+     "expiryDate": "2026-11-24T06:00:00.000Z"
+    },
+    {
+     "id": "467999-1167059",
+     "label": "Dallas wins 3rd Quarter",
+     "prices": {
+      "buy": {},
+      "sell": {}
+     },
+     "status": "active",
+     "ticker": "DAL",
+     "instrumentSymbol": "GEMI-NFL-2611221800-TEN-DAL-3QM-DAL",
+     "marketState": "open",
+     "abbreviatedName": "DAL",
+     "sportsSide": "home",
+     "expiryDate": "2026-11-24T06:00:00.000Z"
+    },
+    {
+     "id": "467999-1167065",
+     "label": "Tie in 3rd Quarter",
+     "prices": {
+      "buy": {},
+      "sell": {}
+     },
+     "status": "active",
+     "ticker": "D",
+     "instrumentSymbol": "GEMI-NFL-2611221800-TEN-DAL-3QM-D",
+     "marketState": "open",
+     "sportsSide": "tie",
+     "expiryDate": "2026-11-24T06:00:00.000Z"
+    }
+   ]
+  },
+  {
+   "id": "467998",
+   "title": "Tennessee vs Dallas: 4th Quarter Moneyline",
+   "slug": "tennessee-vs-dallas-4th-quarter-moneyline",
+   "type": "categorical",
+   "category": "Sports",
+   "ticker": "NFL-2611221800-TEN-DAL-4QM",
+   "status": "active",
+   "startTime": "2026-11-22T18:00:00.000Z",
+   "expiryDate": "2026-11-24T06:00:00.000Z",
+   "isLive": false,
+   "participants": [
+    {
+     "id": "d26a1ca5-722d-4274-8f97-c92e49c96315",
+     "name": "Tennessee",
+     "abbreviation": "TEN",
+     "side": "away"
+    },
+    {
+     "id": "e627eec7-bbae-4fa4-8e73-8e1d6bc5c060",
+     "name": "Dallas",
+     "abbreviation": "DAL",
+     "side": "home"
+    }
+   ],
+   "tags": [
+    "Pro Football"
+   ],
+   "volume": "0",
+   "sportsMarket": {
+    "sport": "american_football",
+    "type": "moneyline",
+    "subject": "contest",
+    "scope": {
+     "type": "quarter",
+     "ordinal": 4
+    }
+   },
+   "contracts": [
+    {
+     "id": "467998-1167054",
+     "label": "Tennessee wins 4th Quarter",
+     "prices": {
+      "buy": {},
+      "sell": {}
+     },
+     "status": "active",
+     "ticker": "TEN",
+     "instrumentSymbol": "GEMI-NFL-2611221800-TEN-DAL-4QM-TEN",
+     "marketState": "open",
+     "abbreviatedName": "TEN",
+     "sportsSide": "away",
+     "expiryDate": "2026-11-24T06:00:00.000Z"
+    },
+    {
+     "id": "467998-1167060",
+     "label": "Dallas wins 4th Quarter",
+     "prices": {
+      "buy": {},
+      "sell": {}
+     },
+     "status": "active",
+     "ticker": "DAL",
+     "instrumentSymbol": "GEMI-NFL-2611221800-TEN-DAL-4QM-DAL",
+     "marketState": "open",
+     "abbreviatedName": "DAL",
+     "sportsSide": "home",
+     "expiryDate": "2026-11-24T06:00:00.000Z"
+    },
+    {
+     "id": "467998-1167064",
+     "label": "Tie in 4th Quarter",
+     "prices": {
+      "buy": {},
+      "sell": {}
+     },
+     "status": "active",
+     "ticker": "D",
+     "instrumentSymbol": "GEMI-NFL-2611221800-TEN-DAL-4QM-D",
+     "marketState": "open",
+     "sportsSide": "tie",
+     "expiryDate": "2026-11-24T06:00:00.000Z"
+    }
+   ]
+  },
+  {
+   "id": "467995",
+   "title": "Tennessee vs Dallas: 1st Quarter Moneyline",
+   "slug": "tennessee-vs-dallas-1st-quarter-moneyline",
+   "type": "categorical",
+   "category": "Sports",
+   "ticker": "NFL-2611221800-TEN-DAL-1QM",
+   "status": "active",
+   "startTime": "2026-11-22T18:00:00.000Z",
+   "expiryDate": "2026-11-24T06:00:00.000Z",
+   "isLive": false,
+   "participants": [
+    {
+     "id": "d26a1ca5-722d-4274-8f97-c92e49c96315",
+     "name": "Tennessee",
+     "abbreviation": "TEN",
+     "side": "away"
+    },
+    {
+     "id": "e627eec7-bbae-4fa4-8e73-8e1d6bc5c060",
+     "name": "Dallas",
+     "abbreviation": "DAL",
+     "side": "home"
+    }
+   ],
+   "tags": [
+    "Pro Football"
+   ],
+   "volume": "0",
+   "sportsMarket": {
+    "sport": "american_football",
+    "type": "moneyline",
+    "subject": "contest",
+    "scope": {
+     "type": "quarter",
+     "ordinal": 1
+    }
+   },
+   "contracts": [
+    {
+     "id": "467995-1167053",
+     "label": "Tennessee wins 1st Quarter",
+     "prices": {
+      "buy": {},
+      "sell": {}
+     },
+     "status": "active",
+     "ticker": "TEN",
+     "instrumentSymbol": "GEMI-NFL-2611221800-TEN-DAL-1QM-TEN",
+     "marketState": "open",
+     "abbreviatedName": "TEN",
+     "sportsSide": "away",
+     "expiryDate": "2026-11-24T06:00:00.000Z"
+    },
+    {
+     "id": "467995-1167055",
+     "label": "Dallas wins 1st Quarter",
+     "prices": {
+      "buy": {},
+      "sell": {}
+     },
+     "status": "active",
+     "ticker": "DAL",
+     "instrumentSymbol": "GEMI-NFL-2611221800-TEN-DAL-1QM-DAL",
+     "marketState": "open",
+     "abbreviatedName": "DAL",
+     "sportsSide": "home",
+     "expiryDate": "2026-11-24T06:00:00.000Z"
+    },
+    {
+     "id": "467995-1167058",
+     "label": "Tie in 1st Quarter",
+     "prices": {
+      "buy": {},
+      "sell": {}
+     },
+     "status": "active",
+     "ticker": "D",
+     "instrumentSymbol": "GEMI-NFL-2611221800-TEN-DAL-1QM-D",
+     "marketState": "open",
+     "sportsSide": "tie",
+     "expiryDate": "2026-11-24T06:00:00.000Z"
+    }
+   ]
+  },
+  {
+   "id": "219591",
+   "title": "Dallas Total Wins",
+   "slug": "dallas-total-wins",
+   "type": "categorical",
+   "category": "Sports",
+   "ticker": "NFLDALWINS26",
+   "status": "active",
+   "expiryDate": "2027-01-11T06:00:00.000Z",
+   "isLive": false,
+   "participants": [],
+   "tags": [
+    "Pro Football"
+   ],
+   "volume": "560.6",
+   "contracts": [
+    {
+     "id": "219591-526884",
+     "label": "6+ wins",
+     "prices": {
+      "buy": {
+       "yes": "0.96",
+       "no": "0.09"
+      },
+      "sell": {
+       "yes": "0.91",
+       "no": "0.04"
+      },
+      "bestBid": "0.91",
+      "bestAsk": "0.96"
+     },
+     "status": "active",
+     "ticker": "6PLUS",
+     "instrumentSymbol": "GEMI-NFLDALWINS26-6PLUS",
+     "marketState": "open",
+     "abbreviatedName": "6+ wins",
+     "expiryDate": "2027-01-11T06:00:00.000Z"
+    },
+    {
+     "id": "219591-526881",
+     "label": "3+ wins",
+     "prices": {
+      "buy": {
+       "yes": "0.95",
+       "no": "0.05"
+      },
+      "sell": {
+       "yes": "0.95",
+       "no": "0.05"
+      },
+      "lastTradePrice": "0.95"
+     },
+     "status": "active",
+     "ticker": "3PLUS",
+     "instrumentSymbol": "GEMI-NFLDALWINS26-3PLUS",
+     "marketState": "open",
+     "abbreviatedName": "3+ wins",
+     "expiryDate": "2027-01-11T06:00:00.000Z"
+    },
+    {
+     "id": "219591-526885",
+     "label": "7+ wins",
+     "prices": {
+      "buy": {
+       "yes": "0.82",
+       "no": "0.24"
+      },
+      "sell": {
+       "yes": "0.76",
+       "no": "0.18"
+      },
+      "bestBid": "0.76",
+      "bestAsk": "0.82"
+     },
+     "status": "active",
+     "ticker": "7PLUS",
+     "instrumentSymbol": "GEMI-NFLDALWINS26-7PLUS",
+     "marketState": "open",
+     "abbreviatedName": "7+ wins",
+     "expiryDate": "2027-01-11T06:00:00.000Z"
+    },
+    {
+     "id": "219591-526887",
+     "label": "8+ wins",
+     "prices": {
+      "buy": {
+       "yes": "0.57",
+       "no": "0.49"
+      },
+      "sell": {
+       "yes": "0.51",
+       "no": "0.43"
+      },
+      "bestBid": "0.51",
+      "bestAsk": "0.57"
+     },
+     "status": "active",
+     "ticker": "8PLUS",
+     "instrumentSymbol": "GEMI-NFLDALWINS26-8PLUS",
+     "marketState": "open",
+     "abbreviatedName": "8+ wins",
+     "expiryDate": "2027-01-11T06:00:00.000Z"
+    },
+    {
+     "id": "219591-526891",
+     "label": "14+ wins",
+     "prices": {
+      "buy": {
+       "yes": "0.42",
+       "no": "0.58"
+      },
+      "sell": {
+       "yes": "0.42",
+       "no": "0.58"
+      },
+      "bestAsk": "0.42",
+      "lastTradePrice": "0.42"
+     },
+     "status": "active",
+     "ticker": "14PLUS",
+     "instrumentSymbol": "GEMI-NFLDALWINS26-14PLUS",
+     "marketState": "open",
+     "abbreviatedName": "14+ wins",
+     "expiryDate": "2027-01-11T06:00:00.000Z"
+    },
+    {
+     "id": "219591-526886",
+     "label": "9+ wins",
+     "prices": {
+      "buy": {
+       "yes": "0.3",
+       "no": "0.71"
+      },
+      "sell": {
+       "yes": "0.29",
+       "no": "0.7"
+      },
+      "bestBid": "0.29",
+      "bestAsk": "0.3"
+     },
+     "status": "active",
+     "ticker": "9PLUS",
+     "instrumentSymbol": "GEMI-NFLDALWINS26-9PLUS",
+     "marketState": "open",
+     "abbreviatedName": "9+ wins",
+     "expiryDate": "2027-01-11T06:00:00.000Z"
+    }
+   ]
+  }
+ ],
+ "pagination": {
+  "limit": 50,
+  "offset": 0,
+  "total": 12
+ }
+}
