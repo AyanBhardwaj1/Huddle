@@ -152,6 +152,8 @@ export async function startTestEngine(over: Partial<EngineOptions> = {}, makeSet
     logger: false,
     env: TEST_ENV,
     ...over,
+    // Test arithmetic assumes a 2 USDC per-market house budget.
+    partyDefaults: { houseBudgetPerMarket: 2_000_000, ...over.partyDefaults },
     adapters: {
       sports: new MockSportsAdapter(),
       questionEngine: () => new MockQuestionEngine(),

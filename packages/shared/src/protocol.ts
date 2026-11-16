@@ -226,7 +226,7 @@ export const createPartySchema = z.object({
   defaultMode: modeSchema.default('pool'),
   /** Human USDC amounts (e.g. 10), converted to base units by the engine. */
   buyIn: z.number().positive().max(1000).default(10),
-  houseBudget: z.number().min(0).max(1000).default(20),
+  houseBudget: z.number().min(0).max(1000).default(50),
   persona: personaSchema.optional(),
   settlement: settlementSchema.optional(),
   requireMemberSig: z.boolean().optional(),

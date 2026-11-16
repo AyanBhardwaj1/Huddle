@@ -49,7 +49,7 @@ export function Lobby() {
         <div className="flex items-start gap-3">
           <div className="min-w-0 flex-1">
             <Wordmark className="text-[1.6rem] text-pitch-200" />
-            <h1 className="truncate font-display text-[3rem] font-bold uppercase leading-[0.95]">{party.game.title}</h1>
+            <h1 className="line-clamp-2 font-display text-[2.3rem] font-bold uppercase leading-[0.95]">{party.game.title}</h1>
             <div className="mt-1 flex flex-wrap gap-2 text-[0.9rem] text-pitch-200">
               <span className="rounded-full bg-pitch-800 px-3 py-0.5 ring-1 ring-pitch-700">
                 {MODE_LABEL[party.config.defaultMode]} mode

@@ -23,6 +23,8 @@ Where the PRD is silent, we pick the simplest option that keeps the demo working
 | D15 | Tailwind v3 + PostCSS, React 18, Vite 5. | Most battle-tested combination for a fast build. |
 | D16 | The engine serves the built box UI at `/box` and the built player PWA at `/` (join links are `/j/:code`; bare `/j` redirects to the current party for a passive NFC sticker). | One port (8080), one tunnel URL, matches the Pi kiosk URL in PRD section 10. |
 | D17 | A phone with no stored last-signed state (cleared storage, new device) accepts the next balance state by chaining from that state's own `prevBalance` / `prevStateHash` instead of showing a mismatch. | Otherwise a cleared browser locks the player out mid-party. The box signature, entry arithmetic and hash are still verified; only the link to a state this device signed is taken on trust. Devnet trade-off. |
+| D18 | Default house budget is 6 USDC per AMM market (PRD suggests 2) and 50 USDC per party. | With D2's tighter `b`, a 2 USDC budget on an 83/17 prior gave `b` of about 1.1, so one 2 USDC bet pushed the price to 99%. 6 USDC keeps prices moving visibly without pinning. The house still cannot lose more than its per-market budget. |
+| D19 | With no `PUBLIC_ENGINE_URL`, the engine advertises its LAN IPv4 address in join links and the QR code (`HUDDLE_NO_LAN=1` turns this off). | A QR code pointing at `localhost` is useless to a phone on the same Wi-Fi. |
 
 ## Workstreams
 

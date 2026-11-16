@@ -550,7 +550,7 @@ describe('REST', () => {
     expect(list[0]!.code).toBe(party.code); // most recent first
     const detail = await h.get(`/parties/${party.code.toLowerCase()}`);
     expect(detail.json).toMatchObject({ party: { code: party.code }, game: { status: 'pre' } });
-    expect((detail.json.players as { isHouse: boolean; balance: number }[])[0]).toMatchObject({ isHouse: true, balance: 20 * USDC });
+    expect((detail.json.players as { isHouse: boolean; balance: number }[])[0]).toMatchObject({ isHouse: true, balance: 50 * USDC });
     expect((await h.get('/parties/ZZZZ')).status).toBe(404);
     const redirect = await h.get('/j');
     expect(redirect.status).toBe(302);

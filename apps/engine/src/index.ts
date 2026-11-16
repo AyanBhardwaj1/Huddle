@@ -1,3 +1,4 @@
+import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import dotenv from 'dotenv';
@@ -12,6 +13,14 @@ dotenv.config({ path: path.join(repoRoot, '.env') });
 
 // DATA_DIR in .env is relative to the repo root, wherever the engine was started from.
 const dataDir = path.resolve(repoRoot, process.env.DATA_DIR ?? './data');
+
+// Without a tunnel URL, advertise the LAN address so phones on the same Wi-Fi can scan the QR code.
+if (!(process.env.PUBLIC_ENGINE_URL ?? '').trim() && process.env.HUDDLE_NO_LAN !== '1') {
+  const lan = Object.values(os.networkInterfaces())
+    .flat()
+    .find((i) => i && i.family === 'IPv4' && !i.internal);
+  if (lan) process.env.PUBLIC_ENGINE_URL = `http://${lan.address}:${process.env.PORT ?? 8080}`;
+}
 
 const logger = pino({
   level: process.env.LOG_LEVEL ?? 'info',

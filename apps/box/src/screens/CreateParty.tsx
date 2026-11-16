@@ -52,7 +52,7 @@ export function CreateParty() {
         gameId: game.id,
         defaultMode: mode,
         buyIn,
-        houseBudget: 20,
+        houseBudget: 50,
         persona: effPersona,
         settlement: effSettlement,
         autoApprove,

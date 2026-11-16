@@ -39,6 +39,15 @@ export class KeyStore {
   /** The box signer: from the environment when given, else generated once and persisted. */
   boxSigner(envSecret?: string): KeyPair {
     if (envSecret && envSecret.trim()) return keyPairFromSecret(parseSecretKey(envSecret));
+    // On the Pi the key lives at /etc/huddle/box-signer.json (mode 600) and never leaves the box (PRD section 10).
+    const boxFile = process.env.BOX_SIGNER_FILE ?? '/etc/huddle/box-signer.json';
+    try {
+      if (this.dir && fs.existsSync(boxFile)) {
+        return keyPairFromSecret(Uint8Array.from(JSON.parse(fs.readFileSync(boxFile, 'utf8')) as number[]));
+      }
+    } catch {
+      /* unreadable: fall back to the data directory */
+    }
     const existing = this.read('box-signer.json');
     if (existing) return keyPairFromSecret(existing);
     const kp = generateKeyPair();

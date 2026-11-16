@@ -451,9 +451,7 @@ function ProsStrip({ market, now }: { market: Market; now: number }) {
         <Stat label="Model" value={formatPct(row.model)} color="text-model" />
         {row.gemini != null ? (
           <Stat label={`Gemini · ${ago(row.geminiAsOf, now)}`} value={formatPct(row.gemini)} color="text-gemini" />
-        ) : (
-          <Stat label="Gemini" value="—" color="text-pitch-600" />
-        )}
+        ) : null}
       </div>
     </div>
   );

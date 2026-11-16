@@ -31,7 +31,7 @@ export function makeKit(
   const house = generateKeyPair();
   const box = generateKeyPair();
   const houseBudget = opts.houseBudget ?? 20 * USDC;
-  const config: PartyConfig = { ...DEFAULT_PARTY_CONFIG, houseBudget, ...opts.config };
+  const config: PartyConfig = { ...DEFAULT_PARTY_CONFIG, houseBudget, houseBudgetPerMarket: 2 * USDC, ...opts.config };
   const party: Party = {
     id: 'p1',
     code: 'TEST',
