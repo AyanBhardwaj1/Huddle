@@ -14,13 +14,17 @@ export function ScorecardPanel({ scorecard, compact = false }: { scorecard: Scor
   return (
     <div className={`flex h-full flex-col ${compact ? 'gap-2' : 'gap-4'}`}>
       <div className="flex items-baseline gap-3">
-        <h2 className={`font-display font-bold uppercase leading-none tracking-wide ${compact ? 'text-[1.8rem]' : 'text-[3rem]'}`}>Who's smarter?</h2>
+        <h2 className={`font-display font-bold uppercase leading-none tracking-wide ${compact ? 'text-[1.8rem]' : 'text-[3rem]'}`}>
+          Who's smarter?
+        </h2>
         <span className="kicker">Friends vs. Model vs. Gemini</span>
       </div>
       <div className={`flex flex-col ${compact ? 'gap-2' : 'gap-3'}`}>
         {bars.map((b, i) => (
           <div key={b.id} className="flex items-center gap-3">
-            <span className={`flex w-[8.5rem] shrink-0 items-center gap-1.5 font-display font-bold uppercase ${TEXT_COLOR[b.id]} ${compact ? 'text-[1.4rem]' : 'text-[2.1rem]'}`}>
+            <span
+              className={`flex w-[8.5rem] shrink-0 items-center gap-1.5 font-display font-bold uppercase ${TEXT_COLOR[b.id]} ${compact ? 'text-[1.4rem]' : 'text-[2.1rem]'}`}
+            >
               {b.best && <Icon name="crown" className="h-[0.8em] w-[0.8em] text-volt" aria-label="best" />}
               {b.label}
             </span>
@@ -33,7 +37,11 @@ export function ScorecardPanel({ scorecard, compact = false }: { scorecard: Scor
                   transition={{ delay: 0.15 * i, type: 'spring', stiffness: 80, damping: 18 }}
                 />
               )}
-              <div className="absolute inset-y-0 border-l-2 border-dashed border-pitch-400/60" style={{ left: `${(0.25 / SCALE_MAX) * 100}%` }} title="coin flip" />
+              <div
+                className="absolute inset-y-0 border-l-2 border-dashed border-pitch-400/60"
+                style={{ left: `${(0.25 / SCALE_MAX) * 100}%` }}
+                title="coin flip"
+              />
             </div>
             <span className={`tabular w-[5rem] text-right font-display font-bold ${compact ? 'text-[1.5rem]' : 'text-[2.4rem]'}`}>
               {b.value === null ? '—' : b.value.toFixed(2)}
@@ -41,16 +49,22 @@ export function ScorecardPanel({ scorecard, compact = false }: { scorecard: Scor
           </div>
         ))}
       </div>
-      <p className={`text-pitch-400 ${compact ? 'text-[0.8rem]' : 'text-[1rem]'}`}>
-        Brier score: how far each forecast was from what actually happened. <b className="text-pitch-200">Shorter bar wins</b> — 0 is perfect, the dashed line is a
-        coin flip.
-        {scorecard.nGemini > 0 && scorecard.nGemini < scorecard.n && ` Gemini priced ${scorecard.nGemini} of ${scorecard.n} questions and is scored on those.`}
-      </p>
+      {compact ? (
+        <p className="text-[0.8rem] text-pitch-400">Brier score: shorter bar wins.</p>
+      ) : (
+        <p className="text-[1rem] text-pitch-400">
+          Brier score: how far each forecast was from what actually happened. <b className="text-pitch-200">Shorter bar wins</b> — 0 is
+          perfect, the dashed line is a coin flip.
+          {scorecard.nGemini > 0 &&
+            scorecard.nGemini < scorecard.n &&
+            ` Gemini priced ${scorecard.nGemini} of ${scorecard.n} questions and is scored on those.`}
+        </p>
+      )}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.6 }}
-        className={`rounded-xl bg-volt/10 px-4 py-3 font-display font-bold leading-tight text-volt ring-1 ring-volt/50 ${compact ? 'text-[1.4rem]' : 'text-[2.4rem]'}`}
+        className={`rounded-xl bg-volt/10 px-4 py-3 font-display font-bold leading-tight text-volt ring-1 ring-volt/50 ${compact ? 'text-[1.25rem]' : 'text-[2.4rem]'}`}
       >
         {empty ? 'No results yet — the first resolved question starts the scorecard.' : scorecard.verdict}
       </motion.div>
@@ -71,7 +85,9 @@ export function ScorecardPanel({ scorecard, compact = false }: { scorecard: Scor
                   </span>
                   <span className="tabular text-right font-semibold">{Math.round(e.room * 100)}%</span>
                   <span className="tabular text-right font-semibold">{Math.round(e.model * 100)}%</span>
-                  <span className="tabular text-right font-semibold">{e.gemini === undefined ? '—' : `${Math.round(e.gemini * 100)}%`}</span>
+                  <span className="tabular text-right font-semibold">
+                    {e.gemini === undefined ? '—' : `${Math.round(e.gemini * 100)}%`}
+                  </span>
                 </div>
               ))}
           </div>

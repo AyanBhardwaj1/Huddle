@@ -38,7 +38,9 @@ export function Home() {
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[38%] bg-[repeating-linear-gradient(90deg,rgba(255,255,255,0.025)_0_4rem,transparent_4rem_8rem)]" />
       <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="relative text-center">
         <Wordmark className="text-[8rem]" />
-        <p className="mt-1 font-display text-[1.9rem] font-medium uppercase tracking-[0.2em] text-pitch-200">Call every moment. Settle every bet.</p>
+        <p className="mt-1 font-display text-[1.9rem] font-medium uppercase tracking-[0.2em] text-pitch-200">
+          Call every moment. Settle every bet.
+        </p>
       </motion.div>
       <motion.button
         initial={{ scale: 0.9, opacity: 0 }}

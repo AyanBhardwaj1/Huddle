@@ -157,7 +157,16 @@ function snapshot(kind: FixtureKind): PartySnapshot {
           }),
         ];
 
-  const fill = (i: number, who: number, name: string, mId: string, kind: Fill['kind'], outcome: string, amt: number, price?: number): Fill => ({
+  const fill = (
+    i: number,
+    who: number,
+    name: string,
+    mId: string,
+    kind: Fill['kind'],
+    outcome: string,
+    amt: number,
+    price?: number,
+  ): Fill => ({
     id: `f${i}`,
     marketId: mId,
     player: PK(who),
@@ -225,7 +234,8 @@ function snapshot(kind: FixtureKind): PartySnapshot {
       home: { name: 'Portugal', short: 'POR', color: '#C8102E' },
       away: { name: 'Spain', short: 'ESP', color: '#F1BF00' },
       score: kind === 'lobby' ? { home: 0, away: 0 } : kind === 'end' ? { home: 3, away: 2 } : { home: 2, away: 1 },
-      clock: kind === 'lobby' ? { period: 0, display: "0'" } : kind === 'end' ? { period: 2, display: 'FT' } : { period: 2, display: "67'" },
+      clock:
+        kind === 'lobby' ? { period: 0, display: "0'" } : kind === 'end' ? { period: 2, display: 'FT' } : { period: 2, display: "67'" },
       minute: 67,
       lastSeq: 120,
       counters: {},
@@ -237,7 +247,10 @@ function snapshot(kind: FixtureKind): PartySnapshot {
     announcer: [
       {
         id: 'a1',
-        text: kind === 'lobby' ? "Priya's in for ten from Chicago!" : 'Penalty to Portugal! Ronaldo steps up. Room has him at 71%. Twenty seconds, get in!',
+        text:
+          kind === 'lobby'
+            ? "Priya's in for ten from Chicago!"
+            : 'Penalty to Portugal! Ronaldo steps up. Room has him at 71%. Twenty seconds, get in!',
         priority: 'high',
         createdAt: iso(-1500),
         event: kind === 'lobby' ? 'player_joined' : 'market_opened',
@@ -261,15 +274,54 @@ export function fixtureView(kind: FixtureKind): ClientView {
     chainEvents:
       kind === 'end'
         ? [
-            { kind: 'create_party', signature: '5fXcreate', partyAddress: snap.party.chain.partyAddress, via: 'mock', explorerUrl: 'https://explorer.solana.com/tx/5fXcreate?cluster=devnet' },
-            { kind: 'deposit', signature: '3aDep1', partyAddress: snap.party.chain.partyAddress, member: PK(1), amount: 10 * USDC, via: 'quicknode' },
-            { kind: 'deposit', signature: '3aDep2', partyAddress: snap.party.chain.partyAddress, member: PK(2), amount: 10 * USDC, via: 'quicknode' },
-            { kind: 'request_close', signature: '4cClose', partyAddress: snap.party.chain.partyAddress, via: 'direct', explorerUrl: 'https://explorer.solana.com/tx/4cClose?cluster=devnet' },
+            {
+              kind: 'create_party',
+              signature: '5fXcreate',
+              partyAddress: snap.party.chain.partyAddress,
+              via: 'mock',
+              explorerUrl: 'https://explorer.solana.com/tx/5fXcreate?cluster=devnet',
+            },
+            {
+              kind: 'deposit',
+              signature: '3aDep1',
+              partyAddress: snap.party.chain.partyAddress,
+              member: PK(1),
+              amount: 10 * USDC,
+              via: 'quicknode',
+            },
+            {
+              kind: 'deposit',
+              signature: '3aDep2',
+              partyAddress: snap.party.chain.partyAddress,
+              member: PK(2),
+              amount: 10 * USDC,
+              via: 'quicknode',
+            },
+            {
+              kind: 'request_close',
+              signature: '4cClose',
+              partyAddress: snap.party.chain.partyAddress,
+              via: 'direct',
+              explorerUrl: 'https://explorer.solana.com/tx/4cClose?cluster=devnet',
+            },
             { kind: 'submit_state', signature: '2sState', partyAddress: snap.party.chain.partyAddress, member: PK(2), via: 'quicknode' },
-            { kind: 'withdraw', signature: '9wPay', partyAddress: snap.party.chain.partyAddress, member: PK(2), amount: 17.25 * USDC, via: 'quicknode', explorerUrl: 'https://explorer.solana.com/tx/9wPay?cluster=devnet' },
+            {
+              kind: 'withdraw',
+              signature: '9wPay',
+              partyAddress: snap.party.chain.partyAddress,
+              member: PK(2),
+              amount: 17.25 * USDC,
+              via: 'quicknode',
+              explorerUrl: 'https://explorer.solana.com/tx/9wPay?cluster=devnet',
+            },
           ]
         : [],
-    led: kind === 'lobby' ? { pattern: 'join', color: '#00E5A0' } : kind === 'live' ? { pattern: 'market_open', color: '#FFD60A' } : { pattern: 'idle', color: '#1E90FF' },
+    led:
+      kind === 'lobby'
+        ? { pattern: 'join', color: '#00E5A0' }
+        : kind === 'live'
+          ? { pattern: 'market_open', color: '#FFD60A' }
+          : { pattern: 'idle', color: '#1E90FF' },
     clockSkewMs: 0,
   };
 }

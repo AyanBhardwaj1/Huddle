@@ -1,5 +1,6 @@
 import type { AnnouncerLine, GameState, Market, Party, PlayerPublic } from '@huddle/shared';
 import { AnimatePresence, motion } from 'framer-motion';
+import { useEffect, useRef } from 'react';
 import {
   countdown,
   leaderboard,
@@ -22,8 +23,25 @@ const TONE_ICON = { up: 'up', down: 'down', neutral: null } as const;
 
 /* ---------------- Scorebug ---------------- */
 
-function TeamBlock({ name, short, color, score, side }: { name: string; short: string; color?: string; score: number; side: 'home' | 'away' }) {
+function TeamBlock({
+  name,
+  short,
+  color,
+  score,
+  side,
+}: {
+  name: string;
+  short: string;
+  color?: string;
+  score: number;
+  side: 'home' | 'away';
+}) {
   const bar = <span className="h-full w-[0.45rem] shrink-0" style={{ background: color ?? '#7C8AA0' }} />;
+  // Flash the score only when it changes, not on first paint.
+  const mounted = useRef(false);
+  useEffect(() => {
+    mounted.current = true;
+  }, []);
   return (
     <div className={`flex h-full items-stretch ${side === 'away' ? 'flex-row-reverse' : ''}`}>
       {bar}
@@ -34,7 +52,7 @@ function TeamBlock({ name, short, color, score, side }: { name: string; short: s
       </div>
       <motion.span
         key={score}
-        initial={{ scale: 1.6, backgroundColor: '#D4FF3A', color: '#141A05' }}
+        initial={mounted.current ? { scale: 1.6, backgroundColor: '#D4FF3A', color: '#141A05' } : false}
         animate={{ scale: 1, backgroundColor: '#F4F7FB', color: '#07090D' }}
         transition={{ duration: 0.7 }}
         className="tabular flex min-w-[3.4rem] items-center justify-center font-display text-[2.5rem] font-bold leading-none"
@@ -88,7 +106,12 @@ export function CountdownRing({ market, size = '13rem' }: { market: Market; size
   const frac = locked ? 0 : (cd?.fraction ?? 1);
   const urgent = !!cd?.urgent && !locked;
   return (
-    <div className="relative shrink-0" style={{ width: size, height: size }} role="timer" aria-label={locked ? 'Locked' : cd ? `${cd.label} seconds to lock` : 'Open'}>
+    <div
+      className="relative shrink-0"
+      style={{ width: size, height: size }}
+      role="timer"
+      aria-label={locked ? 'Locked' : cd ? `${cd.label} seconds to lock` : 'Open'}
+    >
       {urgent && <span className="absolute inset-[6%] animate-pulse-ring rounded-full border-4 border-live" />}
       <svg viewBox="0 0 100 100" className="h-full w-full -rotate-90">
         <circle cx="50" cy="50" r={r} fill="none" stroke="#1E2633" strokeWidth="8" />
@@ -156,17 +179,17 @@ export function OutcomeCards({ market, big = true }: { market: Market; big?: boo
             />
             <div className="relative flex items-center gap-2">
               {icon && <Icon name={icon} className={`h-5 w-5 ${TONE_TEXT[tone]}`} />}
-              <span className={`truncate font-display font-bold uppercase tracking-wide ${TONE_TEXT[tone]} ${big ? 'text-[1.9rem]' : 'text-[1.3rem]'}`}>
+              <span
+                className={`truncate font-display font-bold uppercase tracking-wide ${TONE_TEXT[tone]} ${big ? 'text-[1.9rem]' : 'text-[1.5rem]'}`}
+              >
                 {o.label}
               </span>
             </div>
-            <div className={`relative font-display font-bold leading-[0.95] ${big ? 'text-[5rem]' : 'text-[3rem]'}`}>
+            <div className={`relative font-display font-bold leading-[0.95] ${big ? 'text-[4.8rem]' : 'text-[3.6rem]'}`}>
               <AnimatedPct value={prob} />
             </div>
             <div className="relative text-[0.95rem] font-medium text-pitch-200">
-              {market.mode === 'pool' && pool !== undefined
-                ? `${moneyShort(pool, p)} in the pool`
-                : payoutLine(prob, p)}
+              {market.mode === 'pool' && pool !== undefined ? `${moneyShort(pool, p)} in the pool` : payoutLine(prob, p)}
             </div>
           </div>
         );
@@ -204,7 +227,7 @@ export function ProsRowView({ market, compact = false }: { market: Market; compa
 
 /* ---------------- Moment market takeover ---------------- */
 
-export function MarketTakeover({ market }: { market: Market }) {
+export function MarketTakeover({ market, compact = false }: { market: Market; compact?: boolean }) {
   const party = useParty();
   const p = party.view.snapshot?.party;
   return (
@@ -232,13 +255,15 @@ export function MarketTakeover({ market }: { market: Market }) {
             <span className="kicker">{MODE_LABEL[market.mode]}</span>
             <span className="kicker ml-auto tabular">Volume {moneyShort(market.volume, p)}</span>
           </div>
-          <h1 className="line-clamp-2 font-display text-[3.3rem] font-bold leading-[1.0] tracking-tight">{market.question}</h1>
+          <h1 className={`line-clamp-2 font-display font-bold leading-[1.0] tracking-tight ${compact ? 'text-[2.6rem]' : 'text-[3.2rem]'}`}>
+            {market.question}
+          </h1>
           <div className="mt-auto">
-            <OutcomeCards market={market} />
+            <OutcomeCards market={market} big={!compact} />
           </div>
         </div>
         <div className="flex flex-col items-center justify-center">
-          <CountdownRing market={market} />
+          <CountdownRing market={market} size={compact ? '11rem' : '13rem'} />
         </div>
       </div>
       <div className="relative">
@@ -255,7 +280,7 @@ export function GameTile({ market }: { market: Market }) {
   const p = party.view.snapshot?.party;
   const settled = market.state === 'resolved' || market.state === 'final';
   return (
-    <motion.div layout className="card flex min-h-0 flex-col gap-2 p-3">
+    <motion.div layout className="card flex min-h-0 flex-col gap-2 overflow-hidden p-3">
       <div className="flex items-center gap-2">
         <span className="kicker text-[0.75rem]">{MODE_LABEL[market.mode]}</span>
         {market.state === 'locked' && (
@@ -268,10 +293,16 @@ export function GameTile({ market }: { market: Market }) {
             <Icon name="flag" className="h-3.5 w-3.5" /> Disputed
           </span>
         )}
-        <span className="kicker tabular ml-auto text-[0.75rem]">{moneyShort(market.volume, p)}</span>
+        <span className="ml-auto">
+          {market.geminiRef ? (
+            <ProsRowView market={market} compact />
+          ) : (
+            <span className="kicker tabular text-[0.75rem]">{moneyShort(market.volume, p)}</span>
+          )}
+        </span>
       </div>
-      <div className="line-clamp-2 font-display text-[1.45rem] font-semibold leading-tight">{market.question}</div>
-      <div className="mt-auto flex flex-col gap-1.5">
+      <div className="line-clamp-2 font-display text-[1.35rem] font-semibold leading-tight">{market.question}</div>
+      <div className="mt-auto flex flex-col gap-1">
         {market.outcomes.slice(0, 3).map((o, i) => {
           const tone = outcomeTone(i);
           const prob = roomProb(market, o.id);
@@ -285,18 +316,13 @@ export function GameTile({ market }: { market: Market }) {
               <div className="h-2.5 flex-1 overflow-hidden rounded-full bg-pitch-700">
                 <motion.div className={`h-full rounded-full ${TONE_BAR[tone]}`} animate={{ width: `${Math.round(prob * 100)}%` }} />
               </div>
-              <span className={`w-[3.6rem] text-right font-display text-[1.6rem] font-bold leading-none ${TONE_TEXT[tone]}`}>
+              <span className={`w-[3.6rem] text-right font-display text-[1.5rem] font-bold leading-none ${TONE_TEXT[tone]}`}>
                 <AnimatedPct value={prob} showArrow={false} />
               </span>
             </div>
           );
         })}
       </div>
-      {market.geminiRef && (
-        <div className="border-t border-pitch-700 pt-1.5">
-          <ProsRowView market={market} compact />
-        </div>
-      )}
     </motion.div>
   );
 }
@@ -367,8 +393,14 @@ export function CaptionBar({ lines }: { lines: AnnouncerLine[] }) {
   const speaking = useBox((s) => s.speaking);
   const line = speaking ?? lines[lines.length - 1] ?? null;
   return (
-    <div className="flex h-[3.3rem] shrink-0 items-center gap-3 border-t border-pitch-700 bg-pitch-900 px-4" aria-live="polite" aria-label="Announcer captions">
-      <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${speaking ? 'bg-volt text-volt-ink' : 'bg-pitch-700 text-pitch-200'}`}>
+    <div
+      className="flex h-[3.3rem] shrink-0 items-center gap-3 border-t border-pitch-700 bg-pitch-900 px-4"
+      aria-live="polite"
+      aria-label="Announcer captions"
+    >
+      <span
+        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${speaking ? 'bg-volt text-volt-ink' : 'bg-pitch-700 text-pitch-200'}`}
+      >
         <Icon name="sound" className="h-5 w-5" />
       </span>
       <AnimatePresence mode="wait">
@@ -394,7 +426,17 @@ export function CaptionBar({ lines }: { lines: AnnouncerLine[] }) {
 
 /* ---------------- Result reveal ---------------- */
 
-export function ResultReveal({ market, summary, party, onDone }: { market: Market; summary: ResultSummary; party: Party; onDone: () => void }) {
+export function ResultReveal({
+  market,
+  summary,
+  party,
+  onDone,
+}: {
+  market: Market;
+  summary: ResultSummary;
+  party: Party;
+  onDone: () => void;
+}) {
   const voided = market.state === 'voided';
   const winIdx = market.outcomes.findIndex((o) => o.id === market.outcome);
   const tone = voided ? 'neutral' : outcomeTone(Math.max(0, winIdx));
@@ -435,7 +477,12 @@ export function ResultReveal({ market, summary, party, onDone }: { market: Marke
         )}
       </motion.div>
       {!voided && (summary.winners.length > 0 || summary.losers.length > 0) && (
-        <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.5 }} className="grid w-full max-w-[52rem] grid-cols-2 gap-4 text-left">
+        <motion.div
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.5 }}
+          className="grid w-full max-w-[52rem] grid-cols-2 gap-4 text-left"
+        >
           <div className="rounded-xl bg-up/10 p-3 ring-1 ring-up/50">
             <div className="mb-1 flex items-center gap-1.5 text-[0.85rem] font-bold uppercase tracking-widest text-up">
               <Icon name="up" className="h-4 w-4" /> Called it

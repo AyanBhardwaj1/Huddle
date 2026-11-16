@@ -1,11 +1,4 @@
-import {
-  HuddleClient,
-  RequestError,
-  type AnnouncerLine,
-  type ClientRequest,
-  type ClientView,
-  type HostAction,
-} from '@huddle/shared';
+import { HuddleClient, RequestError, type AnnouncerLine, type ClientRequest, type ClientView, type HostAction } from '@huddle/shared';
 import { createContext, useContext, useEffect, useMemo, useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
 import { AnnouncerPlayer } from './lib/announcer';
 import { api } from './lib/api';
@@ -120,7 +113,7 @@ export function LivePartyProvider({ session, children }: { session: BoxSession; 
   const clientRef = useRef<HuddleClient | null>(null);
   clientRef.current = client;
   const request = useMemo(
-    () => (b: ClientRequest) => clientRef.current ? clientRef.current.request(b) : Promise.reject(new Error('not connected')),
+    () => (b: ClientRequest) => (clientRef.current ? clientRef.current.request(b) : Promise.reject(new Error('not connected'))),
     [],
   );
 
@@ -180,7 +173,8 @@ export function StaticPartyProvider({ view, children }: { view: ClientView; chil
         return true;
       },
       talk: {
-        press: async () => setTalk({ phase: 'listening', mode: 'speech', transcript: 'What are the odds Portugal hits seven?', error: null }),
+        press: async () =>
+          setTalk({ phase: 'listening', mode: 'speech', transcript: 'What are the odds Portugal hits seven?', error: null }),
         release: async () => setTalk({ phase: 'idle', mode: null, transcript: '', error: null }),
         sendText: async () => setTalk({ phase: 'idle', mode: null, transcript: '', error: null }),
         cancelText: () => setTalk({ phase: 'idle', mode: null, transcript: '', error: null }),

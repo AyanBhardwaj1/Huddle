@@ -103,7 +103,11 @@ export function CreateParty() {
                       </span>
                       <span
                         className={`shrink-0 rounded-md px-2 py-0.5 text-[0.7rem] font-bold uppercase tracking-widest ${
-                          x.status === 'live' ? 'bg-live text-white' : x.status === 'replay' ? 'bg-pitch-600 text-pitch-50' : 'bg-pitch-700 text-pitch-200'
+                          x.status === 'live'
+                            ? 'bg-live text-white'
+                            : x.status === 'replay'
+                              ? 'bg-pitch-600 text-pitch-50'
+                              : 'bg-pitch-700 text-pitch-200'
                         }`}
                       >
                         {x.status}
@@ -131,7 +135,11 @@ export function CreateParty() {
           <div className="grid grid-cols-2 gap-3">
             <div>
               <h2 className="kicker mb-1.5">Buy-in</h2>
-              <Segmented options={[5, 10, 20].map((v) => ({ value: v, label: effSettlement === 'points' ? `${v} pts` : `$${v}` }))} value={buyIn} onChange={setBuyIn} />
+              <Segmented
+                options={[5, 10, 20].map((v) => ({ value: v, label: effSettlement === 'points' ? `${v} pts` : `$${v}` }))}
+                value={buyIn}
+                onChange={setBuyIn}
+              />
             </div>
             <div>
               <h2 className="kicker mb-1.5">Announcer</h2>

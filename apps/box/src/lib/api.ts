@@ -21,8 +21,7 @@ async function json<T>(path: string, init?: RequestInit, timeoutMs = 6000): Prom
     const text = await res.text();
     const body = text ? (JSON.parse(text) as unknown) : {};
     if (!res.ok) {
-      const msg =
-        (body as { error?: { message?: string } | string }).error ?? `${res.status} ${res.statusText}`;
+      const msg = (body as { error?: { message?: string } | string }).error ?? `${res.status} ${res.statusText}`;
       throw new Error(typeof msg === 'string' ? msg : (msg.message ?? `HTTP ${res.status}`));
     }
     return body as T;
@@ -36,8 +35,7 @@ export const api = {
   games: (sport?: string) =>
     json<{ games: GameInfo[] }>(`/games${sport ? `?sport=${encodeURIComponent(sport)}` : ''}`).then((r) => r.games ?? []),
   parties: () => json<{ parties: Party[] }>('/parties').then((r) => r.parties ?? []),
-  createParty: (body: CreatePartyRequest) =>
-    json<CreatePartyResponse>('/parties', { method: 'POST', body: JSON.stringify(body) }),
+  createParty: (body: CreatePartyRequest) => json<CreatePartyResponse>('/parties', { method: 'POST', body: JSON.stringify(body) }),
   /** ElevenLabs agent session for TALK, or null when no agent is configured. */
   agentSession: async (partyCode: string): Promise<AgentSession | null> => {
     const r = await json<AgentSession | { agent: null }>(`/agent/session?party=${encodeURIComponent(partyCode)}`);

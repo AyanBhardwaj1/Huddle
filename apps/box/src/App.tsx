@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { BoxButtons, SoundGate, TalkOverlay, useBoxInputs } from './components/controls';
+import { SoundGate, TalkOverlay, useBoxInputs } from './components/controls';
 import { Icon, LedRing, ToastHost, Wordmark } from './components/ui';
 import { useFixtureView } from './fixture';
 import { fixtureParam, type FixtureKind } from './lib/config';
@@ -7,7 +7,7 @@ import { LivePartyProvider, StaticPartyProvider, useParty } from './party';
 import { CreateParty } from './screens/CreateParty';
 import { EndGame } from './screens/EndGame';
 import { Home } from './screens/Home';
-import { LiveBoard } from './screens/LiveBoard';
+import { LiveBoard, PartyOverlays } from './screens/LiveBoard';
 import { Lobby } from './screens/Lobby';
 import { useBox } from './store';
 
@@ -40,7 +40,7 @@ function Connecting() {
   );
 }
 
-function PartyScreens() {
+export function PartyScreens() {
   const { view, fixture } = useParty();
   useBoxInputs();
   const s = view.snapshot;
@@ -53,16 +53,14 @@ function PartyScreens() {
     <>
       {screen}
       {s && view.status === 'reconnecting' && (
-        <div className="fixed left-1/2 top-2 z-[75] -translate-x-1/2 rounded-full bg-down px-4 py-1 text-[0.9rem] font-bold text-down-ink">Reconnecting…</div>
+        <div className="fixed left-1/2 top-2 z-[75] -translate-x-1/2 rounded-full bg-down px-4 py-1 text-[0.9rem] font-bold text-down-ink">
+          Reconnecting…
+        </div>
       )}
+      <PartyOverlays />
       <LedRing led={view.led} />
       <TalkOverlay />
       {!fixture && <SoundGate />}
-      {s && s.party.status !== 'live' && s.party.status !== 'lobby' && (
-        <div className="fixed right-3 top-3 z-30">
-          <BoxButtons canLock={false} />
-        </div>
-      )}
     </>
   );
 }

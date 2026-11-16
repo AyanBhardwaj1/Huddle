@@ -152,9 +152,17 @@ export function TalkOverlay() {
           ) : (
             <div className="min-w-0 flex-1">
               <div className="font-display text-[1.5rem] font-bold uppercase tracking-wide">
-                {t.phase === 'connecting' ? 'Connecting…' : t.phase === 'sending' ? (t.mode === 'agent' ? 'Announcer answering…' : 'Asking…') : 'Listening — release to ask'}
+                {t.phase === 'connecting'
+                  ? 'Connecting…'
+                  : t.phase === 'sending'
+                    ? t.mode === 'agent'
+                      ? 'Announcer answering…'
+                      : 'Asking…'
+                    : 'Listening — release to ask'}
               </div>
-              <div className="truncate text-[1.05rem] text-pitch-200">{t.transcript || (t.mode === 'agent' ? 'Live voice with the announcer' : 'Try “What are the odds he scores?”')}</div>
+              <div className="truncate text-[1.05rem] text-pitch-200">
+                {t.transcript || (t.mode === 'agent' ? 'Live voice with the announcer' : 'Try “What are the odds he scores?”')}
+              </div>
               {t.error && <div className="text-[0.85rem] text-down">{t.error}</div>}
             </div>
           )}

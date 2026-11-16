@@ -1,4 +1,13 @@
-import { buildScorecard, DEFAULT_PARTY_CONFIG, USDC, type Fill, type GameInfo, type Market, type Party, type PlayerPublic } from '@huddle/shared';
+import {
+  buildScorecard,
+  DEFAULT_PARTY_CONFIG,
+  USDC,
+  type Fill,
+  type GameInfo,
+  type Market,
+  type Party,
+  type PlayerPublic,
+} from '@huddle/shared';
 import { describe, expect, it } from 'vitest';
 import {
   activeMoment,

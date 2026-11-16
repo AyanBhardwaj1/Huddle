@@ -109,7 +109,9 @@ export function Icon({ name, className = 'h-[1em] w-[1em]', ...rest }: { name: I
 
 export function Wordmark({ className = '' }: { className?: string }) {
   return (
-    <span className={`inline-flex items-center gap-[0.18em] font-display font-bold uppercase italic leading-none tracking-tight ${className}`}>
+    <span
+      className={`inline-flex items-center gap-[0.18em] font-display font-bold uppercase italic leading-none tracking-tight ${className}`}
+    >
       <span className="relative inline-block h-[0.78em] w-[0.78em] rounded-full border-[0.14em] border-volt">
         <span className="absolute inset-[22%] rounded-full bg-volt" />
       </span>
@@ -202,7 +204,11 @@ export function ToastHost() {
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: -20, opacity: 0 }}
             className={`flex items-center gap-2 rounded-full px-5 py-2 text-[1.05rem] font-semibold shadow-card ${
-              toast.tone === 'error' ? 'bg-down text-down-ink' : toast.tone === 'ok' ? 'bg-volt text-volt-ink' : 'bg-pitch-700 text-pitch-50'
+              toast.tone === 'error'
+                ? 'bg-down text-down-ink'
+                : toast.tone === 'ok'
+                  ? 'bg-volt text-volt-ink'
+                  : 'bg-pitch-700 text-pitch-50'
             }`}
             role="status"
           >
@@ -231,7 +237,11 @@ export function Segmented<T extends string | number>({
   size?: 'md' | 'lg';
 }) {
   return (
-    <div className={`grid gap-2 ${className}`} style={{ gridTemplateColumns: `repeat(${options.length}, minmax(0, 1fr))` }} role="radiogroup">
+    <div
+      className={`grid gap-2 ${className}`}
+      style={{ gridTemplateColumns: `repeat(${options.length}, minmax(0, 1fr))` }}
+      role="radiogroup"
+    >
       {options.map((o) => {
         const on = o.value === value;
         return (

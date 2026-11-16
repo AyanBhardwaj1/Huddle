@@ -25,7 +25,14 @@ export function Lobby() {
       {/* Join */}
       <section className="flex w-[25rem] shrink-0 flex-col items-center justify-center gap-3 rounded-card bg-pitch-900 p-5 ring-1 ring-pitch-700">
         <div className="rounded-2xl bg-white p-3 shadow-glow">
-          <QRCodeSVG value={party.joinUrl} size={512} level="M" style={{ width: '17rem', height: '17rem' }} bgColor="#FFFFFF" fgColor="#07090D" />
+          <QRCodeSVG
+            value={party.joinUrl}
+            size={512}
+            level="M"
+            style={{ width: '17rem', height: '17rem' }}
+            bgColor="#FFFFFF"
+            fgColor="#07090D"
+          />
         </div>
         <div className="flex items-center gap-2 font-display text-[1.7rem] font-bold uppercase leading-none tracking-wide text-volt">
           <Icon name="nfc" className="h-7 w-7" /> Tap your phone here to join
@@ -44,10 +51,18 @@ export function Lobby() {
             <Wordmark className="text-[1.6rem] text-pitch-200" />
             <h1 className="truncate font-display text-[3rem] font-bold uppercase leading-[0.95]">{party.game.title}</h1>
             <div className="mt-1 flex flex-wrap gap-2 text-[0.9rem] text-pitch-200">
-              <span className="rounded-full bg-pitch-800 px-3 py-0.5 ring-1 ring-pitch-700">{MODE_LABEL[party.config.defaultMode]} mode</span>
-              <span className="rounded-full bg-pitch-800 px-3 py-0.5 ring-1 ring-pitch-700">Buy-in {moneyShort(party.config.buyIn, party)}</span>
-              {party.game.status === 'replay' && <span className="rounded-full bg-pitch-800 px-3 py-0.5 ring-1 ring-pitch-700">Replay</span>}
-              {party.config.settlement === 'points' && <span className="rounded-full bg-pitch-800 px-3 py-0.5 ring-1 ring-pitch-700">Points only</span>}
+              <span className="rounded-full bg-pitch-800 px-3 py-0.5 ring-1 ring-pitch-700">
+                {MODE_LABEL[party.config.defaultMode]} mode
+              </span>
+              <span className="rounded-full bg-pitch-800 px-3 py-0.5 ring-1 ring-pitch-700">
+                Buy-in {moneyShort(party.config.buyIn, party)}
+              </span>
+              {party.game.status === 'replay' && (
+                <span className="rounded-full bg-pitch-800 px-3 py-0.5 ring-1 ring-pitch-700">Replay</span>
+              )}
+              {party.config.settlement === 'points' && (
+                <span className="rounded-full bg-pitch-800 px-3 py-0.5 ring-1 ring-pitch-700">Points only</span>
+              )}
             </div>
           </div>
           <BoxButtons canLock={false} />
@@ -55,13 +70,21 @@ export function Lobby() {
 
         <div className="flex items-baseline gap-4">
           <span className="font-display text-[4.2rem] font-bold leading-none text-volt tabular">{players.length}</span>
-          <span className="font-display text-[1.6rem] font-semibold uppercase tracking-wide text-pitch-200">{players.length === 1 ? 'player in' : 'players in'}</span>
+          <span className="font-display text-[1.6rem] font-semibold uppercase tracking-wide text-pitch-200">
+            {players.length === 1 ? 'player in' : 'players in'}
+          </span>
           <span className="ml-auto font-display text-[1.6rem] font-semibold uppercase text-pitch-400">
             Pot <span className="tabular text-pitch-50">{moneyShort(pot, party)}</span>
           </span>
         </div>
 
-        <div className="grid min-h-0 flex-1 auto-rows-[4.2rem] grid-cols-2 content-start gap-2.5 overflow-hidden">
+        <div
+          className="grid min-h-0 flex-1 content-start gap-2.5 overflow-hidden"
+          style={{
+            gridTemplateColumns: `repeat(${players.length > 8 ? 3 : 2}, minmax(0, 1fr))`,
+            gridAutoRows: players.length > 6 ? '3.2rem' : '4.2rem',
+          }}
+        >
           <AnimatePresence>
             {players.map((p) => (
               <motion.div

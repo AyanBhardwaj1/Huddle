@@ -36,9 +36,7 @@ export function ledPreview(pattern: LedPattern, color: string, opts: { color?: b
   for (let i = 0; i < RING_SIZE; i++) {
     const k = frame(pattern, i);
     const block = '●';
-    ring += useColor
-      ? `\x1b[38;2;${Math.round(r * k)};${Math.round(g * k)};${Math.round(b * k)}m${block}\x1b[0m`
-      : block;
+    ring += useColor ? `\x1b[38;2;${Math.round(r * k)};${Math.round(g * k)};${Math.round(b * k)}m${block}\x1b[0m` : block;
   }
   return `[led] (${ring}) ${pattern.padEnd(11)} ${color.toUpperCase()}`;
 }

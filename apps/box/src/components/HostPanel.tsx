@@ -25,7 +25,17 @@ function Section({ title, children, accent }: { title: string; children: ReactNo
 }
 
 /** Two-tap confirm for destructive actions. */
-function ConfirmButton({ label, confirmLabel, onConfirm, className = 'btn-ghost' }: { label: ReactNode; confirmLabel: string; onConfirm: () => void; className?: string }) {
+function ConfirmButton({
+  label,
+  confirmLabel,
+  onConfirm,
+  className = 'btn-ghost',
+}: {
+  label: ReactNode;
+  confirmLabel: string;
+  onConfirm: () => void;
+  className?: string;
+}) {
   const [armed, setArmed] = useState(false);
   return (
     <button
@@ -53,7 +63,9 @@ function MarketRow({ m }: { m: Market }) {
   return (
     <div className="rounded-lg bg-pitch-800 p-2 ring-1 ring-pitch-700">
       <button className="flex w-full items-center gap-2 text-left" onClick={() => setOpen((x) => !x)}>
-        <span className={`rounded px-1.5 py-0.5 text-[0.65rem] font-bold uppercase tracking-widest ${m.state === 'open' ? 'bg-volt text-volt-ink' : 'bg-pitch-600 text-pitch-50'}`}>
+        <span
+          className={`rounded px-1.5 py-0.5 text-[0.65rem] font-bold uppercase tracking-widest ${m.state === 'open' ? 'bg-volt text-volt-ink' : 'bg-pitch-600 text-pitch-50'}`}
+        >
           {m.state}
         </span>
         <span className="min-w-0 flex-1 truncate text-[0.95rem] font-semibold">{m.question}</span>
@@ -78,7 +90,11 @@ function MarketRow({ m }: { m: Market }) {
               />
             ))}
           </div>
-          <ConfirmButton label="Void (refund all)" confirmLabel="Tap again to void" onConfirm={() => void act({ action: 'void', marketId: m.id, reason: 'host' })} />
+          <ConfirmButton
+            label="Void (refund all)"
+            confirmLabel="Tap again to void"
+            onConfirm={() => void act({ action: 'void', marketId: m.id, reason: 'host' })}
+          />
           {canSwitch && (
             <>
               <div className="text-[0.75rem] font-bold uppercase tracking-widest text-pitch-400">Mode for this question</div>
@@ -127,14 +143,21 @@ function CustomMarket() {
               aria-label={`Outcome ${i + 1}`}
             />
             {outcomes.length > 2 && (
-              <button className="px-2 text-pitch-400" onClick={() => setOutcomes(outcomes.filter((_, j) => j !== i))} aria-label="Remove outcome">
+              <button
+                className="px-2 text-pitch-400"
+                onClick={() => setOutcomes(outcomes.filter((_, j) => j !== i))}
+                aria-label="Remove outcome"
+              >
                 <Icon name="x" className="h-4 w-4" />
               </button>
             )}
           </div>
         ))}
         {outcomes.length < 6 && (
-          <button className="flex h-10 items-center gap-1 rounded-lg px-3 text-[0.9rem] ring-1 ring-pitch-600" onClick={() => setOutcomes([...outcomes, `Option ${outcomes.length + 1}`])}>
+          <button
+            className="flex h-10 items-center gap-1 rounded-lg px-3 text-[0.9rem] ring-1 ring-pitch-600"
+            onClick={() => setOutcomes([...outcomes, `Option ${outcomes.length + 1}`])}
+          >
             <Icon name="plus" className="h-4 w-4" /> Outcome
           </button>
         )}
@@ -265,9 +288,18 @@ export function HostPanel() {
                     {m.outcomes
                       .filter((o) => o.id !== m.outcome)
                       .map((o) => (
-                        <ConfirmButton key={o.id} label={`Change to ${o.label}`} confirmLabel={`Confirm ${o.label}`} onConfirm={() => void act({ action: 'resolve', marketId: m.id, outcome: o.id }, `Changed to ${o.label}`)} />
+                        <ConfirmButton
+                          key={o.id}
+                          label={`Change to ${o.label}`}
+                          confirmLabel={`Confirm ${o.label}`}
+                          onConfirm={() => void act({ action: 'resolve', marketId: m.id, outcome: o.id }, `Changed to ${o.label}`)}
+                        />
                       ))}
-                    <ConfirmButton label="Void" confirmLabel="Tap again to void" onConfirm={() => void act({ action: 'void', marketId: m.id, reason: 'disputed' })} />
+                    <ConfirmButton
+                      label="Void"
+                      confirmLabel="Tap again to void"
+                      onConfirm={() => void act({ action: 'void', marketId: m.id, reason: 'disputed' })}
+                    />
                   </div>
                 </div>
               );
@@ -280,10 +312,17 @@ export function HostPanel() {
             {dr.map((m) => (
               <div key={m.id} className="flex items-center gap-2 rounded-lg bg-pitch-800 p-2">
                 <span className="min-w-0 flex-1 text-[0.95rem] font-semibold">{m.question}</span>
-                <button className="btn-volt min-h-[2.6rem] px-3 text-[1rem]" onClick={() => void act({ action: 'approve_draft', marketId: m.id })}>
+                <button
+                  className="btn-volt min-h-[2.6rem] px-3 text-[1rem]"
+                  onClick={() => void act({ action: 'approve_draft', marketId: m.id })}
+                >
                   Open
                 </button>
-                <button className="btn-ghost min-h-[2.6rem] px-3 text-[1rem]" onClick={() => void act({ action: 'discard_draft', marketId: m.id })} aria-label="Discard">
+                <button
+                  className="btn-ghost min-h-[2.6rem] px-3 text-[1rem]"
+                  onClick={() => void act({ action: 'discard_draft', marketId: m.id })}
+                  aria-label="Discard"
+                >
                   <Icon name="x" className="h-5 w-5" />
                 </button>
               </div>
@@ -293,7 +332,9 @@ export function HostPanel() {
         )}
 
         <Section title={`Markets (${active.length})`}>
-          {active.length === 0 && <div className="text-[0.9rem] text-pitch-400">Nothing open. The AI will open the next one on a big moment.</div>}
+          {active.length === 0 && (
+            <div className="text-[0.9rem] text-pitch-400">Nothing open. The AI will open the next one on a big moment.</div>
+          )}
           {active.map((m) => (
             <MarketRow key={m.id} m={m} />
           ))}
@@ -308,9 +349,19 @@ export function HostPanel() {
             value={cfg.defaultMode}
             onChange={(mode) => void act({ action: 'set_mode', mode }, `New questions: ${MODE_LABEL[mode]}`)}
           />
-          <Toggle on={cfg.autoApprove} onChange={(value) => void act({ action: 'set_auto_approve', value }, value ? 'AI questions open automatically' : 'AI questions wait for you')} label="Open AI questions automatically" />
+          <Toggle
+            on={cfg.autoApprove}
+            onChange={(value) =>
+              void act({ action: 'set_auto_approve', value }, value ? 'AI questions open automatically' : 'AI questions wait for you')
+            }
+            label="Open AI questions automatically"
+          />
           <div className="text-[0.75rem] font-bold uppercase tracking-widest text-pitch-400">Announcer</div>
-          <Segmented options={PERSONAS} value={cfg.persona} onChange={(persona) => void act({ action: 'set_persona', persona }, `Announcer: ${persona}`)} />
+          <Segmented
+            options={PERSONAS}
+            value={cfg.persona}
+            onChange={(persona) => void act({ action: 'set_persona', persona }, `Announcer: ${persona}`)}
+          />
         </Section>
 
         <CustomMarket />

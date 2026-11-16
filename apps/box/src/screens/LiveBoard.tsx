@@ -2,16 +2,7 @@ import type { Market, MarketState } from '@huddle/shared';
 import { AnimatePresence, motion } from 'framer-motion';
 import { QRCodeSVG } from 'qrcode.react';
 import { useEffect, useRef, useState } from 'react';
-import {
-  CaptionBar,
-  DisputeBanner,
-  GameTile,
-  LeaderStrip,
-  MarketTakeover,
-  ResultReveal,
-  Scorebug,
-  TradeTicker,
-} from '../components/board';
+import { CaptionBar, DisputeBanner, GameTile, LeaderStrip, MarketTakeover, ResultReveal, Scorebug, TradeTicker } from '../components/board';
 import { BoxButtons } from '../components/controls';
 import { HostPanel } from '../components/HostPanel';
 import { Icon } from '../components/ui';
@@ -61,7 +52,6 @@ function IdleHero({ joinUrl, code }: { joinUrl: string; code: string }) {
 export function LiveBoard() {
   const { view } = useParty();
   const s = view.snapshot!;
-  const boardView = useBox((st) => st.view);
   const setView = useBox((st) => st.setView);
   const takeover = activeMoment(s.markets);
   const tiles = gameTiles(s.markets);
@@ -92,7 +82,7 @@ export function LiveBoard() {
       <main className="relative min-h-0 flex-1 px-3 py-2">
         <AnimatePresence mode="wait">
           {takeover ? (
-            <MarketTakeover key={takeover.id} market={takeover} />
+            <MarketTakeover key={takeover.id} market={takeover} compact={ds.length > 0} />
           ) : tiles.length > 0 ? (
             <motion.div
               key="tiles"
@@ -112,7 +102,9 @@ export function LiveBoard() {
           )}
         </AnimatePresence>
         <AnimatePresence>
-          {reveal && <ResultReveal key={reveal.id} market={reveal} summary={resultSummary(reveal, s.fills)} party={s.party} onDone={dismissReveal} />}
+          {reveal && (
+            <ResultReveal key={reveal.id} market={reveal} summary={resultSummary(reveal, s.fills)} party={s.party} onDone={dismissReveal} />
+          )}
         </AnimatePresence>
       </main>
       <div className="flex h-[2.6rem] shrink-0 items-center gap-4 overflow-hidden px-3">
@@ -120,24 +112,38 @@ export function LiveBoard() {
         <TradeTicker />
       </div>
       <CaptionBar lines={s.announcer} />
-
-      <AnimatePresence>
-        {boardView === 'host' && <HostPanel key="host" />}
-        {boardView === 'scorecard' && (
-          <motion.div
-            key="scorecard"
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 30 }}
-            className="absolute inset-x-3 bottom-[3.6rem] top-[4.4rem] z-40 rounded-card bg-pitch-950/[0.97] p-6 shadow-2xl ring-1 ring-pitch-600"
-          >
-            <button className="btn-ghost absolute right-4 top-4 min-h-[2.6rem] px-3" onClick={() => setView('board')} aria-label="Close scorecard">
-              <Icon name="x" className="h-5 w-5" />
-            </button>
-            <ScorecardPanel scorecard={s.scorecard} />
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
+  );
+}
+
+/** NEXT-cycled overlays (host panel, scorecard), available on every party screen. */
+export function PartyOverlays() {
+  const { view } = useParty();
+  const boardView = useBox((st) => st.view);
+  const setView = useBox((st) => st.setView);
+  const s = view.snapshot;
+  if (!s) return null;
+  return (
+    <AnimatePresence>
+      {boardView === 'host' && <HostPanel key="host" />}
+      {boardView === 'scorecard' && (
+        <motion.div
+          key="scorecard"
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 30 }}
+          className="absolute inset-x-3 bottom-[3.6rem] top-[4.4rem] z-40 rounded-card bg-pitch-950/[0.97] p-6 shadow-2xl ring-1 ring-pitch-600"
+        >
+          <button
+            className="btn-ghost absolute right-4 top-4 min-h-[2.6rem] px-3"
+            onClick={() => setView('board')}
+            aria-label="Close scorecard"
+          >
+            <Icon name="x" className="h-5 w-5" />
+          </button>
+          <ScorecardPanel scorecard={s.scorecard} />
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }
