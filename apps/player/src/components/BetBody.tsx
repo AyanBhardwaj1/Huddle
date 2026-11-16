@@ -65,13 +65,13 @@ export function BetBody({ market, live }: { market: Market; live: boolean }) {
             outcome={pick}
             verb="backing"
             onClose={() => setPick(null)}
-            preview={(stake) => `returns ${moneyShort(returnAt(stake, backQuote(market, pick, snap.offers, me).odds), points)}`}
+            preview={(stake) => `pays ${moneyShort(returnAt(stake, backQuote(market, pick, snap.offers, me).odds), points)}`}
             send={(stake) => ({ type: 'place_bet', marketId: market.id, outcome: pick, stake })}
           />
         )}
       </AnimatePresence>
 
-      {holdings.length > 0 && (
+      {holdings.length > 0 && (market.state === 'open' || market.state === 'locked') && (
         <div className="mt-3 space-y-1.5">
           {holdings.map((h) => (
             <div key={h.outcome} className="flex items-center justify-between rounded-2xl border border-pitch-700 bg-pitch-800/70 px-3 py-2.5 text-sm">

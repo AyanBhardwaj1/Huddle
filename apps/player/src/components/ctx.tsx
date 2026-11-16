@@ -41,7 +41,14 @@ export function useNow(ms = 250): number {
 export async function act(client: PartyClient, body: ClientRequest): Promise<string | null> {
   buzz(HAPTIC.tap);
   try {
-    await client.request(body);
+    try {
+      await client.request(body);
+    } catch (e) {
+      // Our countersignature is usually already in flight (D6): retry once before bothering the player.
+      if ((e as { code?: string }).code !== 'cosign_required') throw e;
+      await new Promise((r) => setTimeout(r, 1200));
+      await client.request(body);
+    }
     buzz(HAPTIC.success);
     return null;
   } catch (e) {

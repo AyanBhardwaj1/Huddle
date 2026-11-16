@@ -32,12 +32,13 @@ export function PartyRoute({ code }: { code: string }) {
     };
   }, [code]);
 
-  // Returning players (name already stored) join straight away.
+  // Returning players (name already stored when the page opened) join straight away.
+  const [returning] = useState(() => !!name);
   useEffect(() => {
-    if (name && partyCode !== code.toUpperCase() && previewErr !== 'missing') {
+    if (returning && partyCode !== code.toUpperCase() && previewErr !== 'missing') {
       void connect(code, remoteParam);
     }
-  }, [name, code, partyCode, connect, remoteParam, previewErr]);
+  }, [returning, code, partyCode, connect, remoteParam, previewErr]);
 
   if (client && partyCode === code.toUpperCase() && view.snapshot) {
     return <PartyShell client={client} view={view} remote={remoteParam || remote} />;

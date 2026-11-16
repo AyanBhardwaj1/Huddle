@@ -49,7 +49,37 @@ interface AppState {
   dismiss(id: number): void;
 }
 
+/**
+ * A player connection whose countersigned states persist per party, so co-signing survives reloads
+ * (the next state must chain from the last one this phone signed).
+ */
+export async function createPlayerClient(o: {
+  kv: Kv;
+  wallet: KeyPair;
+  name: string;
+  code: string;
+  remote: boolean;
+  url: string;
+  WebSocketCtor?: typeof WebSocket;
+}): Promise<HuddleClient> {
+  const code = o.code.toUpperCase();
+  const lastSigned = await loadLastSigned(o.kv, code, o.wallet.publicKey);
+  return new HuddleClient({
+    url: o.url,
+    partyCode: code,
+    role: 'player',
+    keyPair: o.wallet,
+    name: o.name,
+    remote: o.remote,
+    lastSigned,
+    onLastSigned: (s) => void saveLastSigned(o.kv, code, s),
+    WebSocketCtor: o.WebSocketCtor,
+  });
+}
+
 let noticeId = 0;
+/** Party code a connect() is in flight for (guards double-connects from effects + forms). */
+let connecting: string | null = null;
 
 export const useApp = create<AppState>((set, get) => ({
   path: typeof window !== 'undefined' ? window.location.pathname : '/',
@@ -93,21 +123,16 @@ export const useApp = create<AppState>((set, get) => ({
     const { kv, wallet, name, client: old, partyCode } = get();
     if (!kv || !wallet || !name) throw new Error('not ready');
     const upper = code.toUpperCase();
-    if (old && partyCode === upper) return;
-    old?.close();
-    const lastSigned = await loadLastSigned(kv, upper, wallet.publicKey);
-    const client = new HuddleClient({
-      url: engineWsUrl(),
-      partyCode: upper,
-      role: 'player',
-      keyPair: wallet,
-      name,
-      remote,
-      lastSigned,
-      onLastSigned: (s) => void saveLastSigned(kv, upper, s),
-    });
-    set({ client, partyCode: upper, remote });
-    client.connect();
+    if ((old && partyCode === upper) || connecting === upper) return;
+    connecting = upper;
+    try {
+      old?.close();
+      const client = await createPlayerClient({ kv, wallet, name, code: upper, remote, url: engineWsUrl() });
+      set({ client, partyCode: upper, remote });
+      client.connect();
+    } finally {
+      connecting = null;
+    }
   },
 
   startFixture(client) {
@@ -155,5 +180,6 @@ const emptyView = () => EMPTY_VIEW;
 
 /** The live, reduced party view from the current client. */
 export function useView(client: PartyClient | null): ClientView {
-  return useSyncExternalStore(client ? client.subscribe : noopSubscribe, client ? client.getView : emptyView);
+  const get = client ? client.getView : emptyView;
+  return useSyncExternalStore(client ? client.subscribe : noopSubscribe, get, get);
 }

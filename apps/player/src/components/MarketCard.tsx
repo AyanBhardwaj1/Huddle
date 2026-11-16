@@ -169,7 +169,7 @@ function OutcomeTrader({ market, live }: { market: Market; live: boolean }) {
             preview={(stake) => {
               if (isAmm) {
                 const q = ammBuyPreview(market, pick, stake);
-                return q ? `≈${formatShares(q.shares)} sh · pays ${moneyShort(q.payout, points)}` : '';
+                return q ? `pays ${moneyShort(q.payout, points)}` : '';
               }
               return `pays ${moneyShort(poolPreview(market, pick, stake), points)}`;
             }}
@@ -241,17 +241,15 @@ export function StakeTray({
                 key={c.amount}
                 disabled={busy !== null}
                 onClick={() => place(c.amount)}
-                className="flex min-h-[60px] flex-col items-center justify-center rounded-xl bg-volt px-1 text-volt-ink transition-transform active:scale-95 disabled:opacity-60"
+                className="relative flex min-h-[64px] flex-col items-center justify-center rounded-xl bg-volt px-1 text-volt-ink transition-transform active:scale-95 disabled:opacity-60"
               >
                 {busy === c.amount ? (
                   <Spinner />
                 ) : (
                   <>
-                    <span className="font-display text-xl font-bold leading-none tnum">{c.isMax ? 'Max' : moneyShort(c.amount, points)}</span>
-                    <span className="mt-1 text-[10px] font-medium leading-tight opacity-75 tnum">
-                      {c.isMax ? moneyShort(c.amount, points) + ' · ' : ''}
-                      {preview(c.amount)}
-                    </span>
+                    {c.isMax && <span className="text-[9px] font-bold uppercase leading-none tracking-widest opacity-70">Max</span>}
+                    <span className="font-display text-xl font-bold leading-tight tnum">{moneyShort(c.amount, points)}</span>
+                    <span className="text-[10px] font-medium leading-tight opacity-75 tnum">{preview(c.amount)}</span>
                   </>
                 )}
               </button>

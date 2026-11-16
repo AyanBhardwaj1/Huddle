@@ -283,10 +283,31 @@ export class FixtureClient implements PartyClient {
     };
   }
 
+  private timer: ReturnType<typeof setInterval> | null = null;
+
   getView = () => this.view;
   subscribe = (fn: () => void) => {
     this.listeners.add(fn);
-    return () => void this.listeners.delete(fn);
+    // Keep the moment markets cycling so the countdown ring is always visible while reviewing.
+    this.timer ??= setInterval(() => {
+      const now = Date.now();
+      const stale = this.view.snapshot?.markets.some((m) => m.state === 'open' && m.kind === 'moment' && m.lock.at && Date.parse(m.lock.at) < now - 3000);
+      if (stale)
+        this.mutate((s) => {
+          for (const m of s.markets)
+            if (m.state === 'open' && m.kind === 'moment' && m.lock.at && Date.parse(m.lock.at) < now - 3000) {
+              m.openedAt = new Date(now).toISOString();
+              m.lock = { ...m.lock, at: new Date(now + 30_000).toISOString() };
+            }
+        });
+    }, 1000);
+    return () => {
+      this.listeners.delete(fn);
+      if (!this.listeners.size && this.timer) {
+        clearInterval(this.timer);
+        this.timer = null;
+      }
+    };
   };
   now = () => Date.now();
   close() {}

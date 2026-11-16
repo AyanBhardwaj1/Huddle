@@ -47,6 +47,6 @@ export default defineConfig(({ mode }) => {
     server: { port: 5173, strictPort: true, host: true, proxy },
     preview: { port: 5173, proxy },
     build: { target: 'es2020', chunkSizeWarningLimit: 900 },
-    test: { environment: 'node', include: ['src/**/*.test.ts'] },
+    test: { environment: 'node', include: ['src/**/*.test.{ts,tsx}'] },
   };
 });
