@@ -1,0 +1,112 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * Fluid scale: the layout is designed in rem at 1024x600 (1rem = 16px) and scales with the smaller
+ * of width/height, so the 7-inch box and a 1080p TV show the same composition (1rem ≈ 29px at 1080p).
+ */
+html {
+  font-size: clamp(10px, min(1.5625vw, 2.6667vh), 40px);
+  background: #07090d;
+  color-scheme: dark;
+}
+html,
+body,
+#root {
+  height: 100%;
+  overflow: hidden;
+}
+body {
+  @apply bg-pitch-950 font-sans text-pitch-50 antialiased;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  touch-action: manipulation;
+}
+input,
+textarea {
+  user-select: text;
+}
+
+@layer components {
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+  .kicker {
+    @apply font-display text-[1rem] font-semibold uppercase tracking-[0.18em] text-pitch-400;
+  }
+  .btn {
+    @apply inline-flex min-h-[3rem] items-center justify-center gap-2 rounded-xl px-5 font-display text-[1.35rem] font-semibold uppercase tracking-wide transition active:scale-[0.97] disabled:opacity-40;
+  }
+  .btn-volt {
+    @apply btn bg-volt text-volt-ink shadow-glow;
+  }
+  .btn-ghost {
+    @apply btn border border-pitch-600 bg-pitch-800 text-pitch-50;
+  }
+  .btn-up {
+    @apply btn bg-up text-up-ink;
+  }
+  .btn-down {
+    @apply btn bg-down text-down-ink;
+  }
+  .card {
+    @apply rounded-card bg-pitch-900 shadow-card ring-1 ring-pitch-700;
+  }
+  .scroll-thin {
+    scrollbar-width: thin;
+    scrollbar-color: #2c3748 transparent;
+  }
+  /* Broadcast-style slanted panel edge */
+  .slant-r {
+    clip-path: polygon(0 0, 100% 0, calc(100% - 0.9rem) 100%, 0 100%);
+  }
+  .slant-l {
+    clip-path: polygon(0.9rem 0, 100% 0, 100% 100%, 0 100%);
+  }
+}
+
+/* ---------- On-screen LED ring (mirrors the engine's `led` messages) ---------- */
+.led-ring {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 60;
+  border-radius: 0;
+  box-shadow:
+    inset 0 0 0 0.22rem var(--led),
+    inset 0 0 1.6rem 0.2rem color-mix(in srgb, var(--led) 55%, transparent);
+  opacity: 0.55;
+}
+.led-idle { animation: led-breathe 4s ease-in-out infinite; }
+.led-join { animation: led-flash 0.35s ease-in-out 4 both, led-settle 0.1s 1.4s forwards; }
+.led-market_open { animation: led-pulse 1.1s ease-in-out infinite; }
+.led-locking { animation: led-blink 0.3s steps(2, jump-none) infinite; }
+.led-locked { opacity: 0.9; }
+.led-win { animation: led-flash 0.25s ease-in-out 8 both, led-settle 0.1s 2s forwards; }
+.led-loss { animation: led-fade 2.2s ease-out forwards; }
+.led-goal { animation: led-strobe 0.12s steps(2, jump-none) 14 both, led-settle 0.1s 1.7s forwards; }
+.led-error { animation: led-blink 0.6s steps(2, jump-none) 6 both; }
+
+@keyframes led-breathe { 0%, 100% { opacity: 0.18; } 50% { opacity: 0.45; } }
+@keyframes led-pulse { 0%, 100% { opacity: 0.45; } 50% { opacity: 1; } }
+@keyframes led-blink { 0% { opacity: 1; } 100% { opacity: 0.1; } }
+@keyframes led-flash { 0%, 100% { opacity: 0.2; } 50% { opacity: 1; } }
+@keyframes led-strobe { 0% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes led-fade { 0% { opacity: 1; } 100% { opacity: 0.12; } }
+@keyframes led-settle { to { opacity: 0.25; } }
+
+@keyframes join-flash {
+  0% { background-color: rgba(212, 255, 58, 0.5); }
+  100% { background-color: transparent; }
+}
+.join-flash { animation: join-flash 1.4s ease-out; }
+
+@keyframes ticker {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .led-ring { animation: none !important; opacity: 0.6; }
+}
