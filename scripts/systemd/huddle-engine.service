@@ -1,0 +1,17 @@
+[Unit]
+Description=Huddle party engine
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=@RUN_USER@
+WorkingDirectory=@REPO_DIR@
+EnvironmentFile=/etc/huddle/huddle.env
+Environment=NODE_ENV=production
+ExecStart=/usr/bin/env pnpm --filter @huddle/engine start
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target

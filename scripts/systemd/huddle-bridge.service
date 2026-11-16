@@ -1,0 +1,20 @@
+[Unit]
+Description=Huddle box bridge (buttons, LED ring, NFC)
+After=network.target
+
+[Service]
+Type=simple
+User=@RUN_USER@
+WorkingDirectory=@REPO_DIR@
+EnvironmentFile=-/etc/huddle/huddle.env
+# Runs the mock until the hardware adapter is implemented; set BRIDGE_ARGS= (empty) in
+# /etc/huddle/huddle.env to run against real hardware.
+Environment=BRIDGE_ARGS=--mock
+ExecStart=/usr/bin/env pnpm --filter @huddle/box-bridge start $BRIDGE_ARGS
+Restart=always
+RestartSec=2
+# GPIO / SPI / I2C access for the real bridge
+SupplementaryGroups=gpio spi i2c
+
+[Install]
+WantedBy=multi-user.target

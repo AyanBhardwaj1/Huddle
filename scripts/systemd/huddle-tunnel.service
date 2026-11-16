@@ -1,0 +1,15 @@
+[Unit]
+Description=Huddle Cloudflare Tunnel (PUBLIC_ENGINE_URL for remote players)
+After=network-online.target huddle-engine.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=@RUN_USER@
+EnvironmentFile=/etc/huddle/tunnel.env
+ExecStart=/usr/bin/cloudflared tunnel --no-autoupdate run --token ${TUNNEL_TOKEN}
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
