@@ -18,7 +18,6 @@ import {
   sharesGt,
   sharesIsZero,
   subShares,
-  takerStakeFor,
   type AnnouncerEvent,
   type BetOffer,
   type DraftBet,
