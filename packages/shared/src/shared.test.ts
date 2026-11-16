@@ -111,7 +111,7 @@ describe('mock settlement mirrors the vault rules', () => {
     const host = generateKeyPair();
     const a = generateKeyPair();
     const b = generateKeyPair();
-    const { partyAddress } = await chain.createParty({ partyId: 'p1', host: host.publicKey, boxSigner: box.publicKey, bond: 5 * USDC, challengeSecs: 60, requireMemberSig: true });
+    const { partyAddress } = await chain.createParty({ partyId: 'p1', hostSecretKey: host.secretKey, boxSigner: box.publicKey, bond: 5 * USDC, challengeSecs: 60, requireMemberSig: true });
     for (const m of [a, b]) {
       const d = await chain.prepareDeposit({ partyAddress, member: m.publicKey, amount: 10 * USDC });
       await chain.submitDeposit({ depositId: d.depositId });
@@ -121,7 +121,8 @@ describe('mock settlement mirrors the vault rules', () => {
       return { ...f, boxSig: signState(f, box.secretKey), memberSig: withMember ? signState(f, m.secretKey) : undefined };
     };
     await expect(chain.submitState(partyAddress, claim(a, 2, 14 * USDC))).rejects.toThrow('not closing');
-    await chain.requestClose(partyAddress);
+    await expect(chain.requestClose(partyAddress, a.secretKey)).rejects.toThrow('only the host');
+    await chain.requestClose(partyAddress, box.secretKey);
     await expect(chain.submitState(partyAddress, claim(a, 2, 14 * USDC, false))).rejects.toThrow('member signature');
     await chain.submitState(partyAddress, claim(a, 2, 14 * USDC));
     await expect(chain.submitState(partyAddress, claim(a, 1, 20 * USDC))).rejects.toThrow('stale nonce');

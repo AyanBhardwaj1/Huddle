@@ -1,4 +1,4 @@
-import type { DepositRequest, SettlementClient, SignedClaim } from '../interfaces';
+import type { CreatePartyParams, DepositRequest, SettlementClient, SignedClaim } from '../interfaces';
 import { settleClaims } from '../math/settle';
 import { b58encode, randomId, verifyStateSig } from '../state';
 import type { ChainEvent, SettlementMode } from '../types';
@@ -55,18 +55,12 @@ export class MockSettlementClient implements SettlementClient {
     return p;
   }
 
-  async createParty(params: {
-    partyId: string;
-    host: string;
-    boxSigner: string;
-    bond: number;
-    challengeSecs: number;
-    requireMemberSig: boolean;
-  }): Promise<{ partyAddress: string; txSig?: string }> {
+  async createParty(params: CreatePartyParams): Promise<{ partyAddress: string; txSig?: string }> {
     const address = b58encode(nacl.randomBytes(32));
+    const host = b58encode(nacl.sign.keyPair.fromSecretKey(params.hostSecretKey).publicKey);
     this.parties.set(address, {
       address,
-      host: params.host,
+      host,
       boxSigner: params.boxSigner,
       bond: params.bond,
       challengeSecs: params.challengeSecs,
@@ -105,8 +99,10 @@ export class MockSettlementClient implements SettlementClient {
     return this.submitDeposit({ depositId: d.depositId });
   }
 
-  async requestClose(partyAddress: string): Promise<{ txSig?: string; challengeEndsAt: string }> {
+  async requestClose(partyAddress: string, signerSecretKey: Uint8Array): Promise<{ txSig?: string; challengeEndsAt: string }> {
     const p = this.party(partyAddress);
+    const signer = b58encode(nacl.sign.keyPair.fromSecretKey(signerSecretKey).publicKey);
+    if (signer !== p.host && signer !== p.boxSigner) throw new Error('only the host or the box can close');
     if (p.status === 'open') {
       p.status = 'closing';
       p.closeRequestedAt = this.now();

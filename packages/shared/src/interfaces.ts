@@ -42,20 +42,36 @@ export interface DepositRequest {
   messageB64: string | null;
 }
 
+export interface CreatePartyParams {
+  partyId: string;
+  /**
+   * The host (house) key is held by the engine (DECISIONS D4): it signs create_party and pays the bond.
+   * On devnet the client first tops this wallet up from the treasury so it can cover the bond.
+   */
+  hostSecretKey: Uint8Array;
+  /** Box signer public key, base58. */
+  boxSigner: string;
+  bond: number;
+  challengeSecs: number;
+  requireMemberSig: boolean;
+}
+
+/** ElevenLabs Agents session for the TALK button (P1). */
+export interface AgentSession {
+  agentId: string;
+  /** Signed conversation URL when the agent is private. */
+  signedUrl?: string;
+  /** Passed to the agent as dynamic variables (party code, player name, session token). */
+  dynamicVariables: Record<string, string>;
+}
+
 export interface SettlementClient {
   readonly mode: SettlementMode;
   /** Human-readable description for the host screen ("Solana devnet", "points only", "mock vault"). */
   readonly label: string;
 
   /** Create the party on-chain and deposit the host bond. Returns the party address (PDA). */
-  createParty(params: {
-    partyId: string;
-    host: string;
-    boxSigner: string;
-    bond: number;
-    challengeSecs: number;
-    requireMemberSig: boolean;
-  }): Promise<{ partyAddress: string; txSig?: string }>;
+  createParty(params: CreatePartyParams): Promise<{ partyAddress: string; txSig?: string }>;
 
   /** Step 1 of a buy-in: build the deposit for the member to sign. */
   prepareDeposit(params: { partyAddress: string; member: string; amount: number }): Promise<DepositRequest>;
@@ -65,7 +81,8 @@ export interface SettlementClient {
   /** Deposit from an engine-held key (the host's house budget). */
   depositFromKey(params: { partyAddress: string; secretKey: Uint8Array; amount: number }): Promise<{ txSig?: string }>;
 
-  requestClose(partyAddress: string): Promise<{ txSig?: string; challengeEndsAt: string }>;
+  /** Signed by the host key or the box signer key. */
+  requestClose(partyAddress: string, signerSecretKey: Uint8Array): Promise<{ txSig?: string; challengeEndsAt: string }>;
   submitState(partyAddress: string, claim: SignedClaim): Promise<{ txSig?: string }>;
   /** After the challenge window. Returns each member's final payout in base units. */
   finalize(partyAddress: string): Promise<{ txSig?: string; payouts: Record<string, number>; hostRefund: number }>;
@@ -203,6 +220,11 @@ export interface Announcer {
   getAudio(id: string): { mime: string; data: Uint8Array } | undefined;
   /** TALK fallback without an ElevenLabs agent: answer a typed/transcribed question. */
   answer(text: string, ctx: TalkContext): Promise<TalkReply>;
+  /**
+   * Start an ElevenLabs Agents conversation (P1). Null when no agent is configured, in which case
+   * clients fall back to Web Speech recognition + `talk_text`.
+   */
+  agentSession?(params: { partyCode: string; playerName?: string; sessionToken: string }): Promise<AgentSession | null>;
 }
 
 // ───────────────────────── Box bridge (apps/box-bridge; client in @huddle/shared) ─────────────────────────
