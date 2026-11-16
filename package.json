@@ -4,7 +4,9 @@
   "version": "0.1.0",
   "type": "module",
   "packageManager": "pnpm@9.15.9",
-  "engines": { "node": ">=20" },
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "build": "turbo run build",
     "typecheck": "turbo run typecheck",
@@ -13,7 +15,11 @@
     "dev": "turbo run dev --parallel",
     "demo": "tsx scripts/demo.ts",
     "engine": "pnpm --filter @huddle/engine dev",
-    "bridge:mock": "pnpm --filter @huddle/box-bridge dev -- --mock"
+    "bridge:mock": "pnpm --filter @huddle/box-bridge dev -- --mock",
+    "solana:test": "sh scripts/solana-test.sh",
+    "solana:setup": "tsx scripts/solana-setup.ts",
+    "solana:deploy": "sh scripts/solana-deploy.sh",
+    "bots": "pnpm --filter @huddle/engine bots --"
   },
   "devDependencies": {
     "@eslint/js": "^9.14.0",
