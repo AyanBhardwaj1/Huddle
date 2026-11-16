@@ -1,0 +1,1553 @@
+{
+ "data": [
+  {
+   "id": "440407",
+   "title": "Los Angeles C vs Baltimore",
+   "slug": "los-angeles-c-vs-baltimore",
+   "type": "categorical",
+   "category": "Sports",
+   "ticker": "NFL-2611170115-LAC-BAL-M",
+   "status": "active",
+   "startTime": "2026-11-17T01:15:00.000Z",
+   "expiryDate": "2026-11-18T13:15:00.000Z",
+   "isLive": false,
+   "participants": [
+    {
+     "id": "430",
+     "name": "Baltimore Ravens",
+     "abbreviation": "BAL",
+     "side": "home"
+    },
+    {
+     "id": "441",
+     "name": "Los Angeles Chargers",
+     "abbreviation": "LAC",
+     "side": "away"
+    }
+   ],
+   "tags": [
+    "Pro Football"
+   ],
+   "volume": "14598.46",
+   "sportsMarket": {
+    "sport": "american_football",
+    "type": "moneyline",
+    "subject": "contest",
+    "scope": {
+     "type": "full_contest"
+    }
+   },
+   "contracts": [
+    {
+     "id": "440407-1063256",
+     "label": "Baltimore",
+     "prices": {
+      "buy": {
+       "yes": "0.68",
+       "no": "0.33"
+      },
+      "sell": {
+       "yes": "0.67",
+       "no": "0.32"
+      },
+      "bestBid": "0.67",
+      "bestAsk": "0.68",
+      "lastTradePrice": "0.68"
+     },
+     "status": "active",
+     "ticker": "BAL",
+     "instrumentSymbol": "GEMI-NFL-2611170115-LAC-BAL-M-BAL",
+     "marketState": "open",
+     "abbreviatedName": "BAL",
+     "sportsSide": "home",
+     "expiryDate": "2026-11-18T13:15:00.000Z",
+     "sortOrder": 2
+    },
+    {
+     "id": "440407-1063252",
+     "label": "Los Angeles C",
+     "prices": {
+      "buy": {
+       "yes": "0.32",
+       "no": "0.69"
+      },
+      "sell": {
+       "yes": "0.31",
+       "no": "0.68"
+      },
+      "bestBid": "0.31",
+      "bestAsk": "0.32",
+      "lastTradePrice": "0.32"
+     },
+     "status": "active",
+     "ticker": "LAC",
+     "instrumentSymbol": "GEMI-NFL-2611170115-LAC-BAL-M-LAC",
+     "marketState": "open",
+     "abbreviatedName": "LAC",
+     "sportsSide": "away",
+     "expiryDate": "2026-11-18T13:15:00.000Z",
+     "sortOrder": 1
+    }
+   ]
+  },
+  {
+   "id": "444602",
+   "title": "Los Angeles C vs Baltimore: Total Points",
+   "slug": "los-angeles-c-vs-baltimore-total-points",
+   "type": "categorical",
+   "category": "Sports",
+   "ticker": "NFL-2611170115-LAC-BAL-T",
+   "status": "active",
+   "startTime": "2026-11-17T01:15:00.000Z",
+   "expiryDate": "2026-11-18T13:15:00.000Z",
+   "isLive": false,
+   "participants": [
+    {
+     "id": "430",
+     "name": "Baltimore Ravens",
+     "abbreviation": "BAL",
+     "side": "home"
+    },
+    {
+     "id": "441",
+     "name": "Los Angeles Chargers",
+     "abbreviation": "LAC",
+     "side": "away"
+    }
+   ],
+   "tags": [
+    "Pro Football"
+   ],
+   "volume": "441.68",
+   "sportsMarket": {
+    "sport": "american_football",
+    "type": "total",
+    "subject": "contest",
+    "scope": {
+     "type": "full_contest"
+    },
+    "metric": "points"
+   },
+   "contracts": [
+    {
+     "id": "444602-1078847",
+     "label": "More than 26.5 points scored",
+     "prices": {
+      "buy": {
+       "yes": "0.91",
+       "no": "0.18"
+      },
+      "sell": {
+       "yes": "0.82",
+       "no": "0.09"
+      },
+      "bestBid": "0.82",
+      "bestAsk": "0.91"
+     },
+     "status": "active",
+     "ticker": "O26",
+     "instrumentSymbol": "GEMI-NFL-2611170115-LAC-BAL-T-O26",
+     "marketState": "open",
+     "expiryDate": "2026-11-18T13:15:00.000Z",
+     "sortOrder": 4
+    },
+    {
+     "id": "444602-1078854",
+     "label": "More than 29.5 points scored",
+     "prices": {
+      "buy": {
+       "yes": "0.83",
+       "no": "0.23"
+      },
+      "sell": {
+       "yes": "0.77",
+       "no": "0.17"
+      },
+      "bestBid": "0.77",
+      "bestAsk": "0.83",
+      "lastTradePrice": "0.82"
+     },
+     "status": "active",
+     "ticker": "O29",
+     "instrumentSymbol": "GEMI-NFL-2611170115-LAC-BAL-T-O29",
+     "marketState": "open",
+     "expiryDate": "2026-11-18T13:15:00.000Z",
+     "sortOrder": 11
+    },
+    {
+     "id": "444602-1078860",
+     "label": "More than 32.5 points scored",
+     "prices": {
+      "buy": {
+       "yes": "0.74",
+       "no": "0.31"
+      },
+      "sell": {
+       "yes": "0.69",
+       "no": "0.26"
+      },
+      "bestBid": "0.69",
+      "bestAsk": "0.74"
+     },
+     "status": "active",
+     "ticker": "O32",
+     "instrumentSymbol": "GEMI-NFL-2611170115-LAC-BAL-T-O32",
+     "marketState": "open",
+     "expiryDate": "2026-11-18T13:15:00.000Z",
+     "sortOrder": 16
+    },
+    {
+     "id": "444602-1078857",
+     "label": "More than 35.5 points scored",
+     "prices": {
+      "buy": {
+       "yes": "0.65",
+       "no": "0.4"
+      },
+      "sell": {
+       "yes": "0.6",
+       "no": "0.35"
+      },
+      "bestBid": "0.6",
+      "bestAsk": "0.65",
+      "lastTradePrice": "0.65"
+     },
+     "status": "active",
+     "ticker": "O35",
+     "instrumentSymbol": "GEMI-NFL-2611170115-LAC-BAL-T-O35",
+     "marketState": "open",
+     "expiryDate": "2026-11-18T13:15:00.000Z",
+     "sortOrder": 14
+    },
+    {
+     "id": "444602-1078846",
+     "label": "More than 36.5 points scored",
+     "prices": {
+      "buy": {
+       "yes": "0.59",
+       "no": "0.42"
+      },
+      "sell": {
+       "yes": "0.58",
+       "no": "0.41"
+      },
+      "bestBid": "0.58",
+      "bestAsk": "0.59"
+     },
+     "status": "active",
+     "ticker": "O36",
+     "instrumentSymbol": "GEMI-NFL-2611170115-LAC-BAL-T-O36",
+     "marketState": "open",
+     "expiryDate": "2026-11-18T13:15:00.000Z",
+     "sortOrder": 3
+    },
+    {
+     "id": "444602-1078855",
+     "label": "More than 37.5 points scored",
+     "prices": {
+      "buy": {
+       "yes": "0.56",
+       "no": "0.46"
+      },
+      "sell": {
+       "yes": "0.54",
+       "no": "0.44"
+      },
+      "bestBid": "0.54",
+      "bestAsk": "0.56",
+      "lastTradePrice": "0.56"
+     },
+     "status": "active",
+     "ticker": "O37",
+     "instrumentSymbol": "GEMI-NFL-2611170115-LAC-BAL-T-O37",
+     "marketState": "open",
+     "expiryDate": "2026-11-18T13:15:00.000Z",
+     "sortOrder": 12
+    },
+    {
+     "id": "444602-1078850",
+     "label": "More than 38.5 points scored",
+     "prices": {
+      "buy": {
+       "yes": "0.53",
+       "no": "0.49"
+      },
+      "sell": {
+       "yes": "0.51",
+       "no": "0.47"
+      },
+      "bestBid": "0.51",
+      "bestAsk": "0.53"
+     },
+     "status": "active",
+     "ticker": "O38",
+     "instrumentSymbol": "GEMI-NFL-2611170115-LAC-BAL-T-O38",
+     "marketState": "open",
+     "expiryDate": "2026-11-18T13:15:00.000Z",
+     "sortOrder": 7
+    },
+    {
+     "id": "444602-1078851",
+     "label": "More than 39.5 points scored",
+     "prices": {
+      "buy": {
+       "yes": "0.49",
+       "no": "0.53"
+      },
+      "sell": {
+       "yes": "0.47",
+       "no": "0.51"
+      },
+      "bestBid": "0.47",
+      "bestAsk": "0.49",
+      "lastTradePrice": "0.46"
+     },
+     "status": "active",
+     "ticker": "O39",
+     "instrumentSymbol": "GEMI-NFL-2611170115-LAC-BAL-T-O39",
+     "marketState": "open",
+     "expiryDate": "2026-11-18T13:15:00.000Z",
+     "sortOrder": 8
+    }
+   ]
+  },
+  {
+   "id": "444601",
+   "title": "Los Angeles C vs Baltimore: Point Spread",
+   "slug": "los-angeles-c-vs-baltimore-point-spread",
+   "type": "categorical",
+   "category": "Sports",
+   "ticker": "NFL-2611170115-LAC-BAL-S",
+   "status": "active",
+   "startTime": "2026-11-17T01:15:00.000Z",
+   "expiryDate": "2026-11-18T13:15:00.000Z",
+   "isLive": false,
+   "participants": [
+    {
+     "id": "430",
+     "name": "Baltimore Ravens",
+     "abbreviation": "BAL",
+     "side": "home"
+    },
+    {
+     "id": "441",
+     "name": "Los Angeles Chargers",
+     "abbreviation": "LAC",
+     "side": "away"
+    }
+   ],
+   "tags": [
+    "Pro Football"
+   ],
+   "volume": "376.14",
+   "sportsMarket": {
+    "sport": "american_football",
+    "type": "spread",
+    "subject": "team",
+    "scope": {
+     "type": "full_contest"
+    },
+    "metric": "points"
+   },
+   "contracts": [
+    {
+     "id": "444601-1078825",
+     "label": "Baltimore wins by more than 1.5 points",
+     "prices": {
+      "buy": {
+       "yes": "0.65",
+       "no": "0.37"
+      },
+      "sell": {
+       "yes": "0.63",
+       "no": "0.35"
+      },
+      "bestBid": "0.63",
+      "bestAsk": "0.65",
+      "lastTradePrice": "0.64"
+     },
+     "status": "active",
+     "ticker": "BAL1",
+     "instrumentSymbol": "GEMI-NFL-2611170115-LAC-BAL-S-BAL1",
+     "marketState": "open",
+     "abbreviatedName": "Baltimore",
+     "expiryDate": "2026-11-18T13:15:00.000Z",
+     "sortOrder": 7
+    },
+    {
+     "id": "444601-1078839",
+     "label": "Baltimore wins by more than 2.5 points",
+     "prices": {
+      "buy": {
+       "yes": "0.63",
+       "no": "0.39"
+      },
+      "sell": {
+       "yes": "0.61",
+       "no": "0.37"
+      },
+      "bestBid": "0.61",
+      "bestAsk": "0.63"
+     },
+     "status": "active",
+     "ticker": "BAL2",
+     "instrumentSymbol": "GEMI-NFL-2611170115-LAC-BAL-S-BAL2",
+     "marketState": "open",
+     "abbreviatedName": "Baltimore",
+     "expiryDate": "2026-11-18T13:15:00.000Z",
+     "sortOrder": 21
+    },
+    {
+     "id": "444601-1078826",
+     "label": "Baltimore wins by more than 3.5 points",
+     "prices": {
+      "buy": {
+       "yes": "0.55",
+       "no": "0.46"
+      },
+      "sell": {
+       "yes": "0.54",
+       "no": "0.45"
+      },
+      "bestBid": "0.54",
+      "bestAsk": "0.55"
+     },
+     "status": "active",
+     "ticker": "BAL3",
+     "instrumentSymbol": "GEMI-NFL-2611170115-LAC-BAL-S-BAL3",
+     "marketState": "open",
+     "abbreviatedName": "Baltimore",
+     "expiryDate": "2026-11-18T13:15:00.000Z",
+     "sortOrder": 8
+    },
+    {
+     "id": "444601-1078828",
+     "label": "Baltimore wins by more than 4.5 points",
+     "prices": {
+      "buy": {
+       "yes": "0.51",
+       "no": "0.5"
+      },
+      "sell": {
+       "yes": "0.5",
+       "no": "0.49"
+      },
+      "bestBid": "0.5",
+      "bestAsk": "0.51",
+      "lastTradePrice": "0.43"
+     },
+     "status": "active",
+     "ticker": "BAL4",
+     "instrumentSymbol": "GEMI-NFL-2611170115-LAC-BAL-S-BAL4",
+     "marketState": "open",
+     "abbreviatedName": "Baltimore",
+     "expiryDate": "2026-11-18T13:15:00.000Z",
+     "sortOrder": 10
+    },
+    {
+     "id": "444601-1078838",
+     "label": "Baltimore wins by more than 5.5 points",
+     "prices": {
+      "buy": {
+       "yes": "0.49",
+       "no": "0.53"
+      },
+      "sell": {
+       "yes": "0.47",
+       "no": "0.51"
+      },
+      "bestBid": "0.47",
+      "bestAsk": "0.49"
+     },
+     "status": "active",
+     "ticker": "BAL5",
+     "instrumentSymbol": "GEMI-NFL-2611170115-LAC-BAL-S-BAL5",
+     "marketState": "open",
+     "abbreviatedName": "Baltimore",
+     "expiryDate": "2026-11-18T13:15:00.000Z",
+     "sortOrder": 20
+    },
+    {
+     "id": "444601-1078831",
+     "label": "Baltimore wins by more than 6.5 points",
+     "prices": {
+      "buy": {
+       "yes": "0.45",
+       "no": "0.57"
+      },
+      "sell": {
+       "yes": "0.43",
+       "no": "0.55"
+      },
+      "bestBid": "0.43",
+      "bestAsk": "0.45",
+      "lastTradePrice": "0.44"
+     },
+     "status": "active",
+     "ticker": "BAL6",
+     "instrumentSymbol": "GEMI-NFL-2611170115-LAC-BAL-S-BAL6",
+     "marketState": "open",
+     "abbreviatedName": "Baltimore",
+     "expiryDate": "2026-11-18T13:15:00.000Z",
+     "sortOrder": 13
+    },
+    {
+     "id": "444601-1078827",
+     "label": "Baltimore wins by more than 7.5 points",
+     "prices": {
+      "buy": {
+       "yes": "0.39",
+       "no": "0.63"
+      },
+      "sell": {
+       "yes": "0.37",
+       "no": "0.61"
+      },
+      "bestBid": "0.37",
+      "bestAsk": "0.39",
+      "lastTradePrice": "0.37"
+     },
+     "status": "active",
+     "ticker": "BAL7",
+     "instrumentSymbol": "GEMI-NFL-2611170115-LAC-BAL-S-BAL7",
+     "marketState": "open",
+     "abbreviatedName": "Baltimore",
+     "expiryDate": "2026-11-18T13:15:00.000Z",
+     "sortOrder": 9
+    },
+    {
+     "id": "444601-1078829",
+     "label": "Baltimore wins by more than 9.5 points",
+     "prices": {
+      "buy": {
+       "yes": "0.34",
+       "no": "0.68"
+      },
+      "sell": {
+       "yes": "0.32",
+       "no": "0.66"
+      },
+      "bestBid": "0.32",
+      "bestAsk": "0.34",
+      "lastTradePrice": "0.32"
+     },
+     "status": "active",
+     "ticker": "BAL9",
+     "instrumentSymbol": "GEMI-NFL-2611170115-LAC-BAL-S-BAL9",
+     "marketState": "open",
+     "abbreviatedName": "Baltimore",
+     "expiryDate": "2026-11-18T13:15:00.000Z",
+     "sortOrder": 11
+    }
+   ]
+  },
+  {
+   "id": "440411",
+   "title": "Los Angeles C vs Baltimore: 1st Quarter Moneyline",
+   "slug": "los-angeles-c-vs-baltimore-1st-quarter-moneyline",
+   "type": "categorical",
+   "category": "Sports",
+   "ticker": "NFL-2611170115-LAC-BAL-1QM",
+   "status": "active",
+   "startTime": "2026-11-17T01:15:00.000Z",
+   "expiryDate": "2026-11-18T13:15:00.000Z",
+   "isLive": false,
+   "participants": [
+    {
+     "id": "ebd87119-b331-4469-9ea6-d51fe3ce2f1c",
+     "name": "Baltimore",
+     "abbreviation": "BAL",
+     "side": "home"
+    },
+    {
+     "id": "1f6dcffb-9823-43cd-9ff4-e7a8466749b5",
+     "name": "Los Angeles C",
+     "abbreviation": "LAC",
+     "side": "away"
+    }
+   ],
+   "tags": [
+    "Pro Football"
+   ],
+   "volume": "2.08",
+   "sportsMarket": {
+    "sport": "american_football",
+    "type": "moneyline",
+    "subject": "contest",
+    "scope": {
+     "type": "quarter",
+     "ordinal": 1
+    }
+   },
+   "contracts": [
+    {
+     "id": "440411-1063266",
+     "label": "Baltimore wins 1st Quarter",
+     "prices": {
+      "buy": {
+       "yes": "0.46",
+       "no": "0.55"
+      },
+      "sell": {
+       "yes": "0.45",
+       "no": "0.54"
+      },
+      "bestBid": "0.45",
+      "bestAsk": "0.46",
+      "lastTradePrice": "0.46"
+     },
+     "status": "active",
+     "ticker": "BAL",
+     "instrumentSymbol": "GEMI-NFL-2611170115-LAC-BAL-1QM-BAL",
+     "marketState": "open",
+     "abbreviatedName": "BAL",
+     "sportsSide": "home",
+     "expiryDate": "2026-11-18T13:15:00.000Z"
+    },
+    {
+     "id": "440411-1063261",
+     "label": "Los Angeles C wins 1st Quarter",
+     "prices": {
+      "buy": {
+       "yes": "0.36",
+       "no": "0.73"
+      },
+      "sell": {
+       "yes": "0.27",
+       "no": "0.64"
+      },
+      "bestBid": "0.27",
+      "bestAsk": "0.36"
+     },
+     "status": "active",
+     "ticker": "LAC",
+     "instrumentSymbol": "GEMI-NFL-2611170115-LAC-BAL-1QM-LAC",
+     "marketState": "open",
+     "abbreviatedName": "LAC",
+     "sportsSide": "away",
+     "expiryDate": "2026-11-18T13:15:00.000Z"
+    },
+    {
+     "id": "440411-1063272",
+     "label": "Tie in 1st Quarter",
+     "prices": {
+      "buy": {
+       "yes": "0.24",
+       "no": "0.78"
+      },
+      "sell": {
+       "yes": "0.22",
+       "no": "0.76"
+      },
+      "bestBid": "0.22",
+      "bestAsk": "0.24"
+     },
+     "status": "active",
+     "ticker": "D",
+     "instrumentSymbol": "GEMI-NFL-2611170115-LAC-BAL-1QM-D",
+     "marketState": "open",
+     "sportsSide": "tie",
+     "expiryDate": "2026-11-18T13:15:00.000Z"
+    }
+   ]
+  },
+  {
+   "id": "451900",
+   "title": "Los Angeles C vs Baltimore: 1st Quarter Point Total",
+   "slug": "los-angeles-c-vs-baltimore-1st-quarter-point-total",
+   "type": "categorical",
+   "category": "Sports",
+   "ticker": "NFL-2611170115-LAC-BAL-1QT",
+   "status": "active",
+   "startTime": "2026-11-17T01:15:00.000Z",
+   "expiryDate": "2026-12-12T06:06:37.073Z",
+   "isLive": false,
+   "participants": [],
+   "tags": [
+    "Pro Football"
+   ],
+   "volume": "0",
+   "sportsMarket": {
+    "sport": "american_football",
+    "type": "total",
+    "subject": "contest",
+    "scope": {
+     "type": "quarter",
+     "ordinal": 1
+    },
+    "metric": "points"
+   },
+   "contracts": [
+    {
+     "id": "451900-1109324",
+     "label": "More than 3.5 points scored in the 1st quarter",
+     "prices": {
+      "buy": {
+       "yes": "0.75",
+       "no": "0.35"
+      },
+      "sell": {
+       "yes": "0.65",
+       "no": "0.25"
+      },
+      "bestBid": "0.65",
+      "bestAsk": "0.75"
+     },
+     "status": "active",
+     "ticker": "O3",
+     "instrumentSymbol": "GEMI-NFL-2611170115-LAC-BAL-1QT-O3",
+     "marketState": "open",
+     "expiryDate": "2026-12-12T06:06:36.881Z"
+    },
+    {
+     "id": "451900-1109317",
+     "label": "More than 6.5 points scored in the 1st quarter",
+     "prices": {
+      "buy": {
+       "yes": "0.68",
+       "no": "0.41"
+      },
+      "sell": {
+       "yes": "0.59",
+       "no": "0.32"
+      },
+      "bestBid": "0.59",
+      "bestAsk": "0.68"
+     },
+     "status": "active",
+     "ticker": "O6",
+     "instrumentSymbol": "GEMI-NFL-2611170115-LAC-BAL-1QT-O6",
+     "marketState": "open",
+     "expiryDate": "2026-12-12T06:06:36.667Z"
+    },
+    {
+     "id": "451900-1109308",
+     "label": "More than 7.5 points scored in the 1st quarter",
+     "prices": {
+      "buy": {
+       "yes": "0.47",
+       "no": "0.63"
+      },
+      "sell": {
+       "yes": "0.37",
+       "no": "0.53"
+      },
+      "bestBid": "0.37",
+      "bestAsk": "0.47"
+     },
+     "status": "active",
+     "ticker": "O7",
+     "instrumentSymbol": "GEMI-NFL-2611170115-LAC-BAL-1QT-O7",
+     "marketState": "open",
+     "expiryDate": "2026-12-12T06:06:36.388Z"
+    },
+    {
+     "id": "451900-1109302",
+     "label": "More than 10.5 points scored in the 1st quarter",
+     "prices": {
+      "buy": {
+       "yes": "0.29",
+       "no": "0.81"
+      },
+      "sell": {
+       "yes": "0.19",
+       "no": "0.71"
+      },
+      "bestBid": "0.19",
+      "bestAsk": "0.29"
+     },
+     "status": "active",
+     "ticker": "O10",
+     "instrumentSymbol": "GEMI-NFL-2611170115-LAC-BAL-1QT-O10",
+     "marketState": "open",
+     "expiryDate": "2026-12-12T06:06:36.154Z"
+    },
+    {
+     "id": "451900-1109296",
+     "label": "More than 13.5 points scored in the 1st quarter",
+     "prices": {
+      "buy": {
+       "yes": "0.23",
+       "no": "0.87"
+      },
+      "sell": {
+       "yes": "0.13",
+       "no": "0.77"
+      },
+      "bestBid": "0.13",
+      "bestAsk": "0.23"
+     },
+     "status": "active",
+     "ticker": "O13",
+     "instrumentSymbol": "GEMI-NFL-2611170115-LAC-BAL-1QT-O13",
+     "marketState": "open",
+     "expiryDate": "2026-12-12T06:06:35.924Z"
+    },
+    {
+     "id": "451900-1109328",
+     "label": "More than 14.5 points scored in the 1st quarter",
+     "prices": {
+      "buy": {
+       "yes": "0.15",
+       "no": "0.98"
+      },
+      "sell": {
+       "yes": "0.02",
+       "no": "0.85"
+      },
+      "bestBid": "0.02",
+      "bestAsk": "0.15"
+     },
+     "status": "active",
+     "ticker": "O14",
+     "instrumentSymbol": "GEMI-NFL-2611170115-LAC-BAL-1QT-O14",
+     "marketState": "open",
+     "expiryDate": "2026-12-12T06:06:37.073Z"
+    },
+    {
+     "id": "451900-1109285",
+     "label": "More than 17.5 points scored in the 1st quarter",
+     "prices": {
+      "buy": {
+       "yes": "0.09"
+      },
+      "sell": {
+       "no": "0.91"
+      },
+      "bestAsk": "0.09"
+     },
+     "status": "active",
+     "ticker": "O17",
+     "instrumentSymbol": "GEMI-NFL-2611170115-LAC-BAL-1QT-O17",
+     "marketState": "open",
+     "expiryDate": "2026-12-12T06:06:35.586Z"
+    },
+    {
+     "id": "451900-1109290",
+     "label": "More than 20.5 points scored in the 1st quarter",
+     "prices": {
+      "buy": {
+       "yes": "0.09"
+      },
+      "sell": {
+       "no": "0.91"
+      },
+      "bestAsk": "0.09"
+     },
+     "status": "active",
+     "ticker": "O20",
+     "instrumentSymbol": "GEMI-NFL-2611170115-LAC-BAL-1QT-O20",
+     "marketState": "open",
+     "expiryDate": "2026-12-12T06:06:35.774Z"
+    }
+   ]
+  },
+  {
+   "id": "445193",
+   "title": "Los Angeles C vs Baltimore: Team Total",
+   "slug": "los-angeles-c-vs-baltimore-team-total",
+   "type": "categorical",
+   "category": "Sports",
+   "ticker": "NFL-2611170115-LAC-BAL-TT",
+   "status": "active",
+   "startTime": "2026-11-17T01:15:00.000Z",
+   "expiryDate": "2026-12-10T06:06:34.052Z",
+   "isLive": false,
+   "participants": [
+    {
+     "id": "1f6dcffb-9823-43cd-9ff4-e7a8466749b5",
+     "name": "Los Angeles C",
+     "abbreviation": "LAC",
+     "side": "away"
+    },
+    {
+     "id": "ebd87119-b331-4469-9ea6-d51fe3ce2f1c",
+     "name": "Baltimore",
+     "abbreviation": "BAL",
+     "side": "home"
+    },
+    {
+     "id": "1f6dcffb-9823-43cd-9ff4-e7a8466749b5",
+     "name": "Los Angeles C",
+     "abbreviation": "LAC",
+     "side": "away"
+    },
+    {
+     "id": "1f6dcffb-9823-43cd-9ff4-e7a8466749b5",
+     "name": "Los Angeles C",
+     "abbreviation": "LAC",
+     "side": "away"
+    },
+    {
+     "id": "ebd87119-b331-4469-9ea6-d51fe3ce2f1c",
+     "name": "Baltimore",
+     "abbreviation": "BAL",
+     "side": "home"
+    },
+    {
+     "id": "1f6dcffb-9823-43cd-9ff4-e7a8466749b5",
+     "name": "Los Angeles C",
+     "abbreviation": "LAC",
+     "side": "away"
+    },
+    {
+     "id": "ebd87119-b331-4469-9ea6-d51fe3ce2f1c",
+     "name": "Baltimore",
+     "abbreviation": "BAL",
+     "side": "home"
+    },
+    {
+     "id": "ebd87119-b331-4469-9ea6-d51fe3ce2f1c",
+     "name": "Baltimore",
+     "abbreviation": "BAL",
+     "side": "home"
+    },
+    {
+     "id": "1f6dcffb-9823-43cd-9ff4-e7a8466749b5",
+     "name": "Los Angeles C",
+     "abbreviation": "LAC",
+     "side": "away"
+    },
+    {
+     "id": "ebd87119-b331-4469-9ea6-d51fe3ce2f1c",
+     "name": "Baltimore",
+     "abbreviation": "BAL",
+     "side": "home"
+    },
+    {
+     "id": "1f6dcffb-9823-43cd-9ff4-e7a8466749b5",
+     "name": "Los Angeles C",
+     "abbreviation": "LAC",
+     "side": "away"
+    },
+    {
+     "id": "ebd87119-b331-4469-9ea6-d51fe3ce2f1c",
+     "name": "Baltimore",
+     "abbreviation": "BAL",
+     "side": "home"
+    },
+    {
+     "id": "1f6dcffb-9823-43cd-9ff4-e7a8466749b5",
+     "name": "Los Angeles C",
+     "abbreviation": "LAC",
+     "side": "away"
+    },
+    {
+     "id": "ebd87119-b331-4469-9ea6-d51fe3ce2f1c",
+     "name": "Baltimore",
+     "abbreviation": "BAL",
+     "side": "home"
+    },
+    {
+     "id": "1f6dcffb-9823-43cd-9ff4-e7a8466749b5",
+     "name": "Los Angeles C",
+     "abbreviation": "LAC",
+     "side": "away"
+    },
+    {
+     "id": "ebd87119-b331-4469-9ea6-d51fe3ce2f1c",
+     "name": "Baltimore",
+     "abbreviation": "BAL",
+     "side": "home"
+    },
+    {
+     "id": "1f6dcffb-9823-43cd-9ff4-e7a8466749b5",
+     "name": "Los Angeles C",
+     "abbreviation": "LAC",
+     "side": "away"
+    },
+    {
+     "id": "1f6dcffb-9823-43cd-9ff4-e7a8466749b5",
+     "name": "Los Angeles C",
+     "abbreviation": "LAC",
+     "side": "away"
+    },
+    {
+     "id": "ebd87119-b331-4469-9ea6-d51fe3ce2f1c",
+     "name": "Baltimore",
+     "abbreviation": "BAL",
+     "side": "home"
+    },
+    {
+     "id": "1f6dcffb-9823-43cd-9ff4-e7a8466749b5",
+     "name": "Los Angeles C",
+     "abbreviation": "LAC",
+     "side": "away"
+    },
+    {
+     "id": "ebd87119-b331-4469-9ea6-d51fe3ce2f1c",
+     "name": "Baltimore",
+     "abbreviation": "BAL",
+     "side": "home"
+    },
+    {
+     "id": "1f6dcffb-9823-43cd-9ff4-e7a8466749b5",
+     "name": "Los Angeles C",
+     "abbreviation": "LAC",
+     "side": "away"
+    },
+    {
+     "id": "ebd87119-b331-4469-9ea6-d51fe3ce2f1c",
+     "name": "Baltimore",
+     "abbreviation": "BAL",
+     "side": "home"
+    },
+    {
+     "id": "1f6dcffb-9823-43cd-9ff4-e7a8466749b5",
+     "name": "Los Angeles C",
+     "abbreviation": "LAC",
+     "side": "away"
+    },
+    {
+     "id": "ebd87119-b331-4469-9ea6-d51fe3ce2f1c",
+     "name": "Baltimore",
+     "abbreviation": "BAL",
+     "side": "home"
+    },
+    {
+     "id": "1f6dcffb-9823-43cd-9ff4-e7a8466749b5",
+     "name": "Los Angeles C",
+     "abbreviation": "LAC",
+     "side": "away"
+    },
+    {
+     "id": "ebd87119-b331-4469-9ea6-d51fe3ce2f1c",
+     "name": "Baltimore",
+     "abbreviation": "BAL",
+     "side": "home"
+    }
+   ],
+   "tags": [
+    "Pro Football"
+   ],
+   "volume": "2",
+   "sportsMarket": {
+    "sport": "american_football",
+    "type": "total",
+    "subject": "team",
+    "scope": {
+     "type": "full_contest"
+    },
+    "metric": "points"
+   },
+   "contracts": [
+    {
+     "id": "445193-1081369",
+     "label": "Baltimore scores more than 7.5 points",
+     "prices": {
+      "buy": {
+       "yes": "0.99",
+       "no": "0.08"
+      },
+      "sell": {
+       "yes": "0.92",
+       "no": "0.01"
+      },
+      "bestBid": "0.92",
+      "bestAsk": "0.99"
+     },
+     "status": "active",
+     "ticker": "BALO7",
+     "instrumentSymbol": "GEMI-NFL-2611170115-LAC-BAL-TT-BALO7",
+     "marketState": "open",
+     "abbreviatedName": "Baltimore",
+     "sportsSide": "home",
+     "expiryDate": "2026-12-10T06:06:30.582Z"
+    },
+    {
+     "id": "445193-1081374",
+     "label": "Los Angeles C scores more than 3.5 points",
+     "prices": {
+      "buy": {
+       "yes": "0.99",
+       "no": "0.09"
+      },
+      "sell": {
+       "yes": "0.91",
+       "no": "0.01"
+      },
+      "bestBid": "0.91",
+      "bestAsk": "0.99"
+     },
+     "status": "active",
+     "ticker": "LACO3",
+     "instrumentSymbol": "GEMI-NFL-2611170115-LAC-BAL-TT-LACO3",
+     "marketState": "open",
+     "abbreviatedName": "Los Angeles C",
+     "sportsSide": "away",
+     "expiryDate": "2026-12-10T06:06:31.575Z"
+    },
+    {
+     "id": "445193-1081381",
+     "label": "Baltimore scores more than 3.5 points",
+     "prices": {
+      "buy": {
+       "yes": "0.99",
+       "no": "0.05"
+      },
+      "sell": {
+       "yes": "0.95",
+       "no": "0.01"
+      },
+      "bestBid": "0.95",
+      "bestAsk": "0.99"
+     },
+     "status": "active",
+     "ticker": "BALO3",
+     "instrumentSymbol": "GEMI-NFL-2611170115-LAC-BAL-TT-BALO3",
+     "marketState": "open",
+     "abbreviatedName": "Baltimore",
+     "sportsSide": "home",
+     "expiryDate": "2026-12-10T06:06:33.032Z"
+    },
+    {
+     "id": "445193-1081364",
+     "label": "Los Angeles C scores more than 7.5 points",
+     "prices": {
+      "buy": {
+       "yes": "0.91",
+       "no": "0.16"
+      },
+      "sell": {
+       "yes": "0.84",
+       "no": "0.09"
+      },
+      "bestBid": "0.84",
+      "bestAsk": "0.91"
+     },
+     "status": "active",
+     "ticker": "LACO7",
+     "instrumentSymbol": "GEMI-NFL-2611170115-LAC-BAL-TT-LACO7",
+     "marketState": "open",
+     "abbreviatedName": "Los Angeles C",
+     "sportsSide": "away",
+     "expiryDate": "2026-12-10T06:06:29.499Z"
+    },
+    {
+     "id": "445193-1081361",
+     "label": "Baltimore scores more than 10.5 points",
+     "prices": {
+      "buy": {
+       "yes": "0.9",
+       "no": "0.12"
+      },
+      "sell": {
+       "yes": "0.88",
+       "no": "0.1"
+      },
+      "bestBid": "0.88",
+      "bestAsk": "0.9"
+     },
+     "status": "active",
+     "ticker": "BALO10",
+     "instrumentSymbol": "GEMI-NFL-2611170115-LAC-BAL-TT-BALO10",
+     "marketState": "open",
+     "abbreviatedName": "Baltimore",
+     "sportsSide": "home",
+     "expiryDate": "2026-12-10T06:06:28.890Z"
+    },
+    {
+     "id": "445193-1081370",
+     "label": "Baltimore scores more than 14.5 points",
+     "prices": {
+      "buy": {
+       "yes": "0.84",
+       "no": "0.23"
+      },
+      "sell": {
+       "yes": "0.77",
+       "no": "0.16"
+      },
+      "bestBid": "0.77",
+      "bestAsk": "0.84"
+     },
+     "status": "active",
+     "ticker": "BALO14",
+     "instrumentSymbol": "GEMI-NFL-2611170115-LAC-BAL-TT-BALO14",
+     "marketState": "open",
+     "abbreviatedName": "Baltimore",
+     "sportsSide": "home",
+     "expiryDate": "2026-12-10T06:06:30.759Z"
+    },
+    {
+     "id": "445193-1081385",
+     "label": "Los Angeles C scores more than 10.5 points",
+     "prices": {
+      "buy": {
+       "yes": "0.76",
+       "no": "0.26"
+      },
+      "sell": {
+       "yes": "0.74",
+       "no": "0.24"
+      },
+      "bestBid": "0.74",
+      "bestAsk": "0.76"
+     },
+     "status": "active",
+     "ticker": "LACO10",
+     "instrumentSymbol": "GEMI-NFL-2611170115-LAC-BAL-TT-LACO10",
+     "marketState": "open",
+     "abbreviatedName": "Los Angeles C",
+     "sportsSide": "away",
+     "expiryDate": "2026-12-10T06:06:33.868Z"
+    },
+    {
+     "id": "445193-1081378",
+     "label": "Baltimore scores more than 17.5 points",
+     "prices": {
+      "buy": {
+       "yes": "0.69",
+       "no": "0.34"
+      },
+      "sell": {
+       "yes": "0.66",
+       "no": "0.31"
+      },
+      "bestBid": "0.66",
+      "bestAsk": "0.69"
+     },
+     "status": "active",
+     "ticker": "BALO17",
+     "instrumentSymbol": "GEMI-NFL-2611170115-LAC-BAL-TT-BALO17",
+     "marketState": "open",
+     "abbreviatedName": "Baltimore",
+     "sportsSide": "home",
+     "expiryDate": "2026-12-10T06:06:32.532Z"
+    }
+   ]
+  },
+  {
+   "id": "440415",
+   "title": "Los Angeles C vs Baltimore: 2nd Quarter Moneyline",
+   "slug": "los-angeles-c-vs-baltimore-2nd-quarter-moneyline",
+   "type": "categorical",
+   "category": "Sports",
+   "ticker": "NFL-2611170115-LAC-BAL-2QM",
+   "status": "active",
+   "startTime": "2026-11-17T01:15:00.000Z",
+   "expiryDate": "2026-11-18T13:15:00.000Z",
+   "isLive": false,
+   "participants": [
+    {
+     "id": "ebd87119-b331-4469-9ea6-d51fe3ce2f1c",
+     "name": "Baltimore",
+     "abbreviation": "BAL",
+     "side": "home"
+    },
+    {
+     "id": "1f6dcffb-9823-43cd-9ff4-e7a8466749b5",
+     "name": "Los Angeles C",
+     "abbreviation": "LAC",
+     "side": "away"
+    }
+   ],
+   "tags": [
+    "Pro Football"
+   ],
+   "volume": "0",
+   "sportsMarket": {
+    "sport": "american_football",
+    "type": "moneyline",
+    "subject": "contest",
+    "scope": {
+     "type": "quarter",
+     "ordinal": 2
+    }
+   },
+   "contracts": [
+    {
+     "id": "440415-1063271",
+     "label": "Baltimore wins 2nd Quarter",
+     "prices": {
+      "buy": {
+       "yes": "0.52",
+       "no": "0.49"
+      },
+      "sell": {
+       "yes": "0.51",
+       "no": "0.48"
+      },
+      "bestBid": "0.51",
+      "bestAsk": "0.52"
+     },
+     "status": "active",
+     "ticker": "BAL",
+     "instrumentSymbol": "GEMI-NFL-2611170115-LAC-BAL-2QM-BAL",
+     "marketState": "open",
+     "abbreviatedName": "BAL",
+     "sportsSide": "home",
+     "expiryDate": "2026-11-18T13:15:00.000Z"
+    },
+    {
+     "id": "440415-1063263",
+     "label": "Los Angeles C wins 2nd Quarter",
+     "prices": {
+      "buy": {
+       "yes": "0.39",
+       "no": "0.71"
+      },
+      "sell": {
+       "yes": "0.29",
+       "no": "0.61"
+      },
+      "bestBid": "0.29",
+      "bestAsk": "0.39"
+     },
+     "status": "active",
+     "ticker": "LAC",
+     "instrumentSymbol": "GEMI-NFL-2611170115-LAC-BAL-2QM-LAC",
+     "marketState": "open",
+     "abbreviatedName": "LAC",
+     "sportsSide": "away",
+     "expiryDate": "2026-11-18T13:15:00.000Z"
+    },
+    {
+     "id": "440415-1063276",
+     "label": "Tie in 2nd Quarter",
+     "prices": {
+      "buy": {
+       "yes": "0.15",
+       "no": "0.87"
+      },
+      "sell": {
+       "yes": "0.13",
+       "no": "0.85"
+      },
+      "bestBid": "0.13",
+      "bestAsk": "0.15"
+     },
+     "status": "active",
+     "ticker": "D",
+     "instrumentSymbol": "GEMI-NFL-2611170115-LAC-BAL-2QM-D",
+     "marketState": "open",
+     "sportsSide": "tie",
+     "expiryDate": "2026-11-18T13:15:00.000Z"
+    }
+   ]
+  },
+  {
+   "id": "440414",
+   "title": "Los Angeles C vs Baltimore: 2nd Half Moneyline",
+   "slug": "los-angeles-c-vs-baltimore-2nd-half-moneyline",
+   "type": "categorical",
+   "category": "Sports",
+   "ticker": "NFL-2611170115-LAC-BAL-2HM",
+   "status": "active",
+   "startTime": "2026-11-17T01:15:00.000Z",
+   "expiryDate": "2026-11-18T13:15:00.000Z",
+   "isLive": false,
+   "participants": [
+    {
+     "id": "ebd87119-b331-4469-9ea6-d51fe3ce2f1c",
+     "name": "Baltimore",
+     "abbreviation": "BAL",
+     "side": "home"
+    },
+    {
+     "id": "1f6dcffb-9823-43cd-9ff4-e7a8466749b5",
+     "name": "Los Angeles C",
+     "abbreviation": "LAC",
+     "side": "away"
+    }
+   ],
+   "tags": [
+    "Pro Football"
+   ],
+   "volume": "0",
+   "sportsMarket": {
+    "sport": "american_football",
+    "type": "moneyline",
+    "subject": "contest",
+    "scope": {
+     "type": "half",
+     "ordinal": 2
+    }
+   },
+   "contracts": [
+    {
+     "id": "440414-1063267",
+     "label": "Baltimore wins 2nd Half",
+     "prices": {
+      "buy": {
+       "yes": "0.6",
+       "no": "0.51"
+      },
+      "sell": {
+       "yes": "0.49",
+       "no": "0.4"
+      },
+      "bestBid": "0.49",
+      "bestAsk": "0.6"
+     },
+     "status": "active",
+     "ticker": "BAL",
+     "instrumentSymbol": "GEMI-NFL-2611170115-LAC-BAL-2HM-BAL",
+     "marketState": "open",
+     "abbreviatedName": "BAL",
+     "sportsSide": "home",
+     "expiryDate": "2026-11-18T13:15:00.000Z"
+    },
+    {
+     "id": "440414-1063262",
+     "label": "Los Angeles C wins 2nd Half",
+     "prices": {
+      "buy": {
+       "yes": "0.37",
+       "no": "0.72"
+      },
+      "sell": {
+       "yes": "0.28",
+       "no": "0.63"
+      },
+      "bestBid": "0.28",
+      "bestAsk": "0.37"
+     },
+     "status": "active",
+     "ticker": "LAC",
+     "instrumentSymbol": "GEMI-NFL-2611170115-LAC-BAL-2HM-LAC",
+     "marketState": "open",
+     "abbreviatedName": "LAC",
+     "sportsSide": "away",
+     "expiryDate": "2026-11-18T13:15:00.000Z"
+    },
+    {
+     "id": "440414-1063277",
+     "label": "Tie in 2nd Half",
+     "prices": {
+      "buy": {
+       "yes": "0.14",
+       "no": "0.98"
+      },
+      "sell": {
+       "yes": "0.02",
+       "no": "0.86"
+      },
+      "bestBid": "0.02",
+      "bestAsk": "0.14"
+     },
+     "status": "active",
+     "ticker": "D",
+     "instrumentSymbol": "GEMI-NFL-2611170115-LAC-BAL-2HM-D",
+     "marketState": "open",
+     "sportsSide": "tie",
+     "expiryDate": "2026-11-18T13:15:00.000Z"
+    }
+   ]
+  },
+  {
+   "id": "440412",
+   "title": "Los Angeles C vs Baltimore: 1st Half Moneyline",
+   "slug": "los-angeles-c-vs-baltimore-1st-half-moneyline",
+   "type": "categorical",
+   "category": "Sports",
+   "ticker": "NFL-2611170115-LAC-BAL-1HM",
+   "status": "active",
+   "startTime": "2026-11-17T01:15:00.000Z",
+   "expiryDate": "2026-11-18T13:15:00.000Z",
+   "isLive": false,
+   "participants": [
+    {
+     "id": "ebd87119-b331-4469-9ea6-d51fe3ce2f1c",
+     "name": "Baltimore",
+     "abbreviation": "BAL",
+     "side": "home"
+    },
+    {
+     "id": "1f6dcffb-9823-43cd-9ff4-e7a8466749b5",
+     "name": "Los Angeles C",
+     "abbreviation": "LAC",
+     "side": "away"
+    }
+   ],
+   "tags": [
+    "Pro Football"
+   ],
+   "volume": "0",
+   "sportsMarket": {
+    "sport": "american_football",
+    "type": "moneyline",
+    "subject": "contest",
+    "scope": {
+     "type": "half",
+     "ordinal": 1
+    }
+   },
+   "contracts": [
+    {
+     "id": "440412-1063265",
+     "label": "Baltimore wins 1st Half",
+     "prices": {
+      "buy": {
+       "yes": "0.58",
+       "no": "0.43"
+      },
+      "sell": {
+       "yes": "0.57",
+       "no": "0.42"
+      },
+      "bestBid": "0.57",
+      "bestAsk": "0.58"
+     },
+     "status": "active",
+     "ticker": "BAL",
+     "instrumentSymbol": "GEMI-NFL-2611170115-LAC-BAL-1HM-BAL",
+     "marketState": "open",
+     "abbreviatedName": "BAL",
+     "sportsSide": "home",
+     "expiryDate": "2026-11-18T13:15:00.000Z"
+    },
+    {
+     "id": "440412-1063259",
+     "label": "Los Angeles C wins 1st Half",
+     "prices": {
+      "buy": {
+       "yes": "0.33",
+       "no": "0.68"
+      },
+      "sell": {
+       "yes": "0.32",
+       "no": "0.67"
+      },
+      "bestBid": "0.32",
+      "bestAsk": "0.33"
+     },
+     "status": "active",
+     "ticker": "LAC",
+     "instrumentSymbol": "GEMI-NFL-2611170115-LAC-BAL-1HM-LAC",
+     "marketState": "open",
+     "abbreviatedName": "LAC",
+     "sportsSide": "away",
+     "expiryDate": "2026-11-18T13:15:00.000Z"
+    },
+    {
+     "id": "440412-1063273",
+     "label": "Tie in 1st Half",
+     "prices": {
+      "buy": {
+       "yes": "0.1",
+       "no": "0.92"
+      },
+      "sell": {
+       "yes": "0.08",
+       "no": "0.9"
+      },
+      "bestBid": "0.08",
+      "bestAsk": "0.1"
+     },
+     "status": "active",
+     "ticker": "D",
+     "instrumentSymbol": "GEMI-NFL-2611170115-LAC-BAL-1HM-D",
+     "marketState": "open",
+     "sportsSide": "tie",
+     "expiryDate": "2026-11-18T13:15:00.000Z"
+    }
+   ]
+  }
+ ],
+ "pagination": {
+  "limit": 50,
+  "offset": 0,
+  "total": 9
+ }
+}

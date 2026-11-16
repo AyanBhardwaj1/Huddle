@@ -1,0 +1,33 @@
+{
+  "_note": "SYNTHETIC: written by hand from the documented API-Football v3 /fixtures?id= response shape (no API key was available to record a real one). Field names follow https://www.api-football.com/documentation-v3#tag/Fixtures.",
+  "get": "fixtures",
+  "parameters": { "id": "900001" },
+  "errors": [],
+  "results": 1,
+  "response": [
+    {
+      "fixture": {
+        "id": 900001,
+        "date": "2026-11-14T19:45:00+00:00",
+        "status": { "long": "Match Finished", "short": "FT", "elapsed": 90 }
+      },
+      "league": { "id": 5, "name": "UEFA Nations League" },
+      "teams": {
+        "home": { "id": 27, "name": "Portugal", "winner": true },
+        "away": { "id": 9, "name": "Spain", "winner": false }
+      },
+      "goals": { "home": 2, "away": 1 },
+      "score": { "halftime": { "home": 1, "away": 1 }, "fulltime": { "home": 2, "away": 1 } },
+      "events": [
+        { "time": { "elapsed": 12, "extra": null }, "team": { "id": 9, "name": "Spain" }, "player": { "id": 101, "name": "Rodri" }, "assist": { "id": null, "name": null }, "type": "Card", "detail": "Yellow Card", "comments": "Foul" },
+        { "time": { "elapsed": 23, "extra": null }, "team": { "id": 27, "name": "Portugal" }, "player": { "id": 874, "name": "Cristiano Ronaldo" }, "assist": { "id": null, "name": null }, "type": "Var", "detail": "Penalty confirmed", "comments": null },
+        { "time": { "elapsed": 24, "extra": null }, "team": { "id": 27, "name": "Portugal" }, "player": { "id": 874, "name": "Cristiano Ronaldo" }, "assist": { "id": null, "name": null }, "type": "Goal", "detail": "Penalty", "comments": null },
+        { "time": { "elapsed": 45, "extra": 2 }, "team": { "id": 9, "name": "Spain" }, "player": { "id": 102, "name": "L. Yamal" }, "assist": { "id": 103, "name": "Pedri" }, "type": "Goal", "detail": "Normal Goal", "comments": null },
+        { "time": { "elapsed": 58, "extra": null }, "team": { "id": 9, "name": "Spain" }, "player": { "id": 104, "name": "A. Morata" }, "assist": { "id": null, "name": null }, "type": "Goal", "detail": "Missed Penalty", "comments": null },
+        { "time": { "elapsed": 63, "extra": null }, "team": { "id": 27, "name": "Portugal" }, "player": { "id": 201, "name": "R. Leão" }, "assist": { "id": 202, "name": "Bernardo Silva" }, "type": "subst", "detail": "Substitution 1", "comments": null },
+        { "time": { "elapsed": 71, "extra": null }, "team": { "id": 9, "name": "Spain" }, "player": { "id": 105, "name": "A. Laporte" }, "assist": { "id": null, "name": null }, "type": "Goal", "detail": "Own Goal", "comments": null },
+        { "time": { "elapsed": 88, "extra": null }, "team": { "id": 9, "name": "Spain" }, "player": { "id": 106, "name": "D. Carvajal" }, "assist": { "id": null, "name": null }, "type": "Card", "detail": "Red Card", "comments": "Serious foul play" }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,1944 @@
+{
+ "header": {
+  "id": "401878757",
+  "competitions": [
+   {
+    "id": "401878757",
+    "date": "2026-11-07T17:30Z",
+    "status": {
+     "type": {
+      "id": "28",
+      "name": "STATUS_FULL_TIME",
+      "state": "post",
+      "completed": true,
+      "description": "Full Time",
+      "detail": "FT",
+      "shortDetail": "FT"
+     }
+    },
+    "competitors": [
+     {
+      "id": "393",
+      "homeAway": "home",
+      "score": "3",
+      "team": {
+       "id": "393",
+       "abbreviation": "NFO",
+       "displayName": "Nottingham Forest",
+       "shortDisplayName": "Nottm Forest",
+       "name": "Nottingham Forest",
+       "color": "c8102e"
+      }
+     },
+     {
+      "id": "382",
+      "homeAway": "away",
+      "score": "1",
+      "team": {
+       "id": "382",
+       "abbreviation": "MNC",
+       "displayName": "Manchester City",
+       "shortDisplayName": "Man City",
+       "name": "Manchester City",
+       "color": "99c5ea"
+      }
+     }
+    ]
+   }
+  ]
+ },
+ "keyEvents": [
+  {
+   "id": "54971240",
+   "type": {
+    "id": "80",
+    "text": "Kickoff",
+    "type": "kickoff"
+   },
+   "period": {
+    "number": 1
+   },
+   "clock": {
+    "value": 0.0,
+    "displayValue": ""
+   },
+   "scoringPlay": false,
+   "wallclock": "2026-11-07T17:32:31Z"
+  },
+  {
+   "id": "54971764",
+   "type": {
+    "id": "70",
+    "text": "Goal",
+    "type": "goal"
+   },
+   "text": "Goal! Nottingham Forest 1, Manchester City 0. Jair Cunha (Nottingham Forest) left footed shot from the centre of the box to the bottom left corner.",
+   "shortText": "Jair Cunha Goal",
+   "period": {
+    "number": 1
+   },
+   "clock": {
+    "value": 302.0,
+    "displayValue": "6'"
+   },
+   "scoringPlay": true,
+   "wallclock": "2026-11-07T17:37:33Z",
+   "team": {
+    "id": "393",
+    "displayName": "Nottingham Forest"
+   },
+   "participants": [
+    {
+     "athlete": {
+      "displayName": "Jair Cunha"
+     }
+    }
+   ]
+  },
+  {
+   "id": "54972985",
+   "type": {
+    "id": "70",
+    "text": "Goal",
+    "type": "goal"
+   },
+   "text": "Goal! Nottingham Forest 2, Manchester City 0. Liam Delap (Nottingham Forest) right footed shot from the centre of the box to the high centre of the goal. Assisted by Xaver Schlager following a fast break.",
+   "shortText": "Liam Delap Goal",
+   "period": {
+    "number": 1
+   },
+   "clock": {
+    "value": 1022.0,
+    "displayValue": "18'"
+   },
+   "scoringPlay": true,
+   "wallclock": "2026-11-07T17:49:34Z",
+   "team": {
+    "id": "393",
+    "displayName": "Nottingham Forest"
+   },
+   "participants": [
+    {
+     "athlete": {
+      "displayName": "Liam Delap"
+     }
+    },
+    {
+     "athlete": {
+      "displayName": "Xaver Schlager"
+     }
+    }
+   ]
+  },
+  {
+   "id": "54977019",
+   "type": {
+    "id": "81",
+    "text": "Halftime",
+    "type": "halftime"
+   },
+   "period": {
+    "number": 1
+   },
+   "clock": {
+    "value": 2700.0,
+    "displayValue": "45'+3'"
+   },
+   "scoringPlay": false,
+   "wallclock": "2026-11-07T18:19:48Z"
+  },
+  {
+   "id": "54978775",
+   "type": {
+    "id": "76",
+    "text": "Substitution",
+    "type": "substitution"
+   },
+   "text": "Substitution, Manchester City. Nico O'Reilly replaces Josko Gvardiol.",
+   "shortText": "Nico O'Reilly Substitution",
+   "period": {
+    "number": 2
+   },
+   "clock": {
+    "value": 2700.0,
+    "displayValue": "45'"
+   },
+   "scoringPlay": false,
+   "wallclock": "2026-11-07T18:35:03Z",
+   "team": {
+    "id": "382",
+    "displayName": "Manchester City"
+   },
+   "participants": [
+    {
+     "athlete": {
+      "displayName": "Nico O'Reilly"
+     }
+    },
+    {
+     "athlete": {
+      "displayName": "Josko Gvardiol"
+     }
+    }
+   ]
+  },
+  {
+   "id": "54978776",
+   "type": {
+    "id": "76",
+    "text": "Substitution",
+    "type": "substitution"
+   },
+   "text": "Substitution, Manchester City. Matheus Nunes replaces Marc Guéhi.",
+   "shortText": "Matheus Nunes Substitution",
+   "period": {
+    "number": 2
+   },
+   "clock": {
+    "value": 2700.0,
+    "displayValue": "45'"
+   },
+   "scoringPlay": false,
+   "wallclock": "2026-11-07T18:35:03Z",
+   "team": {
+    "id": "382",
+    "displayName": "Manchester City"
+   },
+   "participants": [
+    {
+     "athlete": {
+      "displayName": "Matheus Nunes"
+     }
+    },
+    {
+     "athlete": {
+      "displayName": "Marc Guéhi"
+     }
+    }
+   ]
+  },
+  {
+   "id": "54978774",
+   "type": {
+    "id": "82",
+    "text": "Start 2nd Half",
+    "type": "start-2nd-half"
+   },
+   "text": "Second Half begins Nottingham Forest 2, Manchester City 0.",
+   "period": {
+    "number": 2
+   },
+   "clock": {
+    "value": 2700.0,
+    "displayValue": "45'"
+   },
+   "scoringPlay": false,
+   "wallclock": "2026-11-07T18:35:25Z"
+  },
+  {
+   "id": "54979808",
+   "type": {
+    "id": "70",
+    "text": "Goal",
+    "type": "goal"
+   },
+   "text": "Goal! Nottingham Forest 2, Manchester City 1. Rayan Cherki (Manchester City) left footed shot from the centre of the box to the top left corner.",
+   "shortText": "Rayan Cherki Goal",
+   "period": {
+    "number": 2
+   },
+   "clock": {
+    "value": 3081.0,
+    "displayValue": "52'"
+   },
+   "scoringPlay": true,
+   "wallclock": "2026-11-07T18:41:47Z",
+   "team": {
+    "id": "382",
+    "displayName": "Manchester City"
+   },
+   "participants": [
+    {
+     "athlete": {
+      "displayName": "Rayan Cherki"
+     }
+    }
+   ]
+  },
+  {
+   "id": "54981653",
+   "type": {
+    "id": "94",
+    "text": "Yellow Card",
+    "type": "yellow-card"
+   },
+   "text": "James McAtee (Nottingham Forest) is shown the yellow card for a bad foul.",
+   "shortText": "James McAtee Yellow Card",
+   "period": {
+    "number": 2
+   },
+   "clock": {
+    "value": 3790.0,
+    "displayValue": "64'"
+   },
+   "scoringPlay": false,
+   "wallclock": "2026-11-07T18:53:35Z",
+   "team": {
+    "id": "393",
+    "displayName": "Nottingham Forest"
+   },
+   "participants": [
+    {
+     "athlete": {
+      "displayName": "James McAtee"
+     }
+    }
+   ]
+  },
+  {
+   "id": "54981682",
+   "type": {
+    "id": "76",
+    "text": "Substitution",
+    "type": "substitution"
+   },
+   "text": "Substitution, Nottingham Forest. Dan Ndoye replaces James McAtee.",
+   "shortText": "Dan Ndoye Substitution",
+   "period": {
+    "number": 2
+   },
+   "clock": {
+    "value": 3855.0,
+    "displayValue": "65'"
+   },
+   "scoringPlay": false,
+   "wallclock": "2026-11-07T18:54:41Z",
+   "team": {
+    "id": "393",
+    "displayName": "Nottingham Forest"
+   },
+   "participants": [
+    {
+     "athlete": {
+      "displayName": "Dan Ndoye"
+     }
+    },
+    {
+     "athlete": {
+      "displayName": "James McAtee"
+     }
+    }
+   ]
+  },
+  {
+   "id": "54981733",
+   "type": {
+    "id": "76",
+    "text": "Substitution",
+    "type": "substitution"
+   },
+   "text": "Substitution, Nottingham Forest. Luca Netz replaces Daniel Muñoz.",
+   "shortText": "Luca Netz Substitution",
+   "period": {
+    "number": 2
+   },
+   "clock": {
+    "value": 3865.0,
+    "displayValue": "65'"
+   },
+   "scoringPlay": false,
+   "wallclock": "2026-11-07T18:54:50Z",
+   "team": {
+    "id": "393",
+    "displayName": "Nottingham Forest"
+   },
+   "participants": [
+    {
+     "athlete": {
+      "displayName": "Luca Netz"
+     }
+    },
+    {
+     "athlete": {
+      "displayName": "Daniel Muñoz"
+     }
+    }
+   ]
+  },
+  {
+   "id": "54982064",
+   "type": {
+    "id": "94",
+    "text": "Yellow Card",
+    "type": "yellow-card"
+   },
+   "text": "Dan Ndoye (Nottingham Forest) is shown the yellow card for a bad foul.",
+   "shortText": "Dan Ndoye Yellow Card",
+   "period": {
+    "number": 2
+   },
+   "clock": {
+    "value": 4081.0,
+    "displayValue": "69'"
+   },
+   "scoringPlay": false,
+   "wallclock": "2026-11-07T18:58:27Z",
+   "team": {
+    "id": "393",
+    "displayName": "Nottingham Forest"
+   },
+   "participants": [
+    {
+     "athlete": {
+      "displayName": "Dan Ndoye"
+     }
+    }
+   ]
+  },
+  {
+   "id": "54982543",
+   "type": {
+    "id": "70",
+    "text": "Goal",
+    "type": "goal"
+   },
+   "text": "Goal! Nottingham Forest 3, Manchester City 1. Liam Delap (Nottingham Forest) left footed shot from the left side of the box to the top right corner. Assisted by Morgan Gibbs-White following a fast break.",
+   "shortText": "Liam Delap Goal",
+   "period": {
+    "number": 2
+   },
+   "clock": {
+    "value": 4377.0,
+    "displayValue": "73'"
+   },
+   "scoringPlay": true,
+   "wallclock": "2026-11-07T19:03:22Z",
+   "team": {
+    "id": "393",
+    "displayName": "Nottingham Forest"
+   },
+   "participants": [
+    {
+     "athlete": {
+      "displayName": "Liam Delap"
+     }
+    },
+    {
+     "athlete": {
+      "displayName": "Morgan Gibbs-White"
+     }
+    }
+   ]
+  },
+  {
+   "id": "54983214",
+   "type": {
+    "id": "76",
+    "text": "Substitution",
+    "type": "substitution"
+   },
+   "text": "Substitution, Manchester City. Phil Foden replaces Enzo Fernández.",
+   "shortText": "Phil Foden Substitution",
+   "period": {
+    "number": 2
+   },
+   "clock": {
+    "value": 4678.0,
+    "displayValue": "78'"
+   },
+   "scoringPlay": false,
+   "wallclock": "2026-11-07T19:08:24Z",
+   "team": {
+    "id": "382",
+    "displayName": "Manchester City"
+   },
+   "participants": [
+    {
+     "athlete": {
+      "displayName": "Phil Foden"
+     }
+    },
+    {
+     "athlete": {
+      "displayName": "Enzo Fernández"
+     }
+    }
+   ]
+  },
+  {
+   "id": "54983215",
+   "type": {
+    "id": "76",
+    "text": "Substitution",
+    "type": "substitution"
+   },
+   "text": "Substitution, Nottingham Forest. Ibrahim Sangaré replaces Ryan Yates.",
+   "shortText": "Ibrahim Sangaré Substitution",
+   "period": {
+    "number": 2
+   },
+   "clock": {
+    "value": 4695.0,
+    "displayValue": "79'"
+   },
+   "scoringPlay": false,
+   "wallclock": "2026-11-07T19:08:40Z",
+   "team": {
+    "id": "393",
+    "displayName": "Nottingham Forest"
+   },
+   "participants": [
+    {
+     "athlete": {
+      "displayName": "Ibrahim Sangaré"
+     }
+    },
+    {
+     "athlete": {
+      "displayName": "Ryan Yates"
+     }
+    }
+   ]
+  },
+  {
+   "id": "54984648",
+   "type": {
+    "id": "76",
+    "text": "Substitution",
+    "type": "substitution"
+   },
+   "text": "Substitution, Nottingham Forest. Igor Jesus replaces Liam Delap.",
+   "shortText": "Igor Jesus Substitution",
+   "period": {
+    "number": 2
+   },
+   "clock": {
+    "value": 5191.0,
+    "displayValue": "87'"
+   },
+   "scoringPlay": false,
+   "wallclock": "2026-11-07T19:16:57Z",
+   "team": {
+    "id": "393",
+    "displayName": "Nottingham Forest"
+   },
+   "participants": [
+    {
+     "athlete": {
+      "displayName": "Igor Jesus"
+     }
+    },
+    {
+     "athlete": {
+      "displayName": "Liam Delap"
+     }
+    }
+   ]
+  },
+  {
+   "id": "54986016",
+   "type": {
+    "id": "94",
+    "text": "Yellow Card",
+    "type": "yellow-card"
+   },
+   "text": "Luca Netz (Nottingham Forest) is shown the yellow card for a bad foul.",
+   "shortText": "Luca Netz Yellow Card",
+   "period": {
+    "number": 2
+   },
+   "clock": {
+    "value": 5400.0,
+    "displayValue": "90'+4'"
+   },
+   "scoringPlay": false,
+   "wallclock": "2026-11-07T19:24:23Z",
+   "team": {
+    "id": "393",
+    "displayName": "Nottingham Forest"
+   },
+   "participants": [
+    {
+     "athlete": {
+      "displayName": "Luca Netz"
+     }
+    }
+   ]
+  },
+  {
+   "id": "54986017",
+   "type": {
+    "id": "94",
+    "text": "Yellow Card",
+    "type": "yellow-card"
+   },
+   "text": "Igor Jesus (Nottingham Forest) is shown the yellow card.",
+   "shortText": "Igor Jesus Yellow Card",
+   "period": {
+    "number": 2
+   },
+   "clock": {
+    "value": 5400.0,
+    "displayValue": "90'+5'"
+   },
+   "scoringPlay": false,
+   "wallclock": "2026-11-07T19:24:54Z",
+   "team": {
+    "id": "393",
+    "displayName": "Nottingham Forest"
+   },
+   "participants": [
+    {
+     "athlete": {
+      "displayName": "Igor Jesus"
+     }
+    }
+   ]
+  },
+  {
+   "id": "54986025",
+   "type": {
+    "id": "83",
+    "text": "End Regular Time",
+    "type": "end-regular-time"
+   },
+   "period": {
+    "number": 2
+   },
+   "clock": {
+    "value": 5400.0,
+    "displayValue": "90'+6'"
+   },
+   "scoringPlay": false,
+   "wallclock": "2026-11-07T19:25:50Z"
+  }
+ ],
+ "commentary": [
+  {
+   "sequence": 2,
+   "time": {
+    "value": 122.0,
+    "displayValue": "3'"
+   },
+   "text": "Attempt saved. Jair Cunha (Nottingham Forest) header from the right side of the box is saved in the top right corner by Gianluigi Donnarumma (Manchester City). Assisted by Daniel Muñoz.",
+   "play": {
+    "id": "54971652",
+    "type": {
+     "id": "106",
+     "text": "Shot On Target",
+     "type": "shot-on-target"
+    },
+    "text": "Attempt saved. Jair Cunha (Nottingham Forest) header from the right side of the box is saved in the top right corner by Gianluigi Donnarumma (Manchester City). Assisted by Daniel Muñoz.",
+    "shortText": "Jair Cunha Shot On Target",
+    "period": {
+     "number": 1
+    },
+    "clock": {
+     "value": 122.0,
+     "displayValue": "3'"
+    },
+    "wallclock": "2026-11-07T17:34:34Z",
+    "team": {
+     "displayName": "Nottingham Forest"
+    },
+    "participants": [
+     {
+      "athlete": {
+       "displayName": "Jair Cunha"
+      }
+     },
+     {
+      "athlete": {
+       "displayName": "Daniel Muñoz"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "sequence": 3,
+   "time": {
+    "value": 302.0,
+    "displayValue": "6'"
+   },
+   "text": "Goal! Nottingham Forest 1, Manchester City 0. Jair Cunha (Nottingham Forest) left footed shot from the centre of the box to the bottom left corner.",
+   "play": {
+    "id": "54971764",
+    "type": {
+     "id": "70",
+     "text": "Goal",
+     "type": "goal"
+    },
+    "text": "Goal! Nottingham Forest 1, Manchester City 0. Jair Cunha (Nottingham Forest) left footed shot from the centre of the box to the bottom left corner.",
+    "shortText": "Jair Cunha Goal",
+    "period": {
+     "number": 1
+    },
+    "clock": {
+     "value": 302.0,
+     "displayValue": "6'"
+    },
+    "wallclock": "2026-11-07T17:37:33Z",
+    "team": {
+     "displayName": "Nottingham Forest"
+    },
+    "participants": [
+     {
+      "athlete": {
+       "displayName": "Jair Cunha"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "sequence": 6,
+   "time": {
+    "value": 465.0,
+    "displayValue": "8'"
+   },
+   "text": "Corner, Manchester City. Conceded by Nikola Milenkovic.",
+   "play": {
+    "id": "54972047",
+    "type": {
+     "id": "95",
+     "text": "Corner Awarded",
+     "type": "corner-awarded"
+    },
+    "text": "Corner, Manchester City. Conceded by Nikola Milenkovic.",
+    "period": {
+     "number": 1
+    },
+    "clock": {
+     "value": 465.0,
+     "displayValue": "8'"
+    },
+    "wallclock": "2026-11-07T17:40:17Z",
+    "team": {
+     "displayName": "Manchester City"
+    }
+   }
+  },
+  {
+   "sequence": 9,
+   "time": {
+    "value": 873.0,
+    "displayValue": "15'"
+   },
+   "text": "Corner, Nottingham Forest. Conceded by Rúben Dias.",
+   "play": {
+    "id": "54972754",
+    "type": {
+     "id": "95",
+     "text": "Corner Awarded",
+     "type": "corner-awarded"
+    },
+    "text": "Corner, Nottingham Forest. Conceded by Rúben Dias.",
+    "period": {
+     "number": 1
+    },
+    "clock": {
+     "value": 873.0,
+     "displayValue": "15'"
+    },
+    "wallclock": "2026-11-07T17:47:04Z",
+    "team": {
+     "displayName": "Nottingham Forest"
+    }
+   }
+  },
+  {
+   "sequence": 11,
+   "time": {
+    "value": 1022.0,
+    "displayValue": "18'"
+   },
+   "text": "Goal! Nottingham Forest 2, Manchester City 0. Liam Delap (Nottingham Forest) right footed shot from the centre of the box to the high centre of the goal. Assisted by Xaver Schlager following a fast break.",
+   "play": {
+    "id": "54972985",
+    "type": {
+     "id": "70",
+     "text": "Goal",
+     "type": "goal"
+    },
+    "text": "Goal! Nottingham Forest 2, Manchester City 0. Liam Delap (Nottingham Forest) right footed shot from the centre of the box to the high centre of the goal. Assisted by Xaver Schlager following a fast break.",
+    "shortText": "Liam Delap Goal",
+    "period": {
+     "number": 1
+    },
+    "clock": {
+     "value": 1022.0,
+     "displayValue": "18'"
+    },
+    "wallclock": "2026-11-07T17:49:34Z",
+    "team": {
+     "displayName": "Nottingham Forest"
+    },
+    "participants": [
+     {
+      "athlete": {
+       "displayName": "Liam Delap"
+      }
+     },
+     {
+      "athlete": {
+       "displayName": "Xaver Schlager"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "sequence": 12,
+   "time": {
+    "value": 1154.0,
+    "displayValue": "20'"
+   },
+   "text": "Attempt missed. James McAtee (Nottingham Forest) left footed shot from the centre of the box is high and wide to the left. Assisted by Morgan Gibbs-White following a fast break.",
+   "play": {
+    "id": "54973187",
+    "type": {
+     "id": "117",
+     "text": "Shot Off Target",
+     "type": "shot-off-target"
+    },
+    "text": "Attempt missed. James McAtee (Nottingham Forest) left footed shot from the centre of the box is high and wide to the left. Assisted by Morgan Gibbs-White following a fast break.",
+    "shortText": "James McAtee Shot Off Target",
+    "period": {
+     "number": 1
+    },
+    "clock": {
+     "value": 1154.0,
+     "displayValue": "20'"
+    },
+    "wallclock": "2026-11-07T17:51:45Z",
+    "team": {
+     "displayName": "Nottingham Forest"
+    },
+    "participants": [
+     {
+      "athlete": {
+       "displayName": "James McAtee"
+      }
+     },
+     {
+      "athlete": {
+       "displayName": "Morgan Gibbs-White"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "sequence": 13,
+   "time": {
+    "value": 1320.0,
+    "displayValue": "22'"
+   },
+   "text": "Corner, Nottingham Forest. Conceded by Abdukodir Khusanov.",
+   "play": {
+    "id": "54973484",
+    "type": {
+     "id": "95",
+     "text": "Corner Awarded",
+     "type": "corner-awarded"
+    },
+    "text": "Corner, Nottingham Forest. Conceded by Abdukodir Khusanov.",
+    "period": {
+     "number": 1
+    },
+    "clock": {
+     "value": 1320.0,
+     "displayValue": "22'"
+    },
+    "wallclock": "2026-11-07T17:54:31Z",
+    "team": {
+     "displayName": "Nottingham Forest"
+    }
+   }
+  },
+  {
+   "sequence": 14,
+   "time": {
+    "value": 1364.0,
+    "displayValue": "23'"
+   },
+   "text": "Attempt saved. Murillo (Nottingham Forest) left footed shot from outside the box is saved in the centre of the goal by Gianluigi Donnarumma (Manchester City).",
+   "play": {
+    "id": "54973594",
+    "type": {
+     "id": "106",
+     "text": "Shot On Target",
+     "type": "shot-on-target"
+    },
+    "text": "Attempt saved. Murillo (Nottingham Forest) left footed shot from outside the box is saved in the centre of the goal by Gianluigi Donnarumma (Manchester City).",
+    "shortText": "Murillo Shot On Target",
+    "period": {
+     "number": 1
+    },
+    "clock": {
+     "value": 1364.0,
+     "displayValue": "23'"
+    },
+    "wallclock": "2026-11-07T17:55:16Z",
+    "team": {
+     "displayName": "Nottingham Forest"
+    },
+    "participants": [
+     {
+      "athlete": {
+       "displayName": "Murillo"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "sequence": 15,
+   "time": {
+    "value": 1419.0,
+    "displayValue": "24'"
+   },
+   "text": "Attempt missed. Enzo Fernández (Manchester City) header from very close range is too high. Assisted by Marc Guéhi with a cross.",
+   "play": {
+    "id": "54973613",
+    "type": {
+     "id": "117",
+     "text": "Shot Off Target",
+     "type": "shot-off-target"
+    },
+    "text": "Attempt missed. Enzo Fernández (Manchester City) header from very close range is too high. Assisted by Marc Guéhi with a cross.",
+    "shortText": "Enzo Fernández Shot Off Target",
+    "period": {
+     "number": 1
+    },
+    "clock": {
+     "value": 1419.0,
+     "displayValue": "24'"
+    },
+    "wallclock": "2026-11-07T17:56:10Z",
+    "team": {
+     "displayName": "Manchester City"
+    },
+    "participants": [
+     {
+      "athlete": {
+       "displayName": "Enzo Fernández"
+      }
+     },
+     {
+      "athlete": {
+       "displayName": "Marc Guéhi"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "sequence": 20,
+   "time": {
+    "value": 1629.0,
+    "displayValue": "28'"
+   },
+   "text": "Attempt missed. Jair Cunha (Nottingham Forest) left footed shot from the centre of the box misses to the left. Assisted by Murillo following a set piece situation.",
+   "play": {
+    "id": "54974021",
+    "type": {
+     "id": "117",
+     "text": "Shot Off Target",
+     "type": "shot-off-target"
+    },
+    "text": "Attempt missed. Jair Cunha (Nottingham Forest) left footed shot from the centre of the box misses to the left. Assisted by Murillo following a set piece situation.",
+    "shortText": "Jair Cunha Shot Off Target",
+    "period": {
+     "number": 1
+    },
+    "clock": {
+     "value": 1629.0,
+     "displayValue": "28'"
+    },
+    "wallclock": "2026-11-07T17:59:41Z",
+    "team": {
+     "displayName": "Nottingham Forest"
+    },
+    "participants": [
+     {
+      "athlete": {
+       "displayName": "Jair Cunha"
+      }
+     },
+     {
+      "athlete": {
+       "displayName": "Murillo"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "sequence": 23,
+   "time": {
+    "value": 1886.0,
+    "displayValue": "32'"
+   },
+   "text": "Attempt saved. Erling Haaland (Manchester City) left footed shot from the left side of the box is saved in the centre of the goal by Matz Sels (Nottingham Forest). Assisted by Marc Guéhi.",
+   "play": {
+    "id": "54974476",
+    "type": {
+     "id": "106",
+     "text": "Shot On Target",
+     "type": "shot-on-target"
+    },
+    "text": "Attempt saved. Erling Haaland (Manchester City) left footed shot from the left side of the box is saved in the centre of the goal by Matz Sels (Nottingham Forest). Assisted by Marc Guéhi.",
+    "shortText": "Erling Haaland Shot On Target",
+    "period": {
+     "number": 1
+    },
+    "clock": {
+     "value": 1886.0,
+     "displayValue": "32'"
+    },
+    "wallclock": "2026-11-07T18:03:58Z",
+    "team": {
+     "displayName": "Manchester City"
+    },
+    "participants": [
+     {
+      "athlete": {
+       "displayName": "Erling Haaland"
+      }
+     },
+     {
+      "athlete": {
+       "displayName": "Marc Guéhi"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "sequence": 24,
+   "time": {
+    "value": 2159.0,
+    "displayValue": "36'"
+   },
+   "text": "Corner, Manchester City. Conceded by Nikola Milenkovic.",
+   "play": {
+    "id": "54975255",
+    "type": {
+     "id": "95",
+     "text": "Corner Awarded",
+     "type": "corner-awarded"
+    },
+    "text": "Corner, Manchester City. Conceded by Nikola Milenkovic.",
+    "period": {
+     "number": 1
+    },
+    "clock": {
+     "value": 2159.0,
+     "displayValue": "36'"
+    },
+    "wallclock": "2026-11-07T18:08:30Z",
+    "team": {
+     "displayName": "Manchester City"
+    }
+   }
+  },
+  {
+   "sequence": 29,
+   "time": {
+    "value": 2449.0,
+    "displayValue": "41'"
+   },
+   "text": "Corner, Manchester City. Conceded by Jair Cunha.",
+   "play": {
+    "id": "54976124",
+    "type": {
+     "id": "95",
+     "text": "Corner Awarded",
+     "type": "corner-awarded"
+    },
+    "text": "Corner, Manchester City. Conceded by Jair Cunha.",
+    "period": {
+     "number": 1
+    },
+    "clock": {
+     "value": 2449.0,
+     "displayValue": "41'"
+    },
+    "wallclock": "2026-11-07T18:13:20Z",
+    "team": {
+     "displayName": "Manchester City"
+    }
+   }
+  },
+  {
+   "sequence": 30,
+   "time": {
+    "value": 2479.0,
+    "displayValue": "42'"
+   },
+   "text": "Attempt saved. Elliot Anderson (Manchester City) right footed shot from the centre of the box is saved in the top centre of the goal by Matz Sels (Nottingham Forest).",
+   "play": {
+    "id": "54976126",
+    "type": {
+     "id": "106",
+     "text": "Shot On Target",
+     "type": "shot-on-target"
+    },
+    "text": "Attempt saved. Elliot Anderson (Manchester City) right footed shot from the centre of the box is saved in the top centre of the goal by Matz Sels (Nottingham Forest).",
+    "shortText": "Elliot Anderson Shot On Target",
+    "period": {
+     "number": 1
+    },
+    "clock": {
+     "value": 2479.0,
+     "displayValue": "42'"
+    },
+    "wallclock": "2026-11-07T18:13:50Z",
+    "team": {
+     "displayName": "Manchester City"
+    },
+    "participants": [
+     {
+      "athlete": {
+       "displayName": "Elliot Anderson"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "sequence": 33,
+   "time": {
+    "value": 2710.0,
+    "displayValue": "45'+1'"
+   },
+   "text": "Corner, Manchester City. Conceded by Murillo.",
+   "play": {
+    "id": "54976721",
+    "type": {
+     "id": "95",
+     "text": "Corner Awarded",
+     "type": "corner-awarded"
+    },
+    "text": "Corner, Manchester City. Conceded by Murillo.",
+    "period": {
+     "number": 1
+    },
+    "clock": {
+     "value": 2700.0,
+     "displayValue": "45'+1'"
+    },
+    "wallclock": "2026-11-07T18:17:41Z",
+    "team": {
+     "displayName": "Manchester City"
+    }
+   }
+  },
+  {
+   "sequence": 35,
+   "time": {
+    "value": 2739.0,
+    "displayValue": "45'+1'"
+   },
+   "text": "Attempt missed. Erling Haaland (Manchester City) left footed shot from the right side of the box is high and wide to the right. Assisted by Enzo Fernández with a cross following a corner.",
+   "play": {
+    "id": "54976921",
+    "type": {
+     "id": "117",
+     "text": "Shot Off Target",
+     "type": "shot-off-target"
+    },
+    "text": "Attempt missed. Erling Haaland (Manchester City) left footed shot from the right side of the box is high and wide to the right. Assisted by Enzo Fernández with a cross following a corner.",
+    "shortText": "Erling Haaland Shot Off Target",
+    "period": {
+     "number": 1
+    },
+    "clock": {
+     "value": 2700.0,
+     "displayValue": "45'+1'"
+    },
+    "wallclock": "2026-11-07T18:18:10Z",
+    "team": {
+     "displayName": "Manchester City"
+    },
+    "participants": [
+     {
+      "athlete": {
+       "displayName": "Erling Haaland"
+      }
+     },
+     {
+      "athlete": {
+       "displayName": "Enzo Fernández"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "sequence": 39,
+   "time": {
+    "value": 2700.0,
+    "displayValue": "45'"
+   },
+   "text": "Substitution, Manchester City. Nico O'Reilly replaces Josko Gvardiol.",
+   "play": {
+    "id": "54978775",
+    "type": {
+     "id": "76",
+     "text": "Substitution",
+     "type": "substitution"
+    },
+    "text": "Substitution, Manchester City. Nico O'Reilly replaces Josko Gvardiol.",
+    "shortText": "Nico O'Reilly Substitution",
+    "period": {
+     "number": 2
+    },
+    "clock": {
+     "value": 2700.0,
+     "displayValue": "45'"
+    },
+    "wallclock": "2026-11-07T18:35:03Z",
+    "team": {
+     "displayName": "Manchester City"
+    },
+    "participants": [
+     {
+      "athlete": {
+       "displayName": "Nico O'Reilly"
+      }
+     },
+     {
+      "athlete": {
+       "displayName": "Josko Gvardiol"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "sequence": 40,
+   "time": {
+    "value": 2700.0,
+    "displayValue": "45'"
+   },
+   "text": "Substitution, Manchester City. Matheus Nunes replaces Marc Guéhi.",
+   "play": {
+    "id": "54978776",
+    "type": {
+     "id": "76",
+     "text": "Substitution",
+     "type": "substitution"
+    },
+    "text": "Substitution, Manchester City. Matheus Nunes replaces Marc Guéhi.",
+    "shortText": "Matheus Nunes Substitution",
+    "period": {
+     "number": 2
+    },
+    "clock": {
+     "value": 2700.0,
+     "displayValue": "45'"
+    },
+    "wallclock": "2026-11-07T18:35:03Z",
+    "team": {
+     "displayName": "Manchester City"
+    },
+    "participants": [
+     {
+      "athlete": {
+       "displayName": "Matheus Nunes"
+      }
+     },
+     {
+      "athlete": {
+       "displayName": "Marc Guéhi"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "sequence": 41,
+   "time": {
+    "value": 2700.0,
+    "displayValue": "45'"
+   },
+   "text": "Second Half begins Nottingham Forest 2, Manchester City 0.",
+   "play": {
+    "id": "54978774",
+    "type": {
+     "id": "82",
+     "text": "Start 2nd Half",
+     "type": "start-2nd-half"
+    },
+    "text": "Second Half begins Nottingham Forest 2, Manchester City 0.",
+    "period": {
+     "number": 2
+    },
+    "clock": {
+     "value": 2700.0,
+     "displayValue": "45'"
+    },
+    "wallclock": "2026-11-07T18:35:25Z"
+   }
+  },
+  {
+   "sequence": 46,
+   "time": {
+    "value": 2914.0,
+    "displayValue": "49'"
+   },
+   "text": "Attempt missed. Nico O'Reilly (Manchester City) header from the right side of the six yard box misses to the left. Assisted by Matheus Nunes.",
+   "play": {
+    "id": "54979801",
+    "type": {
+     "id": "117",
+     "text": "Shot Off Target",
+     "type": "shot-off-target"
+    },
+    "text": "Attempt missed. Nico O'Reilly (Manchester City) header from the right side of the six yard box misses to the left. Assisted by Matheus Nunes.",
+    "shortText": "Nico O'Reilly Shot Off Target",
+    "period": {
+     "number": 2
+    },
+    "clock": {
+     "value": 2914.0,
+     "displayValue": "49'"
+    },
+    "wallclock": "2026-11-07T18:39:00Z",
+    "team": {
+     "displayName": "Manchester City"
+    },
+    "participants": [
+     {
+      "athlete": {
+       "displayName": "Nico O'Reilly"
+      }
+     },
+     {
+      "athlete": {
+       "displayName": "Matheus Nunes"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "sequence": 51,
+   "time": {
+    "value": 3081.0,
+    "displayValue": "52'"
+   },
+   "text": "Goal! Nottingham Forest 2, Manchester City 1. Rayan Cherki (Manchester City) left footed shot from the centre of the box to the top left corner.",
+   "play": {
+    "id": "54979808",
+    "type": {
+     "id": "70",
+     "text": "Goal",
+     "type": "goal"
+    },
+    "text": "Goal! Nottingham Forest 2, Manchester City 1. Rayan Cherki (Manchester City) left footed shot from the centre of the box to the top left corner.",
+    "shortText": "Rayan Cherki Goal",
+    "period": {
+     "number": 2
+    },
+    "clock": {
+     "value": 3081.0,
+     "displayValue": "52'"
+    },
+    "wallclock": "2026-11-07T18:41:47Z",
+    "team": {
+     "displayName": "Manchester City"
+    },
+    "participants": [
+     {
+      "athlete": {
+       "displayName": "Rayan Cherki"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "sequence": 52,
+   "time": {
+    "value": 3202.0,
+    "displayValue": "54'"
+   },
+   "text": "Corner, Manchester City. Conceded by Nikola Milenkovic.",
+   "play": {
+    "id": "54980126",
+    "type": {
+     "id": "95",
+     "text": "Corner Awarded",
+     "type": "corner-awarded"
+    },
+    "text": "Corner, Manchester City. Conceded by Nikola Milenkovic.",
+    "period": {
+     "number": 2
+    },
+    "clock": {
+     "value": 3202.0,
+     "displayValue": "54'"
+    },
+    "wallclock": "2026-11-07T18:43:47Z",
+    "team": {
+     "displayName": "Manchester City"
+    }
+   }
+  },
+  {
+   "sequence": 55,
+   "time": {
+    "value": 3399.0,
+    "displayValue": "57'"
+   },
+   "text": "Attempt missed. Erling Haaland (Manchester City) right footed shot from the centre of the box is close, but misses the top right corner. Assisted by Matheus Nunes with a cross.",
+   "play": {
+    "id": "54980606",
+    "type": {
+     "id": "117",
+     "text": "Shot Off Target",
+     "type": "shot-off-target"
+    },
+    "text": "Attempt missed. Erling Haaland (Manchester City) right footed shot from the centre of the box is close, but misses the top right corner. Assisted by Matheus Nunes with a cross.",
+    "shortText": "Erling Haaland Shot Off Target",
+    "period": {
+     "number": 2
+    },
+    "clock": {
+     "value": 3399.0,
+     "displayValue": "57'"
+    },
+    "wallclock": "2026-11-07T18:47:04Z",
+    "team": {
+     "displayName": "Manchester City"
+    },
+    "participants": [
+     {
+      "athlete": {
+       "displayName": "Erling Haaland"
+      }
+     },
+     {
+      "athlete": {
+       "displayName": "Matheus Nunes"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "sequence": 58,
+   "time": {
+    "value": 3570.0,
+    "displayValue": "60'"
+   },
+   "text": "Corner, Manchester City. Conceded by Murillo.",
+   "play": {
+    "id": "54981218",
+    "type": {
+     "id": "95",
+     "text": "Corner Awarded",
+     "type": "corner-awarded"
+    },
+    "text": "Corner, Manchester City. Conceded by Murillo.",
+    "period": {
+     "number": 2
+    },
+    "clock": {
+     "value": 3570.0,
+     "displayValue": "60'"
+    },
+    "wallclock": "2026-11-07T18:49:56Z",
+    "team": {
+     "displayName": "Manchester City"
+    }
+   }
+  },
+  {
+   "sequence": 62,
+   "time": {
+    "value": 3790.0,
+    "displayValue": "64'"
+   },
+   "text": "James McAtee (Nottingham Forest) is shown the yellow card for a bad foul.",
+   "play": {
+    "id": "54981653",
+    "type": {
+     "id": "94",
+     "text": "Yellow Card",
+     "type": "yellow-card"
+    },
+    "text": "James McAtee (Nottingham Forest) is shown the yellow card for a bad foul.",
+    "shortText": "James McAtee Yellow Card",
+    "period": {
+     "number": 2
+    },
+    "clock": {
+     "value": 3790.0,
+     "displayValue": "64'"
+    },
+    "wallclock": "2026-11-07T18:53:35Z",
+    "team": {
+     "displayName": "Nottingham Forest"
+    },
+    "participants": [
+     {
+      "athlete": {
+       "displayName": "James McAtee"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "sequence": 63,
+   "time": {
+    "value": 3855.0,
+    "displayValue": "65'"
+   },
+   "text": "Substitution, Nottingham Forest. Dan Ndoye replaces James McAtee.",
+   "play": {
+    "id": "54981682",
+    "type": {
+     "id": "76",
+     "text": "Substitution",
+     "type": "substitution"
+    },
+    "text": "Substitution, Nottingham Forest. Dan Ndoye replaces James McAtee.",
+    "shortText": "Dan Ndoye Substitution",
+    "period": {
+     "number": 2
+    },
+    "clock": {
+     "value": 3855.0,
+     "displayValue": "65'"
+    },
+    "wallclock": "2026-11-07T18:54:41Z",
+    "team": {
+     "displayName": "Nottingham Forest"
+    },
+    "participants": [
+     {
+      "athlete": {
+       "displayName": "Dan Ndoye"
+      }
+     },
+     {
+      "athlete": {
+       "displayName": "James McAtee"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "sequence": 64,
+   "time": {
+    "value": 3865.0,
+    "displayValue": "65'"
+   },
+   "text": "Substitution, Nottingham Forest. Luca Netz replaces Daniel Muñoz.",
+   "play": {
+    "id": "54981733",
+    "type": {
+     "id": "76",
+     "text": "Substitution",
+     "type": "substitution"
+    },
+    "text": "Substitution, Nottingham Forest. Luca Netz replaces Daniel Muñoz.",
+    "shortText": "Luca Netz Substitution",
+    "period": {
+     "number": 2
+    },
+    "clock": {
+     "value": 3865.0,
+     "displayValue": "65'"
+    },
+    "wallclock": "2026-11-07T18:54:50Z",
+    "team": {
+     "displayName": "Nottingham Forest"
+    },
+    "participants": [
+     {
+      "athlete": {
+       "displayName": "Luca Netz"
+      }
+     },
+     {
+      "athlete": {
+       "displayName": "Daniel Muñoz"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "sequence": 66,
+   "time": {
+    "value": 4012.0,
+    "displayValue": "67'"
+   },
+   "text": "Corner, Nottingham Forest. Conceded by Elliot Anderson.",
+   "play": {
+    "id": "54982062",
+    "type": {
+     "id": "95",
+     "text": "Corner Awarded",
+     "type": "corner-awarded"
+    },
+    "text": "Corner, Nottingham Forest. Conceded by Elliot Anderson.",
+    "period": {
+     "number": 2
+    },
+    "clock": {
+     "value": 4012.0,
+     "displayValue": "67'"
+    },
+    "wallclock": "2026-11-07T18:57:17Z",
+    "team": {
+     "displayName": "Nottingham Forest"
+    }
+   }
+  },
+  {
+   "sequence": 69,
+   "time": {
+    "value": 4081.0,
+    "displayValue": "69'"
+   },
+   "text": "Dan Ndoye (Nottingham Forest) is shown the yellow card for a bad foul.",
+   "play": {
+    "id": "54982064",
+    "type": {
+     "id": "94",
+     "text": "Yellow Card",
+     "type": "yellow-card"
+    },
+    "text": "Dan Ndoye (Nottingham Forest) is shown the yellow card for a bad foul.",
+    "shortText": "Dan Ndoye Yellow Card",
+    "period": {
+     "number": 2
+    },
+    "clock": {
+     "value": 4081.0,
+     "displayValue": "69'"
+    },
+    "wallclock": "2026-11-07T18:58:27Z",
+    "team": {
+     "displayName": "Nottingham Forest"
+    },
+    "participants": [
+     {
+      "athlete": {
+       "displayName": "Dan Ndoye"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "sequence": 70,
+   "time": {
+    "value": 4184.0,
+    "displayValue": "70'"
+   },
+   "text": "Attempt missed. Murillo (Nottingham Forest) left footed shot from more than 40 yards on the left wing misses to the left following a fast break.",
+   "play": {
+    "id": "54982183",
+    "type": {
+     "id": "117",
+     "text": "Shot Off Target",
+     "type": "shot-off-target"
+    },
+    "text": "Attempt missed. Murillo (Nottingham Forest) left footed shot from more than 40 yards on the left wing misses to the left following a fast break.",
+    "shortText": "Murillo Shot Off Target",
+    "period": {
+     "number": 2
+    },
+    "clock": {
+     "value": 4184.0,
+     "displayValue": "70'"
+    },
+    "wallclock": "2026-11-07T19:00:09Z",
+    "team": {
+     "displayName": "Nottingham Forest"
+    },
+    "participants": [
+     {
+      "athlete": {
+       "displayName": "Murillo"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "sequence": 72,
+   "time": {
+    "value": 4377.0,
+    "displayValue": "73'"
+   },
+   "text": "Goal! Nottingham Forest 3, Manchester City 1. Liam Delap (Nottingham Forest) left footed shot from the left side of the box to the top right corner. Assisted by Morgan Gibbs-White following a fast break.",
+   "play": {
+    "id": "54982543",
+    "type": {
+     "id": "70",
+     "text": "Goal",
+     "type": "goal"
+    },
+    "text": "Goal! Nottingham Forest 3, Manchester City 1. Liam Delap (Nottingham Forest) left footed shot from the left side of the box to the top right corner. Assisted by Morgan Gibbs-White following a fast break.",
+    "shortText": "Liam Delap Goal",
+    "period": {
+     "number": 2
+    },
+    "clock": {
+     "value": 4377.0,
+     "displayValue": "73'"
+    },
+    "wallclock": "2026-11-07T19:03:22Z",
+    "team": {
+     "displayName": "Nottingham Forest"
+    },
+    "participants": [
+     {
+      "athlete": {
+       "displayName": "Liam Delap"
+      }
+     },
+     {
+      "athlete": {
+       "displayName": "Morgan Gibbs-White"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "sequence": 73,
+   "time": {
+    "value": 4575.0,
+    "displayValue": "77'"
+   },
+   "text": "Corner, Manchester City. Conceded by Nikola Milenkovic.",
+   "play": {
+    "id": "54983044",
+    "type": {
+     "id": "95",
+     "text": "Corner Awarded",
+     "type": "corner-awarded"
+    },
+    "text": "Corner, Manchester City. Conceded by Nikola Milenkovic.",
+    "period": {
+     "number": 2
+    },
+    "clock": {
+     "value": 4575.0,
+     "displayValue": "77'"
+    },
+    "wallclock": "2026-11-07T19:06:41Z",
+    "team": {
+     "displayName": "Manchester City"
+    }
+   }
+  },
+  {
+   "sequence": 76,
+   "time": {
+    "value": 4678.0,
+    "displayValue": "78'"
+   },
+   "text": "Substitution, Manchester City. Phil Foden replaces Enzo Fernández.",
+   "play": {
+    "id": "54983214",
+    "type": {
+     "id": "76",
+     "text": "Substitution",
+     "type": "substitution"
+    },
+    "text": "Substitution, Manchester City. Phil Foden replaces Enzo Fernández.",
+    "shortText": "Phil Foden Substitution",
+    "period": {
+     "number": 2
+    },
+    "clock": {
+     "value": 4678.0,
+     "displayValue": "78'"
+    },
+    "wallclock": "2026-11-07T19:08:24Z",
+    "team": {
+     "displayName": "Manchester City"
+    },
+    "participants": [
+     {
+      "athlete": {
+       "displayName": "Phil Foden"
+      }
+     },
+     {
+      "athlete": {
+       "displayName": "Enzo Fernández"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "sequence": 77,
+   "time": {
+    "value": 4695.0,
+    "displayValue": "79'"
+   },
+   "text": "Substitution, Nottingham Forest. Ibrahim Sangaré replaces Ryan Yates.",
+   "play": {
+    "id": "54983215",
+    "type": {
+     "id": "76",
+     "text": "Substitution",
+     "type": "substitution"
+    },
+    "text": "Substitution, Nottingham Forest. Ibrahim Sangaré replaces Ryan Yates.",
+    "shortText": "Ibrahim Sangaré Substitution",
+    "period": {
+     "number": 2
+    },
+    "clock": {
+     "value": 4695.0,
+     "displayValue": "79'"
+    },
+    "wallclock": "2026-11-07T19:08:40Z",
+    "team": {
+     "displayName": "Nottingham Forest"
+    },
+    "participants": [
+     {
+      "athlete": {
+       "displayName": "Ibrahim Sangaré"
+      }
+     },
+     {
+      "athlete": {
+       "displayName": "Ryan Yates"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "sequence": 83,
+   "time": {
+    "value": 5191.0,
+    "displayValue": "87'"
+   },
+   "text": "Substitution, Nottingham Forest. Igor Jesus replaces Liam Delap.",
+   "play": {
+    "id": "54984648",
+    "type": {
+     "id": "76",
+     "text": "Substitution",
+     "type": "substitution"
+    },
+    "text": "Substitution, Nottingham Forest. Igor Jesus replaces Liam Delap.",
+    "shortText": "Igor Jesus Substitution",
+    "period": {
+     "number": 2
+    },
+    "clock": {
+     "value": 5191.0,
+     "displayValue": "87'"
+    },
+    "wallclock": "2026-11-07T19:16:57Z",
+    "team": {
+     "displayName": "Nottingham Forest"
+    },
+    "participants": [
+     {
+      "athlete": {
+       "displayName": "Igor Jesus"
+      }
+     },
+     {
+      "athlete": {
+       "displayName": "Liam Delap"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "sequence": 90,
+   "time": {
+    "value": 5637.0,
+    "displayValue": "90'+4'"
+   },
+   "text": "Luca Netz (Nottingham Forest) is shown the yellow card for a bad foul.",
+   "play": {
+    "id": "54986016",
+    "type": {
+     "id": "94",
+     "text": "Yellow Card",
+     "type": "yellow-card"
+    },
+    "text": "Luca Netz (Nottingham Forest) is shown the yellow card for a bad foul.",
+    "shortText": "Luca Netz Yellow Card",
+    "period": {
+     "number": 2
+    },
+    "clock": {
+     "value": 5400.0,
+     "displayValue": "90'+4'"
+    },
+    "wallclock": "2026-11-07T19:24:23Z",
+    "team": {
+     "displayName": "Nottingham Forest"
+    },
+    "participants": [
+     {
+      "athlete": {
+       "displayName": "Luca Netz"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "sequence": 91,
+   "time": {
+    "value": 5668.0,
+    "displayValue": "90'+5'"
+   },
+   "text": "Igor Jesus (Nottingham Forest) is shown the yellow card.",
+   "play": {
+    "id": "54986017",
+    "type": {
+     "id": "94",
+     "text": "Yellow Card",
+     "type": "yellow-card"
+    },
+    "text": "Igor Jesus (Nottingham Forest) is shown the yellow card.",
+    "shortText": "Igor Jesus Yellow Card",
+    "period": {
+     "number": 2
+    },
+    "clock": {
+     "value": 5400.0,
+     "displayValue": "90'+5'"
+    },
+    "wallclock": "2026-11-07T19:24:54Z",
+    "team": {
+     "displayName": "Nottingham Forest"
+    },
+    "participants": [
+     {
+      "athlete": {
+       "displayName": "Igor Jesus"
+      }
+     }
+    ]
+   }
+  }
+ ]
+}
