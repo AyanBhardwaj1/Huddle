@@ -893,14 +893,21 @@ export class PartyRuntime {
   }
 
   /** The one place deposits are credited. Idempotent on the transaction signature. */
-  confirmDeposit(member: string, amount: number, signature: string, via: ChainEvent['via']): boolean {
+  confirmDeposit(member: string, amount: number, signature: string, via: ChainEvent['via'], source?: ChainEvent): boolean {
     let credited = false;
     try {
       credited = this.core.creditDeposit(member, amount, signature, this.now());
     } catch (e) {
+      // A malformed event (bad wallet, bad amount) is dropped; anything else is a bug worth counting.
+      if (e instanceof EngineError) {
+        this.log.warn({ party: this.code, reason: e.message }, 'deposit event ignored');
+        return false;
+      }
       this.unexpected(e, 'deposit credit');
+      return false;
     }
-    const ev: ChainEvent = { kind: 'deposit', signature, partyAddress: this.core.party.chain.partyAddress, member, amount, via };
+    // Keep slot, block time and explorer link when the confirmation came from the chain.
+    const ev: ChainEvent = { ...source, kind: 'deposit', signature, partyAddress: this.core.party.chain.partyAddress, member, amount, via };
     this.noteChain(ev);
     this.flush();
     return credited;
@@ -910,7 +917,7 @@ export class PartyRuntime {
   onChainEvent(e: ChainEvent): void {
     if (this.disposed) return;
     if (e.kind === 'deposit' && e.member && typeof e.amount === 'number' && e.amount > 0) {
-      this.confirmDeposit(e.member, e.amount, e.signature, e.via);
+      this.confirmDeposit(e.member, e.amount, e.signature, e.via, e);
       return;
     }
     this.noteChain(e);

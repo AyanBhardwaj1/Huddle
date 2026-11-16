@@ -103,11 +103,13 @@ describe('betting over WebSocket', () => {
 
     await b.client.request({ type: 'dispute', marketId: id, reason: 'he clearly missed' });
     expect(view()).toBe('disputed');
+    await waitUntil(() => s.box.getView().snapshot!.markets.find((m) => m.id === id)?.state === 'disputed', 3000, 'the dispute on the box');
     expect(s.box.getView().snapshot!.markets.find((m) => m.id === id)!.dispute).toMatchObject({ by: b.pubkey, reason: 'he clearly missed' });
 
     await s.host({ action: 'resolve', marketId: id, outcome: 'no' });
     await waitUntil(() => a.balance() === 7 * USDC && b.balance() === 13 * USDC, 3000, 'reversed payout');
     expect(b.client.getView().snapshot!.markets.find((m) => m.id === id)).toMatchObject({ state: 'final', outcome: 'no' });
+    await waitUntil(() => a.client.getView().snapshot!.scorecard.entries[0]?.outcome === 'no', 3000, 'the corrected scorecard');
     expect(a.client.getView().snapshot!.scorecard.entries).toMatchObject([{ marketId: id, outcome: 'no' }]);
     await s.settled();
     expect(a.client.getView().cosignMismatch).toBeNull();
@@ -134,6 +136,7 @@ describe('betting over WebSocket', () => {
     await s.host({ action: 'void', marketId: bet });
     await waitUntil(() => a.balance() === 10 * USDC && b.balance() === 10 * USDC, 3000, 'refunds');
     expect(s.rt.core.ledger.balanceOf(s.party.hostPubkey)).toBe(20 * USDC);
+    await waitUntil(() => a.client.getView().snapshot!.you!.positions.length === 0 && a.client.getView().snapshot!.scorecard.n === 0, 3000, 'cleared positions');
     const snap = a.client.getView().snapshot!;
     expect(snap.markets.find((m) => m.id === amm)).toMatchObject({ state: 'voided', voidReason: 'wrong call' });
     expect(snap.markets.find((m) => m.id === bet)!.state).toBe('voided');
@@ -491,7 +494,7 @@ describe('host controls and timers', () => {
     expect(a.client.getView().snapshot!.markets[0]).toMatchObject({ id: first, state: 'open', mode: 'amm', createdBy: 'ai' });
     expect(s.box.getView().snapshot!.markets.find((m) => m.id === second)!.state).toBe('discarded');
     await s.host({ action: 'set_auto_approve', value: true });
-    expect(a.client.getView().snapshot!.party.config.autoApprove).toBe(true);
+    await waitUntil(() => a.client.getView().snapshot!.party.config.autoApprove === true, 3000, 'the party update');
     // A fresh snapshot for a player still leaves the discarded draft out.
     const late = await h.player(s.party.code, 'Late');
     expect(late.client.getView().snapshot!.markets.map((m) => m.id)).toEqual([first]);
@@ -574,8 +577,9 @@ describe('REST', () => {
     await waitUntil(() => rt.game.status === 'live', 5000, 'kickoff');
     expect(rt.status).toBe('live');
     expect((await h.post(`/replays/${party.game.id}/start`, { partyCode: party.code, action: 'pause' }, auth)).json).toMatchObject({ status: { playing: false } });
-    expect(a.messages.some((m) => m.type === 'replay_status')).toBe(true);
-    expect(a.messages.some((m) => m.type === 'game_event' && m.event.type === 'kickoff')).toBe(true);
+    await waitUntil(() => a.messages.some((m) => m.type === 'replay_status'), 3000, 'replay status');
+    await waitUntil(() => a.messages.some((m) => m.type === 'game_event' && m.event.type === 'kickoff'), 3000, 'the kickoff event');
+    await waitUntil(() => a.client.getView().snapshot!.markets.length === 2, 3000, 'the game-long markets');
     // House budget 0: the two game-long markets opened in pool mode.
     const markets = [...rt.core.markets.values()].map((r) => r.market);
     expect(markets.map((m) => m.state)).toEqual(['open', 'open']);
@@ -586,7 +590,8 @@ describe('REST', () => {
     await waitUntil(() => rt.status === 'finalized', 15_000, 'finalize after close');
     expect(markets.map((m) => m.state)).toEqual(['voided', 'voided']);
     expect(rt.core.players().find((p) => p.pubkey === a.pubkey)).toMatchObject({ payout: 10 * USDC, balance: 10 * USDC });
-    expect(a.client.getView().snapshot!.party.status).toBe('finalized');
+    await waitUntil(() => a.client.getView().snapshot!.party.status === 'finalized', 3000, 'the finalized party update');
+    await waitUntil(() => a.messages.some((m) => m.type === 'chain_event' && m.event.kind === 'withdraw'), 3000, 'the withdraw event');
     const steps = a.messages.flatMap((m) => (m.type === 'chain_event' ? [m.event.kind] : []));
     expect(steps).toEqual(expect.arrayContaining(['deposit', 'request_close', 'submit_state', 'finalize', 'withdraw']));
     expect((await h.get('/parties')).json.parties).not.toContainEqual(expect.objectContaining({ code: party.code }));
