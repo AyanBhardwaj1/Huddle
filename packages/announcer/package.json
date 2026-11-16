@@ -8,7 +8,10 @@
   "exports": { ".": "./src/index.ts" },
   "scripts": {
     "typecheck": "tsc --noEmit -p tsconfig.json",
-    "test": "vitest run --passWithNoTests"
+    "test": "vitest run",
+    "sfx": "tsx scripts/generate-sfx.ts",
+    "setup-agent": "tsx scripts/setup-agent.ts",
+    "demo-lines": "tsx scripts/demo-lines.ts"
   },
   "dependencies": {
     "@huddle/shared": "workspace:*"
