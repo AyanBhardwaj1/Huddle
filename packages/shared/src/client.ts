@@ -222,7 +222,15 @@ export class HuddleClient {
     if (!snap || !kp || state.member !== kp.publicKey) return;
     if (this.view.lastSigned && state.nonce <= this.view.lastSigned.nonce) return; // already signed
     const party = snap.party.chain.partyAddress;
-    const check = checkBalanceState(state, party, snap.party.boxSigner, this.view.lastSigned);
+    // If this device lost its storage mid-party there is no local base to chain from. Start from the
+    // state's own claimed predecessor: the box signature, entry sum and hash chain are still checked,
+    // only the link to a state we personally signed is taken on trust (DECISIONS D17).
+    const base =
+      this.view.lastSigned ??
+      (state.nonce > 1
+        ? { nonce: state.nonce - 1, balance: state.prevBalance, stateHash: state.prevStateHash }
+        : null);
+    const check = checkBalanceState(state, party, snap.party.boxSigner, base);
     if (!check.ok) {
       this.set({ cosignMismatch: { state, reason: check.reason } });
       return;
@@ -270,6 +278,12 @@ export class HuddleClient {
         // Catch up on a state we have not countersigned yet.
         const st = snapshot.you?.state;
         if (st && !st.memberSig && this.opts.autoCosign !== false) this.cosign(st);
+        else if (st?.memberSig && (!this.view.lastSigned || this.view.lastSigned.nonce < st.nonce)) {
+          // The engine already holds our countersignature for this state (e.g. after a reload on a
+          // device that lost its storage): adopt it as the base for the next one.
+          this.set({ lastSigned: st });
+          this.opts.onLastSigned?.(st);
+        }
         break;
       }
       case 'party_update':

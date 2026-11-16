@@ -22,6 +22,7 @@ Where the PRD is silent, we pick the simplest option that keeps the demo working
 | D14 | Color-blind-safe palette: YES/win = cyan-blue, NO/loss = orange, never red vs green alone. Shared Tailwind preset in `packages/shared/tailwind-preset.cjs`. | PRD section 13 accessibility; one preset keeps box and phone consistent. |
 | D15 | Tailwind v3 + PostCSS, React 18, Vite 5. | Most battle-tested combination for a fast build. |
 | D16 | The engine serves the built box UI at `/box` and the built player PWA at `/` (join links are `/j/:code`; bare `/j` redirects to the current party for a passive NFC sticker). | One port (8080), one tunnel URL, matches the Pi kiosk URL in PRD section 10. |
+| D17 | A phone with no stored last-signed state (cleared storage, new device) accepts the next balance state by chaining from that state's own `prevBalance` / `prevStateHash` instead of showing a mismatch. | Otherwise a cleared browser locks the player out mid-party. The box signature, entry arithmetic and hash are still verified; only the link to a state this device signed is taken on trust. Devnet trade-off. |
 
 ## Workstreams
 
