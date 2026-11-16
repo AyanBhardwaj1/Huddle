@@ -1,7 +1,7 @@
 import type { AnnouncerLine } from '@huddle/shared';
 import { create } from 'zustand';
 import type { BoardView } from './lib/derive';
-import { loadSession, saveSession, type BoxSession } from './lib/session';
+import { loadSession, saveSession, takeSessionFromUrl, type BoxSession } from './lib/session';
 import { IDLE_TALK, type TalkState } from './lib/talk';
 
 export interface Toast {
@@ -33,8 +33,15 @@ interface BoxStore {
 
 let toastSeq = 0;
 
+/** A launcher handoff in the URL fragment wins over the stored session (see takeSessionFromUrl). */
+function initialSession(): BoxSession | null {
+  const handoff = takeSessionFromUrl();
+  if (handoff) saveSession(handoff);
+  return handoff ?? loadSession();
+}
+
 export const useBox = create<BoxStore>((set) => ({
-  session: loadSession(),
+  session: initialSession(),
   setSession: (session) => {
     saveSession(session);
     set({ session, view: 'board' });

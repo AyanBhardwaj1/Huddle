@@ -25,6 +25,28 @@ export function saveSession(s: BoxSession | null, storage: Pick<Storage, 'setIte
   } catch {}
 }
 
+/**
+ * Launcher handoff (used by `pnpm demo` and the e2e test): `/box/#party=CODE&host=TOKEN` adopts that
+ * party as the kiosk session, saves it like a normal session, and strips the fragment from the
+ * address bar. The fragment is never sent to the server, so the host token stays out of request logs.
+ */
+export function takeSessionFromUrl(
+  loc: Pick<Location, 'hash'> | undefined = typeof window === 'undefined' ? undefined : window.location,
+  clear: () => void = () => {
+    try {
+      window.history.replaceState(null, '', window.location.pathname + window.location.search);
+    } catch {}
+  },
+): BoxSession | null {
+  if (!loc?.hash || loc.hash.length < 2) return null;
+  const params = new URLSearchParams(loc.hash.slice(1));
+  const partyCode = params.get('party')?.trim().toUpperCase();
+  const hostToken = params.get('host')?.trim();
+  if (!partyCode || !hostToken) return null;
+  clear();
+  return { partyCode, hostToken };
+}
+
 function safeStorage(): Storage | undefined {
   try {
     return typeof localStorage === 'undefined' ? undefined : localStorage;
