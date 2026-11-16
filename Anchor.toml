@@ -1,0 +1,23 @@
+# Huddle party vault (PRD section 8). Devnet only.
+[toolchain]
+anchor_version = "1.2.2"
+package_manager = "pnpm"
+
+[features]
+resolution = true
+skip-lint = false
+
+[programs.localnet]
+huddle_vault = "GRpABdrQhDya9n2zuf19w2idbL3CRSqmWYTJs52taRHu"
+
+[programs.devnet]
+huddle_vault = "GRpABdrQhDya9n2zuf19w2idbL3CRSqmWYTJs52taRHu"
+
+[provider]
+cluster = "localnet"
+wallet = "~/.config/solana/id.json"
+
+[scripts]
+# `anchor test --validator legacy` builds the program, starts solana-test-validator with it loaded,
+# then runs this script (Vitest, in packages/solana-client/tests/anchor).
+test = "pnpm --filter @huddle/solana-client run test:anchor"
