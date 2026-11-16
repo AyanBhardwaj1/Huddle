@@ -281,11 +281,37 @@ export function mapEspnSoccerSummary(summary: unknown): { teams?: Teams; events:
   const done = isCompleted(summary);
   if (!teams) return { events: [], done };
 
-  const commentary = arr(s.commentary).map(obj);
-  const rows: { play: Record<string, unknown>; text: string }[] =
-    commentary.length > 0
-      ? commentary.map((c) => ({ play: obj(c.play), text: str(c.text) ?? str(obj(c.play).text) ?? '' }))
-      : arr(s.keyEvents).map((k) => ({ play: obj(k), text: str(obj(k).text) ?? '' }));
+  // `commentary` has every play (corners, shots, cards, goals) but not the kickoff / halftime /
+  // full-time markers; those only exist in `keyEvents`. Walk the commentary in order and slot the
+  // markers in. Text-only commentary lines (no `play`) borrow the line's own `time` as their clock.
+  type Row = { play: Record<string, unknown>; text: string };
+  const keyRows: Row[] = arr(s.keyEvents).map((k) => ({ play: obj(k), text: str(obj(k).text) ?? '' }));
+  const commentary: Row[] = arr(s.commentary)
+    .map(obj)
+    .map((c) => {
+      const play = obj(c.play);
+      return { play: Object.keys(play).length > 0 ? play : { clock: c.time }, text: str(c.text) ?? str(play.text) ?? '' };
+    });
+  const typeOf = (r: Row): string => str(obj(r.play.type).type) ?? '';
+  let rows: Row[] = keyRows;
+  if (commentary.length > 0) {
+    const ids = new Set(commentary.map((r) => str(r.play.id)).filter(Boolean));
+    const markers = keyRows.filter((r) => !ids.has(str(r.play.id)));
+    const kickoffRow = markers.find((r) => typeOf(r) === 'kickoff');
+    const halftimeRow = markers.find((r) => typeOf(r) === 'halftime');
+    const endRows = markers.filter((r) => /^end-|^full-time$/.test(typeOf(r)));
+    rows = kickoffRow ? [kickoffRow] : [];
+    let halftimeDone = !halftimeRow;
+    for (const r of commentary) {
+      if (!halftimeDone && (numOr(obj(r.play.period).number, 1) >= 2 || typeOf(r) === 'start-2nd-half')) {
+        rows.push(halftimeRow!);
+        halftimeDone = true;
+      }
+      rows.push(r);
+    }
+    if (!halftimeDone) rows.push(halftimeRow!);
+    rows.push(...endRows);
+  }
 
   const events: KeyedEvent[] = [];
   const score = { home: 0, away: 0 };
