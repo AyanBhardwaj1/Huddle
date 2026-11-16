@@ -38,6 +38,9 @@ export const DEFAULT_URGENT_BUDGET_MS = 800;
 /** Low and medium priority lines are dropped by the playback queue after 6 s; do not wait that long. */
 export const DEFAULT_RELAXED_BUDGET_MS = 4000;
 
+/** The one voice id confirmed in the official API examples; used when a persona's own voice is rejected. */
+const FALLBACK_VOICE_ID = PERSONAS.soccer.defaultVoiceId;
+
 const URGENT_EVENTS: ReadonlySet<AnnouncerEventType> = new Set(['lock_soon', 'market_locked']);
 
 export interface AnnouncerOptions {
@@ -79,6 +82,7 @@ export class HuddleAnnouncer implements Announcer {
   /** While set, ElevenLabs is considered down and lines go out as text (Web Speech). */
   private down: { until: number; permanent: boolean } | null = null;
   private warnedNoKey = false;
+  private readonly voiceOverride = new Map<Persona, string>();
   /** The last warning, for the host screen. */
   lastWarning: string | null = null;
   /** Timing of the most recent line, for logs and tests. */
@@ -133,7 +137,7 @@ export class HuddleAnnouncer implements Announcer {
   }
 
   private voice(persona: Persona): { voiceId: string; settings: (typeof PERSONAS)[Persona]['voiceSettings'] } {
-    return { voiceId: voiceIdFor(persona, this.env), settings: PERSONAS[persona].voiceSettings };
+    return { voiceId: this.voiceOverride.get(persona) ?? voiceIdFor(persona, this.env), settings: PERSONAS[persona].voiceSettings };
   }
 
   private idFor(persona: Persona, spoken: string): string {
@@ -150,7 +154,8 @@ export class HuddleAnnouncer implements Announcer {
     const v = this.voice(persona);
     const job = this.limiter
       .run(async (): Promise<SynthOutcome> => {
-        if (!this.ttsUsable()) return { ok: false };
+        // Skip work queued before an outage began or before this persona's voice was swapped.
+        if (!this.ttsUsable() || this.voice(persona).voiceId !== v.voiceId) return { ok: false };
         try {
           const res = await tts.synthesize({ voiceId: v.voiceId, modelId: this.modelId, text: spoken, settings: v.settings });
           this.cache.set(id, res.data);
@@ -160,7 +165,7 @@ export class HuddleAnnouncer implements Announcer {
           }
           return { ok: true, ttfbMs: res.ttfbMs, totalMs: res.totalMs };
         } catch (err) {
-          this.onTtsError(err);
+          this.onTtsError(err, persona, v.voiceId);
           return { ok: false };
         }
       }, urgent)
@@ -169,8 +174,17 @@ export class HuddleAnnouncer implements Announcer {
     return job;
   }
 
-  private onTtsError(err: unknown): void {
+  private onTtsError(err: unknown, persona: Persona, voiceId: string): void {
     const e = err instanceof ElevenLabsError ? err : new ElevenLabsError(0, err instanceof Error ? err.message : 'unknown error');
+    // A voice id the account cannot use (wrong id, removed voice) only breaks that persona: switch it to
+    // the stock fallback voice instead of dropping the whole room to browser speech.
+    if ([400, 404, 422].includes(e.status) && voiceId !== FALLBACK_VOICE_ID) {
+      if (!this.voiceOverride.has(persona)) {
+        this.voiceOverride.set(persona, FALLBACK_VOICE_ID);
+        this.warn(`voice ${voiceId} for the ${persona} persona was rejected (${e.message}); using the default voice instead`);
+      }
+      return;
+    }
     const alreadyDown = this.down !== null;
     const cooldown = e.status === 429 ? Math.min(this.cooldownMs, 10_000) : this.cooldownMs;
     this.down = { until: this.now() + cooldown, permanent: e.permanent };
@@ -194,18 +208,26 @@ export class HuddleAnnouncer implements Announcer {
     const lines = warmupLines(p);
     let generated = 0;
     let cached = 0;
-    await Promise.all(
-      lines.map(async (text) => {
-        const spoken = speakable(text);
-        const id = this.idFor(p, spoken);
-        if (this.cache.has(id)) {
-          cached += 1;
-          return;
-        }
-        const res = await this.synthesize(p, spoken, id, false);
-        if (res.ok) generated += 1;
-      }),
-    );
+    const pass = async (): Promise<void> => {
+      generated = 0;
+      cached = 0;
+      await Promise.all(
+        lines.map(async (text) => {
+          const spoken = speakable(text);
+          const id = this.idFor(p, spoken);
+          if (this.cache.has(id)) {
+            cached += 1;
+            return;
+          }
+          const res = await this.synthesize(p, spoken, id, false);
+          if (res.ok) generated += 1;
+        }),
+      );
+    };
+    const voiceBefore = this.voice(p).voiceId;
+    await pass();
+    // The persona's voice was rejected and swapped for the fallback: warm that one up instead.
+    if (this.voice(p).voiceId !== voiceBefore) await pass();
     this.log.info(
       `[announcer] warmup ${p}: ${generated} generated, ${cached} already cached, ${lines.length - generated - cached} failed in ${this.now() - started} ms`,
     );

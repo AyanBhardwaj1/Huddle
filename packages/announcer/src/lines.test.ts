@@ -50,7 +50,7 @@ describe('numbers', () => {
     expect(speakable('up 8 pts')).toBe('up 8 points');
     expect(speakable('Full time, Portugal 2-1 Spain.')).toBe('Full time, Portugal 2 1 Spain.');
     expect(speakable('Final score, 21-14.', 'nfl')).toBe('Final score, 21 to 14.');
-    expect(speakable('$1 pays $1.30')).toBe('1 dollar pays 1 dollars 30');
+    expect(speakable('$1 pays $1.30')).toBe('1 dollar pays 1 dollar 30');
   });
 });
 

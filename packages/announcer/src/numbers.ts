@@ -143,7 +143,7 @@ export function speakable(text: string, sport: 'soccer' | 'nfl' = 'soccer'): str
   let s = text;
   s = s.replace(/([+-])?\$(\d+)(?:\.(\d{2}))?/g, (_m, sign: string | undefined, whole: string, cents: string | undefined) => {
     const prefix = sign === '-' ? 'minus ' : sign === '+' ? 'plus ' : '';
-    const unit = whole === '1' && (!cents || cents === '00') ? 'dollar' : 'dollars';
+    const unit = whole === '1' ? 'dollar' : 'dollars';
     const c = cents && cents !== '00' ? ` ${Number(cents)}` : '';
     return `${prefix}${whole} ${unit}${c}`;
   });

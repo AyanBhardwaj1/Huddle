@@ -246,6 +246,26 @@ describe('ElevenLabs text to speech (mocked fetch)', () => {
     expect(announcer.lastWarning).not.toContain(KEY);
   });
 
+  it('swaps a rejected persona voice for the default voice instead of going silent', async () => {
+    const fetch = vi.fn<FetchLike>(async (url) =>
+      url.includes('/badNflVoice/') ? jsonResponse({ detail: { status: 'voice_not_found', message: 'A voice with that id was not found.' } }, 404) : audioResponse(),
+    );
+    const { announcer, log } = make(env({ ELEVENLABS_VOICE_NFL: 'badNflVoice' }), fetch);
+    await announcer.warmup('nfl');
+    expect(announcer.provider).toBe('elevenlabs');
+    expect(log.warns).toHaveLength(1);
+    expect(log.warns[0]).toMatch(/voice badNflVoice for the nfl persona was rejected \(HTTP 404 \(voice_not_found.*using the default voice instead/);
+    // The warmup finished on the fallback voice, so the countdown call is a cache hit.
+    fetch.mockClear();
+    const line = await announcer.announce(lockSoon, room({ persona: 'nfl', sport: 'nfl' }));
+    expect(line!.audioUrl).toBeDefined();
+    expect(fetch).not.toHaveBeenCalled();
+    const next = await announcer.announce(opened, room({ persona: 'nfl', sport: 'nfl' }));
+    expect(next!.audioUrl).toBeDefined();
+    expect(fetch.mock.calls[0]![0]).toContain(`/v1/text-to-speech/${PERSONAS.soccer.defaultVoiceId}/stream`);
+    expect(log.warns).toHaveLength(1);
+  });
+
   it('falls back on a network failure and never rejects', async () => {
     const fetch = vi.fn<FetchLike>(async () => {
       throw new TypeError('fetch failed');
