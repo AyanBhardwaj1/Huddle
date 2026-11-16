@@ -81,7 +81,8 @@ describe('math', () => {
   });
 
   it('normalizePrior always returns a proper distribution', () => {
-    for (const raw of [{ a: 0.7, b: 0.3 }, { a: 0.999, b: 0.001 }, { a: 5, b: 3, c: 2 }, { a: 0, b: 0 }, { a: Number.NaN, b: 0.4 }, { a: 0.33333, b: 0.33333, c: 0.33333 }]) {
+    const cases: Record<string, number>[] = [{ a: 0.7, b: 0.3 }, { a: 0.999, b: 0.001 }, { a: 5, b: 3, c: 2 }, { a: 0, b: 0 }, { a: Number.NaN, b: 0.4 }, { a: 0.33333, b: 0.33333, c: 0.33333 }];
+    for (const raw of cases) {
       const p = normalizePrior(raw);
       expect(sum(p)).toBeCloseTo(1, 9);
       for (const v of Object.values(p)) {
@@ -413,7 +414,10 @@ describe('resolvers', () => {
     expect(engine.evaluate(corner, g.ev('corner', { team: 'ESP' }), g.state)).toMatchObject({ void: true, reason: expect.stringMatching(/new corner/) });
 
     const final = g.ev('final', { minute: 90 });
-    expect(engine.evaluate(quiet, final, g.state)).toEqual({ outcome: 'none' });
+    // No goal after the market's baseline (3-3 by now): "none".
+    expect(engine.evaluate(mk('next_goal', { startHome: 3, startAway: 3 }, next.outcomes), final, g.state)).toEqual({ outcome: 'none' });
+    // Portugal did score after this one's 2-3 baseline, so the scoreboard settles it.
+    expect(engine.evaluate(quiet, final, g.state)).toEqual({ outcome: 'home' });
     expect(engine.evaluate(teamGoals, final, g.state)).toEqual({ outcome: 'yes' });
     expect(engine.evaluate(mk('total_goals', { n: 9 }), final, g.state)).toEqual({ outcome: 'no' });
     expect(engine.evaluate(corner, final, g.state)).toMatchObject({ void: true });
