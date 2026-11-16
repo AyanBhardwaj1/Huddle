@@ -413,7 +413,10 @@ export class VaultSettlementClient implements SettlementClient {
     } else if (!isHostOrBox) {
       throw new Error('only the host or the box can close');
     }
-    return { txSig, challengeEndsAt: new Date((party.closeRequestedAt + party.challengeSecs) * 1000).toISOString() };
+    // The window is measured on the cluster clock, which is not our clock (devnet can run seconds or
+    // minutes off). Report the deadline on OUR clock: now + the time the window still has on-chain.
+    const remainingSecs = Math.max(0, party.closeRequestedAt + party.challengeSecs - (await this.chainTime()));
+    return { txSig, challengeEndsAt: new Date((Math.floor(Date.now() / 1000) + remainingSecs) * 1000).toISOString() };
   }
 
   async submitState(partyAddress: string, claim: SignedClaim): Promise<{ txSig?: string }> {
