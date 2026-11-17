@@ -1,3 +1,4 @@
+/* global process */
 // Assemble the static Vercel site: the player PWA at `/` and the box kiosk UI at `/box/`.
 // Run after `pnpm --filter @huddle/player --filter @huddle/box build` (see vercel.json).
 import { cpSync, existsSync, mkdirSync, rmSync } from 'node:fs';
@@ -13,4 +14,4 @@ rmSync(out, { recursive: true, force: true });
 mkdirSync(out, { recursive: true });
 cpSync(player, out, { recursive: true });
 cpSync(box, join(out, 'box'), { recursive: true });
-console.log(`assembled ${out} (player at /, box at /box/)`);
+process.stdout.write(`assembled ${out} (player at /, box at /box/)\n`);
