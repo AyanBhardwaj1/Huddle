@@ -1,61 +1,129 @@
 import type { Party } from '@huddle/shared';
-import { motion } from 'framer-motion';
-import { useEffect, useState } from 'react';
-import { cx } from '../components/ctx';
-import { Icon, Spinner } from '../components/Icon';
+import { Icon, Wordmark } from '@huddle/ui';
+import { useCallback, useEffect, useState } from 'react';
+import { Loading } from '../components/primitives';
 import { listParties } from '../lib/api';
 import { useApp } from '../lib/session';
 
-/** Home: type a party code or pick an active party. */
+/**
+ * Home: parties on now (one tap in), and the code field in the thumb zone. Everything you can do
+ * here is at the bottom half of the screen.
+ */
 export function Home() {
   const navigate = useApp((s) => s.navigate);
   const [code, setCode] = useState('');
   const [parties, setParties] = useState<Party[] | null>(null);
   const [failed, setFailed] = useState(false);
+  const [tried, setTried] = useState(false);
+
+  const load = useCallback(
+    (alive: () => boolean) =>
+      listParties()
+        .then((r) => {
+          if (!alive()) return;
+          setParties(r.parties.filter((p) => p.status === 'live' || p.status === 'lobby'));
+          setFailed(false);
+        })
+        .catch(() => alive() && setFailed(true)),
+    [],
+  );
 
   useEffect(() => {
-    let alive = true;
-    const load = () =>
-      listParties()
-        .then((r) => alive && (setParties(r.parties.filter((p) => p.status === 'live' || p.status === 'lobby')), setFailed(false)))
-        .catch(() => alive && setFailed(true));
-    void load();
-    const t = setInterval(load, 10_000);
+    let on = true;
+    const alive = () => on;
+    void load(alive);
+    const t = setInterval(() => void load(alive), 10_000);
     return () => {
-      alive = false;
+      on = false;
       clearInterval(t);
     };
-  }, []);
+  }, [load]);
 
   const clean = code.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8);
+  const ready = clean.length >= 3;
 
   return (
-    <div className="mx-auto flex min-h-[100dvh] max-w-md flex-col px-6 pb-[calc(env(safe-area-inset-bottom)+24px)] pt-[calc(env(safe-area-inset-top)+40px)]">
-      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-        <div className="flex items-center gap-3">
-          <img src="/icon.svg" alt="" className="h-12 w-12" />
-          <span className="font-display text-5xl font-bold uppercase tracking-tight">Huddle</span>
-        </div>
-        <p className="mt-4 text-xl leading-snug text-pitch-200">
-          Bet on every moment of the game with your friends. <span className="text-volt">One tap.</span>
+    <div className="mx-auto flex min-h-[100dvh] max-w-md flex-col px-5 pb-[calc(env(safe-area-inset-bottom)+1.5rem)] pt-[calc(env(safe-area-inset-top)+2rem)]">
+      <header>
+        <Wordmark className="hd-rise text-head" />
+        <p className="hd-rise mt-5 max-w-[22ch] text-balance font-display text-title font-bold stretch-semi text-night-200" style={{ ['--d' as string]: '80ms' }}>
+          Call every moment of the game with your friends.
         </p>
-      </motion.div>
+      </header>
+
+      <section className="mt-10 flex-1" aria-labelledby="on-now">
+        <h2 id="on-now" className="mb-3 text-small text-night-400">
+          Parties on now
+        </h2>
+        {parties === null && !failed && <Loading className="py-3 text-small">Looking for parties nearby…</Loading>}
+        {failed && parties === null && (
+          <div className="rounded-panel bg-night-900 p-4">
+            <p className="text-pretty text-small text-night-200">Can't reach the party box right now. Type the code from the box, or open the invite link again.</p>
+            <button onClick={() => void load(() => true)} className="btn-secondary mt-3">
+              <Icon name="refresh" size={18} /> Try again
+            </button>
+          </div>
+        )}
+        {parties?.length === 0 && <p className="text-pretty text-body text-night-400">No parties right now. Ask the host for the code on the box.</p>}
+        {!!parties?.length && (
+          <ul className="overflow-hidden rounded-panel bg-night-900">
+            {parties.map((p, i) => (
+              <li key={p.id} className={i > 0 ? 'border-t border-night-700' : undefined}>
+                <a
+                  href={`/j/${p.code}`}
+                  onClick={(e) => {
+                    if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+                    e.preventDefault();
+                    navigate(`/j/${p.code}`);
+                  }}
+                  className="hd-rise flex min-h-16 items-center gap-3 px-4 py-3 transition-colors duration-quick hover:bg-night-850"
+                  style={{ ['--d' as string]: `${i * 50}ms` }}
+                >
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate font-bold text-chalk">{p.name}</div>
+                    <div className="flex items-center gap-2 truncate text-small text-night-400">
+                      {p.status === 'live' ? (
+                        <span className="flex shrink-0 items-center gap-1.5 text-night-200">
+                          <span className="h-1.5 w-1.5 rounded-full bg-live" aria-hidden="true" /> Live
+                        </span>
+                      ) : (
+                        <span className="shrink-0">In the lobby</span>
+                      )}
+                      <span className="truncate">{p.game.title}</span>
+                    </div>
+                  </div>
+                  <span className="font-display text-lead font-extrabold stretch-wide text-chalk" translate="no">
+                    {p.code}
+                  </span>
+                  <Icon name="arrowRight" size={20} className="shrink-0 text-night-400" />
+                </a>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
 
       <form
         className="mt-10"
         onSubmit={(e) => {
           e.preventDefault();
-          if (clean.length >= 3) navigate(`/j/${clean}`);
+          setTried(true);
+          if (ready) navigate(`/j/${clean}`);
         }}
+        noValidate
       >
-        <label htmlFor="code" className="text-xs font-semibold uppercase tracking-[0.16em] text-pitch-400">
-          Party code
+        <label htmlFor="code" className="block text-small text-night-200">
+          Got a code? It's on the box.
         </label>
         <div className="mt-2 flex gap-2">
           <input
             id="code"
+            name="party-code"
             value={clean}
-            onChange={(e) => setCode(e.target.value)}
+            onChange={(e) => {
+              setCode(e.target.value);
+              setTried(false);
+            }}
             placeholder="ABCD"
             autoCapitalize="characters"
             autoCorrect="off"
@@ -63,47 +131,27 @@ export function Home() {
             spellCheck={false}
             inputMode="text"
             enterKeyHint="go"
-            className="h-16 min-w-0 flex-1 rounded-2xl border border-pitch-700 bg-pitch-900 px-5 font-display text-3xl font-bold uppercase tracking-[0.3em] text-pitch-50 placeholder:text-pitch-600 focus:border-volt focus:outline-none"
+            aria-invalid={tried && !ready}
+            aria-describedby="code-hint"
+            className="field h-14 min-w-0 flex-1 font-display text-title font-extrabold uppercase tracking-[0.18em] stretch-wide placeholder:tracking-[0.18em]"
+            translate="no"
           />
-          <button
-            type="submit"
-            disabled={clean.length < 3}
-            className="grid h-16 w-16 place-items-center rounded-2xl bg-volt text-volt-ink transition-opacity disabled:opacity-30"
-            aria-label="Join party"
-          >
-            <Icon name="up" className="rotate-90" size={26} />
+          <button type="submit" className="btn-primary w-24 shrink-0 px-0" aria-label="Join party">
+            Join
           </button>
         </div>
-        <p className="mt-2 text-sm text-pitch-400">Or tap your phone on the box.</p>
+        <p id="code-hint" className="mt-2 flex items-center gap-1.5 text-small text-night-400">
+          {tried && !ready ? (
+            'Party codes are at least 3 letters.'
+          ) : (
+            <>
+              <Icon name="nfc" size={16} /> Or tap your phone on the box.
+            </>
+          )}
+        </p>
       </form>
 
-      <section className="mt-10">
-        <h2 className="text-xs font-semibold uppercase tracking-[0.16em] text-pitch-400">Parties on now</h2>
-        <div className="mt-3 space-y-2">
-          {parties === null && !failed && (
-            <div className="flex items-center gap-2 text-sm text-pitch-400">
-              <Spinner size={16} /> Looking for parties…
-            </div>
-          )}
-          {failed && <p className="text-sm text-pitch-400">Can't reach the party box right now. Use a code or an invite link.</p>}
-          {parties?.length === 0 && <p className="text-sm text-pitch-400">No parties right now. Ask the host for a code.</p>}
-          {parties?.map((p) => (
-            <button
-              key={p.id}
-              onClick={() => navigate(`/j/${p.code}`)}
-              className="flex min-h-[64px] w-full items-center gap-3 rounded-2xl border border-pitch-700 bg-pitch-900 px-4 py-3 text-left active:bg-pitch-800"
-            >
-              <div className="min-w-0 flex-1">
-                <div className="truncate font-semibold">{p.name}</div>
-                <div className="truncate text-sm text-pitch-400">{p.game.title}</div>
-              </div>
-              <span className={cx('rounded-lg px-2 py-1 font-display text-lg font-bold tracking-widest', 'bg-pitch-800 text-volt')}>{p.code}</span>
-            </button>
-          ))}
-        </div>
-      </section>
-
-      <p className="mt-auto pt-10 text-center text-xs text-pitch-400">Test money and points only. No real-money betting.</p>
+      <p className="mt-8 text-center text-cap text-night-400">Test money and points only. No real-money betting.</p>
     </div>
   );
 }

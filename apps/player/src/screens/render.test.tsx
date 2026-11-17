@@ -17,7 +17,8 @@ describe('player screens (fixture)', () => {
     expect(html).toContain('Who wins the match?'); // amm game market
     expect(html).toContain('Corner leads to a shot on target?'); // head-to-head
     expect(html).toContain('Cash out now');
-    expect(html).toContain('Friends vs. the Pros');
+    expect(html).toContain('Model'); // the pros' notches and legend under the split
+    expect(html).toContain('Gemini');
     expect(html).toContain('Take it'); // a friend's offer
     expect(html).toContain('Your offer');
     expect(html).toContain('Offer your own odds');
@@ -26,7 +27,21 @@ describe('player screens (fixture)', () => {
     expect(html).toContain('The announcer drafted a bet for you');
     expect(html).toContain('Right now');
     expect(html).toContain('All game');
+    expect(html).toContain('No more goals tonight'); // a 3-outcome market (stacked)
+    expect(html).toContain('Under review'); // disputed
+    expect(html).toContain('Waiting for the result'); // locked
+    expect(html).not.toContain('Friends vs. the Pros');
     expect(html).not.toMatch(/wallet|transaction|sign /i);
+  });
+
+  it('renders the remote, reconnecting and closing states', () => {
+    expect(render('remote')).toContain('quick bets are view-only');
+    const offline = render('offline');
+    expect(offline).toContain('Reconnecting… your bets are safe.');
+    expect(offline).toContain('Your balance doesn&#x27;t match');
+    const closing = render('closing');
+    expect(closing).toContain('Closing the pot');
+    expect(closing).not.toContain('data-testid="my-payout"');
   });
 
   it('renders the buy-in screen for a player who has not bought in', () => {
@@ -49,7 +64,7 @@ describe('player screens (fixture)', () => {
     const snap = client.getView().snapshot!;
     snap.party.config.settlement = 'points';
     const html = renderToString(<PartyShell client={client} view={client.getView()} remote={false} />);
-    expect(html).toContain(`Buy in ${10 * USDC / USDC} pts`);
+    expect(html).toContain(`Buy in ${10 * USDC / USDC}\u00a0pts`);
     expect(html).not.toContain('$');
   });
 });

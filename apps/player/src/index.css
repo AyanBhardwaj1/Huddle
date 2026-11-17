@@ -2,19 +2,30 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * Player app on the Floodlight system (DESIGN.md). Tokens come from the shared preset, motion and
+ * shared component styles from `@huddle/ui/styles.css`. Only phone-specific patterns live here.
+ */
+
 @layer base {
   html {
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
     color-scheme: dark;
+    background-color: theme('colors.night.950');
+    /* Sticky scorebug on top, tab bar + caption slot at the bottom: keep focused controls clear. */
+    scroll-padding-top: 8.5rem;
+    scroll-padding-bottom: 10rem;
+  }
+  @media (pointer: fine) {
+    html {
+      overscroll-behavior: none;
+    }
   }
   body {
-    @apply bg-pitch-950 font-sans text-pitch-50 antialiased;
+    @apply bg-night-950 font-sans text-body text-chalk antialiased;
     min-height: 100dvh;
     -webkit-tap-highlight-color: transparent;
-    overscroll-behavior-y: none;
-    background-image: radial-gradient(120% 60% at 50% -10%, rgba(212, 255, 58, 0.06), transparent 60%);
-    background-attachment: fixed;
   }
   /* 16px+ inputs: iOS Safari never zooms on focus. */
   input,
@@ -22,30 +33,167 @@
   textarea {
     font-size: max(16px, 1em);
   }
+  button,
+  a,
+  label {
+    touch-action: manipulation;
+  }
   button {
     -webkit-user-select: none;
     user-select: none;
-    touch-action: manipulation;
   }
-  button:focus-visible,
-  a:focus-visible,
-  input:focus-visible {
-    outline: 2px solid #d4ff3a;
-    outline-offset: 2px;
+  :focus-visible {
+    outline: 3px solid theme('colors.flood.DEFAULT');
+    outline-offset: 3px;
   }
-  @media (prefers-reduced-motion: reduce) {
-    *,
-    *::before,
-    *::after {
-      animation-duration: 0.01ms !important;
-      transition-duration: 0.01ms !important;
+  ::selection {
+    background: theme('colors.flood.DEFAULT');
+    color: theme('colors.flood.ink');
+  }
+}
+
+@layer components {
+  /* Primary: the one lit thing to do. 56px on the phone, sentence case, says what happens. */
+  .btn-primary {
+    @apply inline-flex min-h-14 items-center justify-center gap-2 rounded-tile bg-flood px-5 font-sans text-lead font-bold text-flood-ink;
+    transition:
+      background-color var(--t-quick) var(--ease-out),
+      transform var(--t-instant) var(--ease-out);
+  }
+  .btn-secondary {
+    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-tile bg-night-800 px-4 font-sans font-bold text-chalk ring-1 ring-inset ring-night-600;
+    transition:
+      background-color var(--t-quick) var(--ease-out),
+      transform var(--t-instant) var(--ease-out);
+  }
+  .btn-quiet {
+    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-tile px-3 font-sans font-semibold text-night-200;
+    transition:
+      color var(--t-quick) var(--ease-out),
+      background-color var(--t-quick) var(--ease-out);
+  }
+  @media (hover: hover) {
+    .btn-primary:hover:not(:disabled) {
+      @apply bg-flood-bright;
     }
+    .btn-secondary:hover:not(:disabled) {
+      @apply bg-night-700;
+    }
+    .btn-quiet:hover:not(:disabled) {
+      @apply bg-night-800 text-chalk;
+    }
+  }
+  .btn-primary:active:not(:disabled),
+  .btn-secondary:active:not(:disabled) {
+    transform: scale(0.98);
+  }
+  .btn-primary:disabled {
+    @apply bg-night-700 text-night-500;
+  }
+  .btn-secondary:disabled,
+  .btn-quiet:disabled {
+    @apply text-night-500;
+  }
+
+  /* Text field: tone, not borders; a flood hairline when focused. */
+  .field {
+    @apply w-full rounded-tile bg-night-800 px-4 text-chalk ring-1 ring-inset ring-night-700 placeholder:text-night-500;
+    transition: box-shadow var(--t-quick) var(--ease-out);
+  }
+  .field:focus-visible {
+    outline: none;
+    @apply ring-2 ring-flood;
   }
 }
 
 @layer utilities {
-  .tnum {
-    font-variant-numeric: tabular-nums;
-    font-feature-settings: 'tnum' 1;
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .pt-safe {
+    padding-top: env(safe-area-inset-top);
+  }
+}
+
+/* ------------------------------------------------------------ player motions */
+
+/* Sheets rise from the bottom edge (CSS: finishes in background tabs; the resting style is open). */
+@keyframes pl-sheet {
+  from {
+    transform: translateY(100%);
+  }
+}
+.pl-sheet {
+  animation: pl-sheet var(--t-slow) var(--ease-out);
+}
+.pl-sheet[data-dragging='true'] {
+  transition: none;
+}
+.pl-sheet[data-dragging='false'] {
+  transition: transform var(--t-base) var(--ease-out);
+}
+
+/* Caption slot: the new line replaces the old one with a short crossfade-rise. */
+@keyframes pl-caption {
+  from {
+    opacity: 0;
+    transform: translateY(0.4rem);
+  }
+}
+.pl-caption {
+  animation: pl-caption var(--t-base) var(--ease-out);
+}
+
+/* Hold-to-talk: two rings breathe out of the mic while it listens. */
+@keyframes pl-listen {
+  from {
+    transform: scale(1);
+    opacity: 0.7;
+  }
+  to {
+    transform: scale(1.75);
+    opacity: 0;
+  }
+}
+.pl-listen {
+  animation: pl-listen 1.4s var(--ease-out) infinite;
+  animation-delay: var(--d, 0ms);
+}
+
+/* Draft expiry and the stake tray's "placing" bar: a scaleX drain (transform only). */
+@keyframes pl-drain {
+  from {
+    transform: scaleX(var(--from, 1));
+  }
+  to {
+    transform: scaleX(0);
+  }
+}
+.pl-drain {
+  transform-origin: left center;
+  animation: pl-drain var(--dur, 1s) linear both;
+}
+
+/* Settlement rail: the filled part grows to the current step. */
+.pl-rail {
+  transform-origin: left center;
+  transition: transform var(--t-linger) var(--ease-out);
+}
+
+/* Market locked: the split desaturates (static filter, no transition) */
+.pl-dim {
+  filter: saturate(0.6) brightness(0.8);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pl-sheet,
+  .pl-caption,
+  .pl-drain,
+  .pl-rail {
+    animation: none !important;
+    transition: none !important;
+  }
+  .pl-listen {
+    display: none !important;
   }
 }

@@ -1,146 +1,138 @@
 import { defaultOddsForPrior, MAX_ODDS, MIN_ODDS, remainingTakerCapacity, roundOdds, takerStakeFor, type BetOffer, type Market } from '@huddle/shared';
-import { AnimatePresence } from 'framer-motion';
+import { Icon, Roll } from '@huddle/ui';
 import { useState } from 'react';
 import { backQuote, holdingsFor, maxStake, myOffers, returnAt, stakeChips, takeableOffers, takerOdds, takerWin } from '../lib/markets';
 import { money, moneyShort } from '../lib/money';
 import { act, cx, useParty } from './ctx';
-import { Icon, Spinner } from './Icon';
-import { InlineError, StakeTray, toneFor, useNotify } from './MarketCard';
-import { Sheet } from './primitives';
+import { OutcomeButton, StakeRow, StakeTray, useNotify, type CardFlow } from './MarketCard';
+import { Avatar, InlineError, Sheet } from './primitives';
+import { tone } from './tones';
 
-/** Head-to-head mode: one-tap back (D10), friends' offers, and your own odds. */
-export function BetBody({ market, live }: { market: Market; live: boolean }) {
+const odds2 = (x: number) => x.toFixed(2);
+
+/** Head-to-head: one-tap back at fair odds (D10), friends' offers to take, and your own odds. */
+export function BetBody({ market, live, flow }: { market: Market; live: boolean; flow?: CardFlow }) {
   const { client, snap, me, points } = useParty();
   const [pick, setPick] = useState<string | null>(null);
   const [taking, setTaking] = useState<BetOffer | null>(null);
   const [offering, setOffering] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [cancelling, setCancelling] = useState<string | null>(null);
   const offers = takeableOffers(market.id, snap.offers, me);
   const mine = myOffers(market.id, snap.offers, me);
   const holdings = holdingsFor(market, snap.you?.positions ?? []);
+  const n = market.outcomes.length;
   const label = (id: string) => market.outcomes.find((o) => o.id === id)?.label ?? id;
   const idxOf = (id: string) => market.outcomes.findIndex((o) => o.id === id);
-  const other = (side: string) =>
-    market.outcomes.length === 2 ? label(market.outcomes.find((o) => o.id !== side)!.id) : `not ${label(side)}`;
+  const other = (side: string) => (n === 2 ? label(market.outcomes.find((o) => o.id !== side)!.id) : `not ${label(side)}`);
+  const settled = market.state !== 'open' && market.state !== 'locked';
 
   return (
     <div>
-      <div className={cx('grid gap-2.5', market.outcomes.length === 3 ? 'grid-cols-3' : 'grid-cols-2')}>
-        {market.outcomes.map((o, i) => {
-          const q = backQuote(market, o.id, snap.offers, me);
-          const tone = toneFor(i);
-          const selected = pick === o.id;
-          const won = market.outcome === o.id && market.state !== 'voided';
-          return (
-            <button
-              key={o.id}
-              disabled={!live}
-              onClick={() => setPick(selected ? null : o.id)}
-              aria-pressed={selected}
-              className={cx(
-                'min-h-[84px] rounded-2xl border px-3 pb-3 pt-2.5 text-left transition-transform active:scale-[0.97] disabled:active:scale-100',
-                selected ? cx(tone.solid, 'border-transparent') : cx(tone.soft, tone.border),
-                !live && !won && 'opacity-60',
-                won && 'ring-2 ring-volt',
-              )}
-            >
-              <div className={cx('text-xs font-semibold uppercase tracking-wider', selected ? 'opacity-80' : 'text-pitch-400')}>Back</div>
-              <div className={cx('font-display text-lg font-bold uppercase leading-tight', selected ? '' : tone.text)}>{o.label}</div>
-              <div className="flex items-baseline gap-1.5">
-                <span className="font-display text-[30px] font-bold leading-none tnum">{q.odds.toFixed(2)}</span>
-                <span className={cx('text-[11px]', selected ? 'opacity-75' : 'text-pitch-400')}>
-                  {q.matchesOffer ? `vs ${q.makerName ?? 'a friend'}` : 'fair odds'}
-                </span>
-              </div>
-            </button>
-          );
-        })}
-      </div>
+      {!settled && (
+        <div className={cx('gap-2', n === 2 ? 'grid grid-cols-2' : 'flex flex-col')}>
+          {market.outcomes.map((o, i) => {
+            const q = backQuote(market, o.id, snap.offers, me);
+            return (
+              <OutcomeButton
+                key={o.id}
+                label={o.label}
+                prefix="Back"
+                index={i}
+                count={n}
+                selected={pick === o.id}
+                disabled={!live}
+                onClick={() => setPick(pick === o.id ? null : o.id)}
+                figure={<Roll text={odds2(q.odds)} className="font-display text-title font-extrabold leading-none stretch-condensed" />}
+                figureLabel={`odds ${odds2(q.odds)}${q.matchesOffer ? `, against ${q.makerName ?? 'a friend'}` : ', fair odds'}`}
+                note={q.matchesOffer ? `Matches ${q.makerName ?? 'a friend'}` : 'Fair odds'}
+              />
+            );
+          })}
+        </div>
+      )}
 
-      <AnimatePresence initial={false}>
-        {pick && live && (
-          <StakeTray
-            key={pick}
-            market={market}
-            outcome={pick}
-            verb="backing"
-            onClose={() => setPick(null)}
-            preview={(stake) => `pays ${moneyShort(returnAt(stake, backQuote(market, pick, snap.offers, me).odds), points)}`}
-            send={(stake) => ({ type: 'place_bet', marketId: market.id, outcome: pick, stake })}
-          />
-        )}
-      </AnimatePresence>
+      {pick && live && (
+        <StakeTray
+          key={pick}
+          market={market}
+          outcome={pick}
+          verb="backing"
+          flow={flow}
+          onClose={() => setPick(null)}
+          preview={(stake) => `pays ${moneyShort(returnAt(stake, backQuote(market, pick, snap.offers, me).odds), points)}`}
+          send={(stake) => ({ type: 'place_bet', marketId: market.id, outcome: pick, stake })}
+        />
+      )}
 
-      {holdings.length > 0 && (market.state === 'open' || market.state === 'locked') && (
-        <div className="mt-3 space-y-1.5">
+      {holdings.length > 0 && !settled && (
+        <div className="mt-3 space-y-2">
           {holdings.map((h) => (
-            <div key={h.outcome} className="flex items-center justify-between rounded-2xl border border-pitch-700 bg-pitch-800/70 px-3 py-2.5 text-sm">
-              <span className="text-pitch-200">
-                Matched: <span className="tnum font-semibold text-pitch-50">{money(h.stake, points)}</span> on{' '}
-                <span className={cx('font-semibold', toneFor(idxOf(h.outcome)).text)}>{label(h.outcome)}</span>
-              </span>
-              <span className="text-xs text-pitch-400">
-                returns <span className="tnum text-pitch-200">{money(h.potential, points)}</span>
-              </span>
-            </div>
+            <StakeRow key={h.outcome} lead="Matched" payLabel="returns" stake={h.stake} potential={h.potential} label={label(h.outcome)} toneIndex={idxOf(h.outcome)} count={n} />
           ))}
         </div>
       )}
 
-      {(offers.length > 0 || mine.length > 0) && (
-        <div className="mt-3 space-y-1.5">
-          <div className="text-[10px] font-semibold uppercase tracking-[0.14em] text-pitch-400">Offers in the room</div>
-          {offers.slice(0, 4).map((o) => (
-            <div key={o.id} className="flex items-center gap-3 rounded-2xl bg-pitch-800/70 py-2 pl-3 pr-2">
-              <Avatar name={o.makerName ?? '?'} />
-              <div className="min-w-0 flex-1 text-sm leading-snug">
-                <div className="truncate text-pitch-50">
-                  <b>{o.makerName ?? 'A friend'}</b> offers <span className="font-display text-base font-bold tnum">{o.odds.toFixed(2)}</span> on{' '}
-                  <span className={cx('font-semibold', toneFor(idxOf(o.side)).text)}>{label(o.side)}</span>
-                </div>
-                <div className="truncate text-xs text-pitch-400">
-                  You back {other(o.side)} at <span className="tnum">{takerOdds(o.odds).toFixed(2)}</span> · up to {money(remainingTakerCapacity(o), points)}
-                </div>
-              </div>
-              <button
-                disabled={!live}
-                onClick={() => setTaking(o)}
-                className="min-h-[44px] shrink-0 rounded-xl bg-volt px-3.5 text-sm font-bold text-volt-ink active:scale-95 disabled:opacity-40"
-              >
-                Take it
-              </button>
-            </div>
-          ))}
-          {mine.map((o) => (
-            <div key={o.id} className="flex items-center gap-3 rounded-2xl border border-dashed border-pitch-600 py-2 pl-3 pr-2 text-sm">
-              <div className="min-w-0 flex-1">
-                <div className="text-pitch-50">
-                  Your offer: {money(o.makerStake, points)} on <span className={cx('font-semibold', toneFor(idxOf(o.side)).text)}>{label(o.side)}</span> at{' '}
-                  <span className="tnum">{o.odds.toFixed(2)}</span>
-                </div>
-                <div className="text-xs text-pitch-400 tnum">
-                  {o.filled ? `${money(o.filled, points)} matched · ` : ''}waiting for a taker
-                </div>
-              </div>
-              <button
-                onClick={async () => {
-                  setError(await act(client, { type: 'cancel_offer', offerId: o.id }));
-                }}
-                className="min-h-[44px] shrink-0 rounded-xl px-3 text-sm font-semibold text-pitch-200 active:bg-pitch-800"
-              >
-                Cancel
-              </button>
-            </div>
-          ))}
-        </div>
+      {!settled && (offers.length > 0 || mine.length > 0) && (
+        <section className="mt-4" aria-label="Offers in the room">
+          <h4 className="mb-1 text-small text-night-400">Offers in the room</h4>
+          <ul className="divide-y divide-night-700">
+            {offers.slice(0, 4).map((o) => {
+              const t = tone(idxOf(o.side), n);
+              return (
+                <li key={o.id} className="hd-fade flex items-center gap-3 py-2.5">
+                  <Avatar name={o.makerName ?? '?'} />
+                  <div className="min-w-0 flex-1 leading-snug">
+                    <p className="text-small text-chalk">
+                      <b>{o.makerName ?? 'A friend'}</b> backs <span className={cx('font-bold', t.text)}>{label(o.side)}</span> at{' '}
+                      <span className="font-display font-bold tnum">{odds2(o.odds)}</span>
+                    </p>
+                    <p className="text-cap text-night-400">
+                      You'd back {other(o.side)} at <span className="font-display font-bold text-night-200 tnum">{odds2(takerOdds(o.odds))}</span>, up to{' '}
+                      <span className="tnum">{money(remainingTakerCapacity(o), points)}</span>
+                    </p>
+                  </div>
+                  <button disabled={!live} onClick={() => setTaking(o)} className="btn-secondary shrink-0 px-4">
+                    Take it
+                  </button>
+                </li>
+              );
+            })}
+            {mine.map((o) => {
+              const t = tone(idxOf(o.side), n);
+              return (
+                <li key={o.id} className="flex items-center gap-3 py-2.5">
+                  <Avatar name="You" className="bg-night-850 text-flood" />
+                  <div className="min-w-0 flex-1 leading-snug">
+                    <p className="text-small text-chalk">
+                      Your offer: <span className="font-display font-bold tnum">{money(o.makerStake, points)}</span> on{' '}
+                      <span className={cx('font-bold', t.text)}>{label(o.side)}</span> at <span className="font-display font-bold tnum">{odds2(o.odds)}</span>
+                    </p>
+                    <p className="text-cap text-night-400 tnum">
+                      {o.filled ? `${money(o.filled, points)} matched, ` : ''}waiting for a taker
+                    </p>
+                  </div>
+                  <button
+                    disabled={cancelling === o.id}
+                    onClick={async () => {
+                      setCancelling(o.id);
+                      setError(await act(client, { type: 'cancel_offer', offerId: o.id }));
+                      setCancelling(null);
+                    }}
+                    className="btn-quiet shrink-0"
+                  >
+                    {cancelling === o.id ? 'Cancelling…' : 'Cancel'}
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
       )}
 
       {live && (
-        <button
-          onClick={() => setOffering(true)}
-          className="mt-3 flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl border border-pitch-600 text-sm font-semibold text-pitch-200 active:bg-pitch-800"
-        >
-          <Icon name="plus" size={16} /> Offer your own odds
+        <button onClick={() => setOffering(true)} className="btn-quiet mt-2 w-full bg-night-850">
+          <Icon name="plus" size={18} /> Offer your own odds
         </button>
       )}
       {error && <InlineError text={error} />}
@@ -151,11 +143,26 @@ export function BetBody({ market, live }: { market: Market; live: boolean }) {
   );
 }
 
-function Avatar({ name }: { name: string }) {
+/** Choice chips inside sheets: the chosen one fills flood. */
+function Chips({ amounts, chosen, onPick, points }: { amounts: { amount: number; isMax: boolean }[]; chosen: number; onPick: (a: number) => void; points: boolean }) {
   return (
-    <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-pitch-700 font-display text-lg font-bold uppercase text-pitch-200">
-      {name.slice(0, 1)}
-    </span>
+    <div className="grid grid-cols-4 gap-2" role="radiogroup" aria-label="Stake">
+      {amounts.map((c) => (
+        <button
+          key={c.amount}
+          role="radio"
+          aria-checked={chosen === c.amount}
+          onClick={() => onPick(c.amount)}
+          className={cx(
+            'flex min-h-12 flex-col items-center justify-center rounded-tile font-display text-lead font-extrabold leading-tight stretch-condensed tnum transition-colors duration-quick',
+            chosen === c.amount ? 'bg-flood text-flood-ink' : 'bg-night-800 text-chalk ring-1 ring-inset ring-night-600 hover:bg-night-700',
+          )}
+        >
+          {moneyShort(c.amount, points)}
+          {c.isMax && <span className="font-sans text-cap font-semibold opacity-70">max</span>}
+        </button>
+      ))}
+    </div>
   );
 }
 
@@ -179,39 +186,28 @@ function TakeSheet({ market, offer, onClose, sideLabel }: { market: Market; offe
   return (
     <Sheet open={!!offer} onClose={close} title="Take the bet">
       {offer && (
-        <div className="space-y-4">
-          <p className="text-pitch-200">
-            <b className="text-pitch-50">{offer.makerName ?? 'A friend'}</b> backs {market.outcomes.find((o) => o.id === offer.side)?.label} at{' '}
-            {offer.odds.toFixed(2)}. You take <b className="text-pitch-50">{sideLabel}</b>.
-          </p>
-          <div className="text-sm text-pitch-400">{market.question}</div>
+        <div className="space-y-5">
+          <div>
+            <p className="text-small text-night-400">{market.question}</p>
+            <p className="mt-1 text-body text-night-200">
+              <b className="text-chalk">{offer.makerName ?? 'A friend'}</b> backs {market.outcomes.find((o) => o.id === offer.side)?.label} at{' '}
+              <span className="font-display font-bold tnum">{odds2(offer.odds)}</span>. You take <b className="text-chalk">{sideLabel}</b> at{' '}
+              <span className="font-display font-bold tnum">{odds2(takerOdds(offer.odds))}</span>.
+            </p>
+          </div>
           {chips.length ? (
-            <div className="grid grid-cols-4 gap-2">
-              {chips.map((c) => (
-                <button
-                  key={c.amount}
-                  onClick={() => setAmount(c.amount)}
-                  className={cx(
-                    'min-h-[52px] rounded-xl font-display text-xl font-bold tnum',
-                    chosen === c.amount ? 'bg-volt text-volt-ink' : 'bg-pitch-800 text-pitch-50',
-                  )}
-                >
-                  {c.isMax ? 'Max' : moneyShort(c.amount, points)}
-                </button>
-              ))}
-            </div>
+            <Chips amounts={chips} chosen={chosen} onPick={setAmount} points={points} />
           ) : (
-            <InlineError text="Not enough balance to take this one." />
+            <InlineError text="Not enough balance to take this one. Add more from your balance at the top." />
           )}
-          <div className="flex items-center justify-between rounded-2xl bg-pitch-800 px-4 py-3">
-            <div>
-              <div className="text-xs text-pitch-400">You stake</div>
-              <div className="font-display text-2xl font-bold tnum">{money(chosen, points)}</div>
+          <div className="grid grid-cols-2 divide-x divide-night-700 rounded-tile bg-night-850 py-3">
+            <div className="px-4">
+              <div className="text-cap text-night-400">You stake</div>
+              <Roll text={money(chosen, points)} className="font-display text-title font-extrabold stretch-condensed" />
             </div>
-            <Icon name="up" className="rotate-90 text-pitch-600" />
-            <div className="text-right">
-              <div className="text-xs text-pitch-400">You win</div>
-              <div className="font-display text-2xl font-bold text-up tnum">{money(win, points)}</div>
+            <div className="px-4">
+              <div className="text-cap text-night-400">You win</div>
+              <Roll text={money(win, points)} className="font-display text-title font-extrabold text-yes stretch-condensed" />
             </div>
           </div>
           <button
@@ -225,9 +221,9 @@ function TakeSheet({ market, offer, onClose, sideLabel }: { market: Market; offe
               notify(`Bet's on: ${money(chosen, points)} to win ${money(win, points)}`, 'win');
               close();
             }}
-            className="flex min-h-[56px] w-full items-center justify-center rounded-2xl bg-volt font-display text-xl font-bold uppercase tracking-wide text-volt-ink shadow-glow active:scale-[0.98] disabled:opacity-50"
+            className="btn-primary w-full shadow-flood"
           >
-            {busy ? <Spinner /> : `Take it · ${moneyShort(chosen, points)}`}
+            {busy ? 'Taking it…' : `Take it for ${moneyShort(chosen, points)}`}
           </button>
           {error && <InlineError text={error} />}
         </div>
@@ -245,64 +241,65 @@ function OfferSheet({ market, open, onClose }: { market: Market; open: boolean; 
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const chips = stakeChips(balance, snap.party.config);
-  const theOdds = odds ?? defaultOddsForPrior(market.prior[side] ?? 0.5);
+  const fair = defaultOddsForPrior(market.prior[side] ?? 0.5);
+  const theOdds = odds ?? fair;
   const theStake = stake ?? Math.min(chips[0]?.amount ?? 0, maxStake(balance, snap.party.config));
   const sideLabel = market.outcomes.find((o) => o.id === side)?.label ?? side;
   const step = (d: number) => setOdds(roundOdds(Math.min(MAX_ODDS, Math.max(MIN_ODDS, theOdds + d))));
+  const n = market.outcomes.length;
 
   return (
     <Sheet open={open} onClose={onClose} title="Offer your odds">
-      <div className="space-y-4">
-        <div className="text-sm text-pitch-400">{market.question}</div>
-        <div className={cx('grid gap-2', market.outcomes.length === 3 ? 'grid-cols-3' : 'grid-cols-2')}>
-          {market.outcomes.map((o, i) => (
-            <button
-              key={o.id}
-              onClick={() => {
-                setSide(o.id);
-                setOdds(null);
-              }}
-              className={cx(
-                'min-h-[48px] rounded-xl border font-display text-lg font-bold uppercase',
-                side === o.id ? cx(toneFor(i).solid, 'border-transparent') : cx(toneFor(i).soft, toneFor(i).border, toneFor(i).text),
-              )}
-            >
-              I back {o.label}
-            </button>
-          ))}
-        </div>
-        <div>
-          <div className="mb-1.5 text-xs uppercase tracking-wider text-pitch-400">Your stake</div>
-          <div className="grid grid-cols-4 gap-2">
-            {chips.map((c) => (
+      <div className="space-y-5">
+        <p className="text-small text-night-400">{market.question}</p>
+        <div className={cx('gap-2', n === 2 ? 'grid grid-cols-2' : 'flex flex-col')} role="radiogroup" aria-label="Your side">
+          {market.outcomes.map((o, i) => {
+            const t = tone(i, n);
+            const on = side === o.id;
+            return (
               <button
-                key={c.amount}
-                onClick={() => setStake(c.amount)}
-                className={cx('min-h-[48px] rounded-xl font-display text-lg font-bold tnum', theStake === c.amount ? 'bg-volt text-volt-ink' : 'bg-pitch-800')}
+                key={o.id}
+                role="radio"
+                aria-checked={on}
+                onClick={() => {
+                  setSide(o.id);
+                  setOdds(null);
+                }}
+                className={cx(
+                  'relative flex min-h-12 items-center gap-2 overflow-hidden rounded-tile pl-4 pr-3 text-left font-bold transition-colors duration-quick',
+                  on ? cx(t.solid, t.ink) : cx(t.deep, 'text-chalk'),
+                )}
               >
-                {c.isMax ? 'Max' : moneyShort(c.amount, points)}
+                {!on && <span className={cx('absolute inset-y-0 left-0 w-1', t.rule)} aria-hidden="true" />}
+                {on && <Icon name="check" size={18} strokeWidth={2.6} />}I back <span className={on ? undefined : t.text}>{o.label}</span>
               </button>
-            ))}
-          </div>
+            );
+          })}
         </div>
         <div>
-          <div className="mb-1.5 text-xs uppercase tracking-wider text-pitch-400">Your odds</div>
-          <div className="flex items-center justify-between rounded-2xl bg-pitch-800 p-1.5">
-            <button onClick={() => step(-0.05)} className="grid h-12 w-12 place-items-center rounded-xl bg-pitch-700 active:scale-95" aria-label="Lower odds">
-              <Icon name="minus" />
+          <p className="mb-2 text-small text-night-200">Your stake</p>
+          <Chips amounts={chips} chosen={theStake} onPick={setStake} points={points} />
+        </div>
+        <div>
+          <p className="mb-2 text-small text-night-200">Your odds</p>
+          <div className="flex items-center justify-between gap-2 rounded-tile bg-night-850 p-1.5">
+            <button onClick={() => step(-0.05)} className="btn-secondary h-12 w-12 px-0" aria-label="Lower odds">
+              <Icon name="minus" size={20} />
             </button>
             <div className="text-center">
-              <div className="font-display text-4xl font-bold tnum">{theOdds.toFixed(2)}</div>
-              <div className="text-[11px] text-pitch-400">fair: {defaultOddsForPrior(market.prior[side] ?? 0.5).toFixed(2)}</div>
+              <Roll text={odds2(theOdds)} className="font-display text-head font-extrabold stretch-condensed" />
+              <div className="text-cap text-night-400">
+                Fair is <span className="tnum">{odds2(fair)}</span>
+              </div>
             </div>
-            <button onClick={() => step(0.05)} className="grid h-12 w-12 place-items-center rounded-xl bg-pitch-700 active:scale-95" aria-label="Raise odds">
-              <Icon name="plus" />
+            <button onClick={() => step(0.05)} className="btn-secondary h-12 w-12 px-0" aria-label="Raise odds">
+              <Icon name="plus" size={20} />
             </button>
           </div>
         </div>
-        <p className="text-sm text-pitch-200">
-          If <b>{sideLabel}</b> hits you get <b className="tnum text-up">{money(returnAt(theStake, theOdds), points)}</b> back. A friend needs{' '}
-          <b className="tnum">{money(takerStakeFor(theStake, theOdds), points)}</b> to take it.
+        <p className="text-pretty text-small text-night-200">
+          If <b className="text-chalk">{sideLabel}</b> hits you get <b className="font-display text-yes tnum">{money(returnAt(theStake, theOdds), points)}</b> back. A
+          friend puts in <b className="font-display text-chalk tnum">{money(takerStakeFor(theStake, theOdds), points)}</b> to take it.
         </p>
         <button
           disabled={busy || theStake <= 0}
@@ -312,12 +309,12 @@ function OfferSheet({ market, open, onClose }: { market: Market; open: boolean; 
             const err = await act(client, { type: 'post_offer', marketId: market.id, side, makerStake: theStake, odds: theOdds });
             setBusy(false);
             if (err) return setError(err);
-            notify(`Offer posted: ${moneyShort(theStake, points)} on ${sideLabel} at ${theOdds.toFixed(2)}`, 'info');
+            notify(`Offer posted: ${moneyShort(theStake, points)} on ${sideLabel} at ${odds2(theOdds)}`, 'info');
             onClose();
           }}
-          className="flex min-h-[56px] w-full items-center justify-center rounded-2xl bg-volt font-display text-xl font-bold uppercase tracking-wide text-volt-ink shadow-glow active:scale-[0.98] disabled:opacity-50"
+          className="btn-primary w-full shadow-flood"
         >
-          {busy ? <Spinner /> : 'Post offer'}
+          {busy ? 'Posting…' : `Post ${moneyShort(theStake, points)} at ${odds2(theOdds)}`}
         </button>
         {error && <InlineError text={error} />}
       </div>

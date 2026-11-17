@@ -362,3 +362,35 @@ export function friendlyError(err: unknown): string {
 export function rankPlayers(players: PlayerPublic[]): PlayerPublic[] {
   return players.filter((p) => !p.isHouse).sort((a, b) => b.pnl - a.pnl || a.name.localeCompare(b.name));
 }
+
+// ---------------------------------------------------------------- lock text
+
+/**
+ * When a market locks, in words: "Locks at 80′", "Locks at half time", "Locks on the kick",
+ * "Locks in 38 min". `remainingMs` comes from `countdown()` when the market has a clock.
+ */
+export function lockText(market: Pick<Market, 'lock' | 'kind'>, remainingMs: number | null): string {
+  const ev = market.lock.onEvent ?? '';
+  const [type, arg] = ev.split(':');
+  if (type === 'minute' && arg) return `Locks at ${arg}′`;
+  if (type === 'period_end')
+    return arg === '1' ? 'Locks at half time' : arg === '2' ? 'Locks at full time' : `Locks at the end of period ${arg ?? ''}`.trim();
+  if (remainingMs != null && remainingMs > 0) {
+    const mins = Math.ceil(remainingMs / 60_000);
+    if (remainingMs >= 100_000)
+      return mins >= 60 ? `Locks in ${Math.floor(mins / 60)}\u00a0h ${mins % 60}\u00a0min` : `Locks in ${mins}\u00a0min`;
+    return `Locks in ${Math.ceil(remainingMs / 1000)}\u00a0s`;
+  }
+  if (type === 'penalty_result') return 'Locks on the kick';
+  if (type === 'snap') return 'Locks at the snap';
+  if (type === 'goal') return 'Locks on the next goal';
+  if (type) return 'Locks on the play';
+  return market.kind === 'game' ? 'Locks when the host calls it' : 'Locks on the play';
+}
+
+/** Ordinal for ranks: 1st, 2nd, 3rd, 11th, 22nd. */
+export function ordinal(n: number): string {
+  const s = n % 100;
+  if (s >= 11 && s <= 13) return `${n}th`;
+  return `${n}${n % 10 === 1 ? 'st' : n % 10 === 2 ? 'nd' : n % 10 === 3 ? 'rd' : 'th'}`;
+}

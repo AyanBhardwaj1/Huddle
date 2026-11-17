@@ -1,6 +1,6 @@
-import { formatPct, payoutPerDollar, type Market } from '@huddle/shared';
-import { AnimatePresence, motion } from 'framer-motion';
-import { useState, type ReactNode } from 'react';
+import { payoutPerDollar, type Market } from '@huddle/shared';
+import { Icon, LockRing, MarkerShape, Pct, Roll, SplitBar, SplitMarkers, pctLabel, pctText, payoutText, useReplayClass } from '@huddle/ui';
+import { useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import {
   ago,
   ammBuyPreview,
@@ -8,6 +8,7 @@ import {
   countdown,
   formatShares,
   holdingsFor,
+  lockText,
   marketResult,
   poolPayoutPerDollar,
   poolPreview,
@@ -15,192 +16,330 @@ import {
   prosRow,
   roomProb,
   stakeChips,
+  type Countdown,
 } from '../lib/markets';
 import { money, moneyShort, pnl } from '../lib/money';
 import { useApp } from '../lib/session';
 import { BetBody } from './BetBody';
 import { act, cx, useNow, useParty, useUi } from './ctx';
-import { Icon, Spinner } from './Icon';
-import { CountdownRing, Pill, Ticker } from './primitives';
-
-// ------------------------------------------------------------------ tones
-
-export const TONES = [
-  { text: 'text-up', soft: 'bg-up/10', border: 'border-up/35', solid: 'bg-up text-up-ink', bar: 'bg-up' },
-  { text: 'text-down', soft: 'bg-down/10', border: 'border-down/35', solid: 'bg-down text-down-ink', bar: 'bg-down' },
-  { text: 'text-pitch-50', soft: 'bg-pitch-700/50', border: 'border-pitch-600', solid: 'bg-pitch-50 text-pitch-950', bar: 'bg-pitch-200' },
-] as const;
-export const toneFor = (i: number) => TONES[Math.min(i, 2)]!;
+import { InlineError, Money, useCoins } from './primitives';
+import { tone } from './tones';
 
 const MODE_LABEL: Record<Market['mode'], string> = { pool: 'Pool', amm: 'Market', bet: 'Head-to-head' };
+const SETTLED = new Set<Market['state']>(['resolved', 'final', 'disputed']);
+
+/** Fill a CSS custom property without fighting React's style typing. */
+const vars = (v: Record<string, string | number>) => v as CSSProperties;
+
+/** Where the coins land when you stake: the split bar (the pot). */
+export interface CardFlow {
+  fire(from: Element | null): void;
+}
 
 // ------------------------------------------------------------------ card
 
 export function MarketCard({ market }: { market: Market }) {
-  const { snap } = useParty();
+  const { snap, client } = useParty();
   const now = useNow(250);
   const cd = market.state === 'open' ? countdown(market, now) : null;
   const viewOnly = market.kind === 'moment' && snap.you?.momentMarketsAllowed === false;
-  const live = market.state === 'open' && !(cd && cd.remainingMs === 0);
+  const lockingNow = market.state === 'open' && !!cd && cd.remainingMs === 0;
+  const live = market.state === 'open' && !lockingNow;
+  // A running clock on a moment gets the ring (ring-drain, last-call); everything else says it in words.
+  const ring = live && !!cd && market.kind === 'moment' && cd.remainingMs < 100_000;
+  // takeover-wipe: only for a moment that opened in the last few seconds (not on every tab switch).
+  const [fresh] = useState(
+    () => market.kind === 'moment' && market.state === 'open' && client.now() - Date.parse(market.openedAt ?? market.createdAt) < 6000,
+  );
+  // lock-snap: a one-off flash the moment this card locks.
+  const lockFlash = useReplayClass(market.state === 'locked' || lockingNow, 'x');
+  const split = useRef<HTMLDivElement>(null);
+  const [coins, fireCoins] = useCoins();
+  const flow: CardFlow = { fire: (from) => fireCoins(from, split.current, 5) };
+  const step = (i: number) => (fresh ? vars({ '--d': `${120 + i * 80}ms` }) : undefined);
 
   return (
-    <motion.article
+    <article
       data-testid="market-card"
       data-market-id={market.id}
       data-market-state={market.state}
-      layout="position"
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      className={cx(
-        'rounded-card border bg-pitch-900 p-4 shadow-card',
-        market.kind === 'moment' && live ? 'border-volt/30' : 'border-pitch-700',
-        !live && market.state !== 'open' && 'bg-pitch-900/70',
-      )}
+      aria-labelledby={`q-${market.id}`}
+      className={cx('relative overflow-hidden rounded-panel bg-night-900 p-4', fresh && 'hd-fade')}
     >
+      {fresh && <div className="hd-wipe" aria-hidden="true" />}
+      {lockFlash && (market.state === 'locked' || lockingNow) && (
+        <div key={lockFlash} className="hd-flashout absolute inset-0 z-10 bg-chalk/25" aria-hidden="true" />
+      )}
+
       <header className="flex items-start gap-3">
         <div className="min-w-0 flex-1">
-          <div className="mb-1.5 flex flex-wrap items-center gap-1.5">
-            {market.kind === 'moment' ? (
-              <Pill className="bg-volt/15 text-volt">
-                {live && <span className="h-1.5 w-1.5 rounded-full bg-volt" />}Moment
-              </Pill>
-            ) : (
-              <Pill className="bg-pitch-700 text-pitch-200">Full game</Pill>
-            )}
-            <Pill className="bg-pitch-800 text-pitch-400">{MODE_LABEL[market.mode]}</Pill>
-            <StateTag market={market} lockingNow={market.state === 'open' && !live} />
+          <div className="flex items-start justify-between gap-3">
+            <p className="min-w-0 text-small text-night-400">
+              {MODE_LABEL[market.mode]}
+              {market.mode === 'pool' && poolTotal(market) > 0 && (
+                <>
+                  {' · Pot '}
+                  <Money value={poolTotal(market)} points={snap.party.config.settlement === 'points'} className="text-night-200" flash={false} />
+                </>
+              )}
+            </p>
+            {!ring && <Status market={market} cd={cd} lockingNow={lockingNow} />}
           </div>
-          <h3 className="font-display text-[22px] font-semibold leading-tight text-pitch-50">{market.question}</h3>
+          <h3
+            id={`q-${market.id}`}
+            className={cx('mt-1 text-balance font-display text-title font-bold stretch-semi text-chalk', fresh && 'hd-rise')}
+            style={step(0)}
+          >
+            {market.question}
+          </h3>
         </div>
-        {cd && cd.remainingMs > 0 && <CountdownRing fraction={cd.fraction} secs={cd.secs} urgent={cd.urgent} />}
+        {ring && cd && (
+          <LockRing fraction={cd.fraction} label={String(cd.secs)} state={cd.urgent ? 'urgent' : 'open'} size="3.5rem" className="-mr-1 -mt-1 text-chalk" />
+        )}
       </header>
 
-      <div className="mt-3.5">
+      <div ref={split} className={cx('mt-4', fresh && 'hd-rise')} style={step(1)}>
+        <Split market={market} />
+      </div>
+
+      <div className={cx('mt-3', fresh && 'hd-rise')} style={step(2)}>
         {market.mode === 'bet' ? (
-          <BetBody market={market} live={live && !viewOnly} />
+          <BetBody market={market} live={live && !viewOnly} flow={flow} />
         ) : (
-          <OutcomeTrader market={market} live={live && !viewOnly} />
+          <OutcomeTrader market={market} live={live && !viewOnly} flow={flow} />
         )}
       </div>
 
       {viewOnly && market.state === 'open' && (
-        <p className="mt-3 flex items-center gap-2 text-sm text-pitch-400">
-          <Icon name="hourglass" size={16} /> You're behind the room's TV, so quick bets are view-only. Full-game questions are open.
+        <p className="mt-3 flex items-start gap-2 text-small text-night-200">
+          <Icon name="hourglass" size={18} className="mt-px shrink-0 text-night-400" />
+          <span className="text-pretty">You're behind the room's TV, so quick bets are view-only. Game-long questions are still open.</span>
         </p>
       )}
 
       {market.mode !== 'bet' && <PositionBlock market={market} live={live} />}
-      <SettledFooter market={market} now={now} />
-      <ProsStrip market={market} now={now} />
-    </motion.article>
+      <ResultRow market={market} now={now} />
+      {coins}
+    </article>
   );
 }
 
-function StateTag({ market, lockingNow }: { market: Market; lockingNow: boolean }) {
-  if (lockingNow || market.state === 'locked')
+/** Lock status at the top right: the ring for a running clock, words otherwise. State always in text. */
+function Status({ market, cd, lockingNow }: { market: Market; cd: Countdown | null; lockingNow: boolean }) {
+  const snapped = useReplayClass(market.state, 'x');
+  if (market.state === 'open' && !lockingNow) {
     return (
-      <Pill className="bg-pitch-700 text-pitch-200">
-        <Icon name="lock" size={11} /> {lockingNow ? 'Locking' : 'Locked'}
-      </Pill>
+      <span className="flex shrink-0 items-center gap-1.5 text-small text-night-200">
+        <span className="h-1.5 w-1.5 rounded-full bg-flood" aria-hidden="true" />
+        <span>
+          <span className="font-semibold text-chalk">Open</span> · {lockText(market, cd?.remainingMs ?? null).replace(/^Locks/, 'locks')}
+        </span>
+      </span>
     );
-  if (market.state === 'disputed') return <Pill className="bg-gemini/20 text-gemini">Under review</Pill>;
-  if (market.state === 'voided') return <Pill className="bg-pitch-700 text-pitch-200">Voided</Pill>;
-  if (market.state === 'resolved' || market.state === 'final') return <Pill className="bg-pitch-700 text-pitch-200">Final</Pill>;
-  return null;
+  }
+  const [icon, text] =
+    lockingNow
+      ? (['lock', 'Locking…'] as const)
+      : market.state === 'locked'
+        ? (['lock', 'Locked'] as const)
+        : market.state === 'disputed'
+          ? (['flag', 'Under review'] as const)
+          : market.state === 'voided'
+            ? (['refresh', 'Voided'] as const)
+            : (['check', 'Settled'] as const);
+  return (
+    <span key={text} className={cx('flex shrink-0 items-center gap-1.5 text-small font-semibold text-night-200', snapped && 'hd-snap')}>
+      <Icon name={icon} size={16} /> {text}
+    </span>
+  );
 }
 
-// ------------------------------------------------------------------ pool + amm
-
-function OutcomeTrader({ market, live }: { market: Market; live: boolean }) {
-  const { points } = useParty();
-  const [pick, setPick] = useState<string | null>(null);
-  const isAmm = market.mode === 'amm';
-  const cols = market.outcomes.length === 2 ? 'grid-cols-2' : market.outcomes.length === 3 ? 'grid-cols-3' : 'grid-cols-2';
+/** The split, the pros' notches and their legend. Settled markets flood with the winner. */
+function Split({ market }: { market: Market }) {
+  const { client } = useParty();
+  const n = market.outcomes.length;
+  const settled = SETTLED.has(market.state) && !!market.outcome;
+  const parts = market.outcomes.map((o) => ({
+    id: o.id,
+    label: o.label,
+    // result-flood: the winner's share goes to 1 and the seam glides to the edge (700ms).
+    p: settled ? (o.id === market.outcome ? 1 : 0) : roomProb(market, o.id),
+  }));
+  const row = SETTLED.has(market.state) || market.state === 'voided' ? null : prosRow(market);
+  const idx = row ? market.outcomes.findIndex((o) => o.id === row.outcomeId) : -1;
+  // Notches sit on the axis of the first outcome's share; only meaningful for binary markets.
+  const axis = (p: number | undefined) => (p == null ? null : idx === 0 ? p : n === 2 && idx === 1 ? 1 - p : null);
+  const winner = market.outcomes.findIndex((o) => o.id === market.outcome);
+  const atLock = market.outcome ? (market.roomProbAtLock?.[market.outcome] ?? market.price?.[market.outcome]) : undefined;
 
   return (
     <div>
-      <div className={cx('grid gap-2.5', cols)}>
-        {market.outcomes.map((o, i) => {
-          const p = roomProb(market, o.id);
-          const tone = toneFor(i);
-          const per = isAmm ? payoutPerDollar(p) : poolPayoutPerDollar(market, o.id);
-          const won = market.outcome === o.id && (market.state === 'resolved' || market.state === 'final' || market.state === 'disputed');
-          const selected = pick === o.id;
-          return (
-            <button
-              key={o.id}
-              data-testid={`outcome-${o.id}`}
-              disabled={!live}
-              onClick={() => setPick(selected ? null : o.id)}
-              aria-pressed={selected}
-              className={cx(
-                'relative min-h-[84px] overflow-hidden rounded-2xl border px-3 pb-3 pt-2.5 text-left transition-[transform,background-color] active:scale-[0.97] disabled:active:scale-100',
-                selected ? cx(tone.solid, 'border-transparent') : cx(tone.soft, tone.border),
-                !live && !won && 'opacity-60',
-                won && 'ring-2 ring-volt',
-              )}
-            >
-              <div className="flex items-center justify-between gap-1">
-                <span
-                  className={cx(
-                    'font-display font-bold uppercase leading-tight tracking-wide',
-                    // Three or more outcomes share the row: let long labels wrap at a smaller size instead of cutting them off.
-                    market.outcomes.length > 2 ? 'line-clamp-2 text-[15px]' : 'truncate text-lg',
-                    selected ? '' : tone.text,
-                  )}
-                >
-                  {o.label}
-                </span>
-                {won && <Icon name="check" size={18} className="text-volt" />}
-              </div>
-              <Ticker value={p} format={formatPct} className="font-display text-[34px] font-bold leading-none" />
-              <div className={cx('mt-1 text-xs tnum', selected ? 'opacity-80' : 'text-pitch-400')}>
-                {points ? `1 pays ${per.toFixed(2)}` : `$1 pays $${per.toFixed(2)}`}
-              </div>
-              <div className="absolute inset-x-0 bottom-0 h-1 bg-black/20">
-                <motion.div className={cx('h-full', selected ? 'bg-black/30' : tone.bar)} animate={{ width: `${Math.round(p * 100)}%` }} />
-              </div>
-            </button>
-          );
-        })}
-      </div>
-      {market.mode === 'pool' && (
-        <div className="mt-2 flex items-center justify-between text-xs text-pitch-400">
-          <span>
-            Pot <span className="tnum text-pitch-200">{money(poolTotal(market), points)}</span>
-          </span>
-          <span>Winners split the pot</span>
-        </div>
+      {row && (
+        <SplitMarkers
+          className="mb-0.5 text-[1.0625rem] text-night-300"
+          markers={[
+            { id: 'model', label: 'Model', p: axis(row.model), shape: 'solid' },
+            { id: 'gemini', label: 'Gemini', p: axis(row.gemini), shape: 'hollow' },
+          ]}
+        />
       )}
-      <AnimatePresence initial={false}>
-        {pick && live && (
-          <StakeTray
-            key={pick}
-            market={market}
-            outcome={pick}
-            onClose={() => setPick(null)}
-            preview={(stake) => {
-              if (isAmm) {
-                const q = ammBuyPreview(market, pick, stake);
-                return q ? `pays ${moneyShort(q.payout, points)}` : '';
-              }
-              return `pays ${moneyShort(poolPreview(market, pick, stake), points)}`;
-            }}
-            send={(stake) => ({ type: 'place_bet', marketId: market.id, outcome: pick, stake })}
-          />
-        )}
-      </AnimatePresence>
+      <SplitBar
+        parts={parts}
+        className={cx('h-2.5 rounded-full', (market.state === 'locked' || market.state === 'voided') && 'pl-dim', market.state === 'voided' && 'opacity-50')}
+      />
+      {row && (
+        <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-small text-night-400">
+          <span>
+            {row.label}: room <span className="font-display font-bold text-chalk tnum">{pctText(row.room)}%</span>
+          </span>
+          <span className="flex items-center gap-1">
+            <MarkerShape shape="solid" className="text-night-300" /> Model{' '}
+            <span className="font-display font-bold text-night-200 tnum">{pctText(row.model)}%</span>
+          </span>
+          {row.gemini != null && (
+            <span className="flex items-center gap-1">
+              <MarkerShape shape="hollow" className="text-night-300" /> Gemini{' '}
+              <span className="font-display font-bold text-night-200 tnum">{pctText(row.gemini)}%</span>
+              <span className="text-cap">{ago(row.geminiAsOf, client.now())}</span>
+            </span>
+          )}
+        </p>
+      )}
+      {settled && winner >= 0 && (
+        <p className="mt-2 text-small text-night-400">
+          <span className={cx('font-bold', tone(winner, n).text)}>{market.outcomes[winner]!.label}</span>
+          {atLock != null ? ` won. The room had it at ${pctText(atLock)}%.` : ' won.'}
+        </p>
+      )}
     </div>
   );
 }
 
-/** Quick stake chips: one tap places. Shared by every mode. */
+// ------------------------------------------------------------------ pool + amm
+
+function OutcomeTrader({ market, live, flow }: { market: Market; live: boolean; flow: CardFlow }) {
+  const { points } = useParty();
+  const [pick, setPick] = useState<string | null>(null);
+  const isAmm = market.mode === 'amm';
+  const n = market.outcomes.length;
+  if (SETTLED.has(market.state) || market.state === 'voided') return null;
+
+  return (
+    <div>
+      <div className={cx('gap-2', n === 2 ? 'grid grid-cols-2' : 'flex flex-col')}>
+        {market.outcomes.map((o, i) => {
+          const p = roomProb(market, o.id);
+          const per = isAmm ? payoutPerDollar(p) : poolPayoutPerDollar(market, o.id);
+          return (
+            <OutcomeButton
+              key={o.id}
+              testId={`outcome-${o.id}`}
+              label={o.label}
+              index={i}
+              count={n}
+              selected={pick === o.id}
+              disabled={!live}
+              onClick={() => setPick(pick === o.id ? null : o.id)}
+              figure={<Pct p={p} className="font-display text-title font-extrabold leading-none stretch-condensed" />}
+              figureLabel={pctLabel(p)}
+              note={payoutText(per > 0 ? 1 / per : null, { points })}
+            />
+          );
+        })}
+      </div>
+      {pick && live && (
+        <StakeTray
+          key={pick}
+          market={market}
+          outcome={pick}
+          flow={flow}
+          onClose={() => setPick(null)}
+          preview={(stake) => {
+            if (isAmm) {
+              const q = ammBuyPreview(market, pick, stake);
+              return q ? `pays ${moneyShort(q.payout, points)}` : '';
+            }
+            return `pays ${moneyShort(poolPreview(market, pick, stake), points)}`;
+          }}
+          send={(stake) => ({ type: 'place_bet', marketId: market.id, outcome: pick, stake })}
+        />
+      )}
+    </div>
+  );
+}
+
+/**
+ * The phone's outcome button: the tone as a 4px rule on a deep tint, label then the number.
+ * Selected = solid tone with ink text and a check. Labels wrap; 3+ outcomes stack.
+ */
+export function OutcomeButton({
+  testId,
+  label,
+  prefix,
+  index,
+  count,
+  selected,
+  disabled,
+  onClick,
+  figure,
+  figureLabel,
+  note,
+}: {
+  testId?: string;
+  label: string;
+  prefix?: string;
+  index: number;
+  count: number;
+  selected: boolean;
+  disabled: boolean;
+  onClick: () => void;
+  figure: ReactNode;
+  figureLabel: string;
+  note: ReactNode;
+}) {
+  const t = tone(index, count);
+  return (
+    <button
+      data-testid={testId}
+      disabled={disabled}
+      onClick={onClick}
+      aria-pressed={selected}
+      aria-label={`${prefix ? `${prefix} ` : ''}${label}, ${figureLabel}`}
+      className={cx(
+        'relative flex min-h-[4.25rem] w-full min-w-0 flex-col justify-center gap-0.5 overflow-hidden rounded-tile py-2.5 pl-4 pr-3 text-left',
+        'transition-[transform,background-color,color] duration-quick ease-out active:scale-[0.98] disabled:active:scale-100',
+        selected ? cx(t.solid, t.ink) : cx(t.deep, 'text-chalk'),
+        disabled && !selected && 'pl-dim',
+      )}
+    >
+      {!selected && <span className={cx('absolute inset-y-0 left-0 w-1', t.rule)} aria-hidden="true" />}
+      <span className="flex items-start justify-between gap-2">
+        <span className="flex min-w-0 items-start gap-1.5 break-words font-sans text-body font-bold leading-tight">
+          {selected && <Icon name="check" size={18} strokeWidth={2.6} className="mt-px shrink-0" />}
+          <span className="min-w-0">
+            {prefix && <span className={cx('font-semibold', selected ? 'opacity-80' : 'text-night-400')}>{prefix} </span>}
+            <span className={selected ? undefined : t.text}>{label}</span>
+          </span>
+        </span>
+        <span className="shrink-0" aria-hidden="true">
+          {figure}
+        </span>
+      </span>
+      <span className={cx('text-cap tnum', selected ? 'opacity-80' : 'text-night-400')} aria-hidden="true">
+        {note}
+      </span>
+    </button>
+  );
+}
+
+/** Quick stake chips: one tap places, coins fly to the pot. Shared by every mode. */
 export function StakeTray({
   market,
   outcome,
   onClose,
   preview,
   send,
+  flow,
   verb = 'on',
   cap,
 }: {
@@ -209,6 +348,7 @@ export function StakeTray({
   onClose: () => void;
   preview: (stake: number) => string;
   send: (stake: number) => Parameters<typeof act>[1];
+  flow?: CardFlow;
   verb?: string;
   cap?: number;
 }) {
@@ -219,73 +359,63 @@ export function StakeTray({
   const [error, setError] = useState<string | null>(null);
   const chips = stakeChips(balance, snap.party.config, cap);
   const idx = market.outcomes.findIndex((o) => o.id === outcome);
+  const t = tone(idx, market.outcomes.length);
   const label = market.outcomes[idx]?.label ?? outcome;
 
-  const place = async (stake: number) => {
+  const place = async (stake: number, el: HTMLElement) => {
     setBusy(stake);
     setError(null);
     const err = await act(client, send(stake));
     setBusy(null);
     if (err) return setError(err);
+    flow?.fire(el);
     notify(`${moneyShort(stake, points)} ${verb} ${label}. You're in.`, 'win');
     onClose();
   };
 
   return (
-    <motion.div
-      initial={{ height: 0, opacity: 0 }}
-      animate={{ height: 'auto', opacity: 1 }}
-      exit={{ height: 0, opacity: 0 }}
-      className="overflow-hidden"
-    >
-      <div className="pt-3">
-        <div className="mb-2 flex items-center justify-between">
-          <span className="text-sm text-pitch-200">
-            Stake on <span className={cx('font-semibold', toneFor(idx).text)}>{label}</span>
-          </span>
-          <button onClick={onClose} className="-mr-2 grid h-9 w-9 place-items-center rounded-full text-pitch-400" aria-label="Cancel">
-            <Icon name="x" size={18} />
-          </button>
-        </div>
-        {chips.length ? (
-          <div className={cx('grid gap-2', chips.length >= 4 ? 'grid-cols-4' : chips.length === 3 ? 'grid-cols-3' : 'grid-cols-2')}>
-            {chips.map((c) => (
-              <button
-                key={c.amount}
-                data-testid="stake-chip"
-                data-stake={c.amount}
-                disabled={busy !== null}
-                onClick={() => place(c.amount)}
-                className="relative flex min-h-[64px] flex-col items-center justify-center rounded-xl bg-volt px-1 text-volt-ink transition-transform active:scale-95 disabled:opacity-60"
-              >
-                {busy === c.amount ? (
-                  <Spinner />
-                ) : (
-                  <>
-                    {c.isMax && <span className="text-[9px] font-bold uppercase leading-none tracking-widest opacity-70">Max</span>}
-                    <span className="font-display text-xl font-bold leading-tight tnum">{moneyShort(c.amount, points)}</span>
-                    <span className="text-[10px] font-medium leading-tight opacity-75 tnum">{preview(c.amount)}</span>
-                  </>
-                )}
-              </button>
-            ))}
-          </div>
-        ) : (
-          <button onClick={() => setTopUp(true)} className="w-full rounded-xl border border-volt/40 py-3.5 font-semibold text-volt">
-            Top up to play
-          </button>
-        )}
-        {error && <InlineError text={error} />}
+    <div className="hd-rise mt-2 rounded-tile bg-night-850 p-3" role="group" aria-label={`Stake on ${label}`}>
+      <div className="flex items-center justify-between gap-2">
+        <span className="text-small text-night-200">
+          How much {verb === 'on' ? 'on' : verb} <span className={cx('font-bold', t.text)}>{label}</span>?
+        </span>
+        <button onClick={onClose} className="btn-quiet -my-1 -mr-1.5 w-11 px-0" aria-label="Cancel">
+          <Icon name="x" size={20} />
+        </button>
       </div>
-    </motion.div>
-  );
-}
-
-export function InlineError({ text }: { text: string }) {
-  return (
-    <motion.p initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} className="mt-2 flex items-start gap-2 text-sm text-down" role="alert">
-      <Icon name="x" size={16} className="mt-0.5 shrink-0" /> {text}
-    </motion.p>
+      {chips.length ? (
+        <div className={cx('mt-2 grid gap-2', chips.length >= 4 ? 'grid-cols-4' : chips.length === 3 ? 'grid-cols-3' : 'grid-cols-2')}>
+          {chips.map((c) => (
+            <button
+              key={c.amount}
+              data-testid="stake-chip"
+              data-stake={c.amount}
+              disabled={busy !== null}
+              onClick={(e) => place(c.amount, e.currentTarget)}
+              aria-label={`Stake ${money(c.amount, points)}${c.isMax ? ', the most you can' : ''}, ${preview(c.amount)}`}
+              className={cx(
+                'flex min-h-14 flex-col items-center justify-center rounded-tile px-1 transition-[transform,background-color] duration-quick ease-out active:scale-[0.97]',
+                busy === c.amount ? 'bg-flood text-flood-ink' : 'bg-night-800 text-chalk ring-1 ring-inset ring-night-600 hover:bg-night-700',
+                busy !== null && busy !== c.amount && 'opacity-50',
+              )}
+            >
+              <span className="flex items-baseline gap-1 font-display text-lead font-extrabold leading-tight stretch-condensed tnum">
+                {moneyShort(c.amount, points)}
+                {c.isMax && <span className="font-sans text-cap font-semibold opacity-70">max</span>}
+              </span>
+              <span className={cx('text-cap leading-tight tnum', busy === c.amount ? 'opacity-80' : 'text-night-400')}>
+                {busy === c.amount ? 'Placing…' : preview(c.amount)}
+              </span>
+            </button>
+          ))}
+        </div>
+      ) : (
+        <button onClick={() => setTopUp(true)} className="btn-secondary mt-2 w-full">
+          <Icon name="plus" size={18} /> Add more to play
+        </button>
+      )}
+      {error && <InlineError text={error} />}
+    </div>
   );
 }
 
@@ -301,35 +431,41 @@ function PositionBlock({ market, live }: { market: Market; live: boolean }) {
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const holdings = holdingsFor(market, snap.you?.positions ?? []);
-  if (!holdings.length || market.state === 'voided' || market.state === 'resolved' || market.state === 'final') return null;
+  if (!holdings.length || market.state === 'voided' || SETTLED.has(market.state)) return null;
 
   return (
     <div className="mt-3 space-y-2">
       {holdings.map((h) => {
         const idx = market.outcomes.findIndex((o) => o.id === h.outcome);
+        const t = tone(idx, market.outcomes.length);
         const label = market.outcomes[idx]?.label ?? h.outcome;
         if (market.mode === 'amm') {
           const value = ammCashOutValue(market, h.shares, h.outcome);
-          const gain = value != null ? value - h.stake : 0;
+          // Under half a cent either way reads as even, never "−$0.00".
+          const raw = value != null ? value - h.stake : 0;
+          const gain = Math.abs(raw) < 5_000 ? 0 : raw;
           return (
-            <div key={h.outcome} className="rounded-2xl border border-pitch-700 bg-pitch-800/70 p-3">
-              <div className="flex items-baseline justify-between gap-2 text-sm">
-                <span className="text-pitch-200">
-                  <span className={cx('font-semibold', toneFor(idx).text)}>{formatShares(h.shares)} {label}</span> shares
+            <div key={h.outcome} className="relative overflow-hidden rounded-tile bg-night-850 py-3 pl-4 pr-3">
+              <span className={cx('absolute inset-y-0 left-0 w-1', t.rule)} aria-hidden="true" />
+              <div className="flex items-baseline justify-between gap-3">
+                <span className="min-w-0 text-small text-night-200">
+                  You hold <span className="font-display font-bold text-chalk tnum">{formatShares(h.shares)}</span>{' '}
+                  <span className={cx('font-bold', t.text)}>{label}</span> shares
                 </span>
-                <span className="text-xs text-pitch-400 tnum">cost {money(h.stake, points)}</span>
+                {value != null &&
+                  (gain === 0 ? (
+                    <span className="shrink-0 text-cap text-night-400">Even so far</span>
+                  ) : (
+                    <span className={cx('flex shrink-0 items-center gap-1 font-display text-body font-bold tnum', gain > 0 ? 'text-yes' : 'text-no')}>
+                      <Icon name={gain > 0 ? 'up' : 'down'} size={11} />
+                      {pnl(gain, points)}
+                    </span>
+                  ))}
               </div>
-              <div className="mt-1 flex items-baseline justify-between text-xs text-pitch-400">
-                <span>
-                  Pays <span className="tnum text-pitch-200">{money(h.potential, points)}</span> if it hits
-                </span>
-                {value != null && (
-                  <span className={cx('flex items-center gap-0.5 tnum', gain >= 0 ? 'text-up' : 'text-down')}>
-                    <Icon name={gain >= 0 ? 'up' : 'down'} size={12} />
-                    {pnl(gain, points)}
-                  </span>
-                )}
-              </div>
+              <p className="mt-0.5 text-cap text-night-400">
+                Cost <span className="tnum text-night-200">{money(h.stake, points)}</span> · pays{' '}
+                <span className="tnum text-night-200">{money(h.potential, points)}</span> if it hits
+              </p>
               {live && value != null && (
                 <button
                   disabled={busy !== null}
@@ -341,13 +477,14 @@ function PositionBlock({ market, live }: { market: Market; live: boolean }) {
                     if (err) setError(err);
                     else notify(`Cashed out ${money(value, points)}`, 'win');
                   }}
-                  className="mt-2.5 flex min-h-[48px] w-full items-center justify-center gap-2 rounded-xl border border-volt/50 bg-volt/10 font-semibold text-volt active:scale-[0.98] disabled:opacity-60"
+                  aria-label={`Cash out now: ${money(value, points)}`}
+                  className="btn-secondary mt-3 min-h-12 w-full"
                 >
                   {busy === h.outcome ? (
-                    <Spinner />
+                    'Cashing out…'
                   ) : (
                     <>
-                      Cash out now: <Ticker value={value} format={(v) => money(Math.round(v), points)} className="font-display text-xl font-bold" />
+                      Cash out now: <Money value={value} points={points} className="text-lead font-extrabold stretch-condensed" />
                     </>
                   )}
                 </button>
@@ -355,60 +492,89 @@ function PositionBlock({ market, live }: { market: Market; live: boolean }) {
             </div>
           );
         }
-        return (
-          <div key={h.outcome} className="flex items-center justify-between rounded-2xl border border-pitch-700 bg-pitch-800/70 px-3 py-2.5 text-sm">
-            <span className="text-pitch-200">
-              You: <span className="tnum font-semibold text-pitch-50">{money(h.stake, points)}</span> on{' '}
-              <span className={cx('font-semibold', toneFor(idx).text)}>{label}</span>
-            </span>
-            <span className="text-xs text-pitch-400">
-              pays ≈ <span className="tnum text-pitch-200">{money(h.potential, points)}</span>
-            </span>
-          </div>
-        );
+        return <StakeRow key={h.outcome} stake={h.stake} potential={h.potential} label={label} toneIndex={idx} count={market.outcomes.length} />;
       })}
       {error && <InlineError text={error} />}
     </div>
   );
 }
 
-// ------------------------------------------------------------------ settled
+/** "Your stake $2 on Yes · pays about $2.85": stamps when it changes. */
+export function StakeRow({
+  stake,
+  potential,
+  label,
+  toneIndex,
+  count,
+  lead = 'Your stake',
+  payLabel = 'pays about',
+}: {
+  stake: number;
+  potential: number;
+  label: string;
+  toneIndex: number;
+  count: number;
+  lead?: string;
+  payLabel?: string;
+}) {
+  const { points } = useParty();
+  const t = tone(toneIndex, count);
+  const stamp = useReplayClass(stake, 'x');
+  return (
+    <div className="relative flex items-center justify-between gap-3 overflow-hidden rounded-tile bg-night-850 py-2.5 pl-4 pr-3">
+      <span className={cx('absolute inset-y-0 left-0 w-1', t.rule)} aria-hidden="true" />
+      <span className="min-w-0 text-small text-night-200">
+        {lead}{' '}
+        <span key={stamp} className={cx('inline-block font-display text-body font-bold text-chalk tnum', stamp && 'hd-stamp')}>
+          {money(stake, points)}
+        </span>{' '}
+        on <span className={cx('font-bold', t.text)}>{label}</span>
+      </span>
+      <span className="shrink-0 text-right text-cap text-night-400">
+        {payLabel} <Roll text={money(potential, points)} className="font-display text-small font-bold text-chalk" />
+      </span>
+    </div>
+  );
+}
 
-function SettledFooter({ market, now }: { market: Market; now: number }) {
-  const { client, snap, me, points } = useParty();
+// ------------------------------------------------------------------ results
+
+function ResultRow({ market, now }: { market: Market; now: number }) {
+  const { client, snap, me, points, positions } = useParty();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [flagged, setFlagged] = useState(false);
   const s = market.state;
+  const landed = useReplayClass(s, 'x');
   if (s === 'open') return null;
   if (s === 'locked')
     return (
-      <Footer>
-        <Icon name="hourglass" size={16} className="text-pitch-400" />
-        <span className="text-pitch-200">Locked. Waiting for the result…</span>
-      </Footer>
+      <Line icon="hourglass">
+        <span className="text-night-200">Locked. Waiting for the result…</span>
+      </Line>
     );
-  const res = marketResult(market, snap.you?.positions ?? [], snap.fills, me);
-  const outcomeLabel = market.outcomes.find((o) => o.id === market.outcome)?.label;
+  const res = marketResult(market, positions, snap.fills, me);
   if (s === 'voided')
     return (
-      <Footer>
-        <Icon name="refresh" size={16} className="text-pitch-400" />
-        <span className="text-pitch-200">
-          Voided. {res.kind === 'refunded' ? `Your ${money(res.amount, points)} is back.` : 'Every stake refunded.'}
+      <Line icon="refresh">
+        <span className="text-night-200">
+          Voided. {res.kind === 'refunded' ? `Your ${money(res.amount, points)} is back.` : 'Every stake is refunded.'}
         </span>
-      </Footer>
+      </Line>
     );
   const disputeLeft = market.disputeEndsAt ? Math.ceil((Date.parse(market.disputeEndsAt) - now) / 1000) : 0;
   return (
-    <div className="mt-3 border-t border-pitch-700 pt-3">
-      <div className="flex items-center justify-between gap-2">
-        <span className="text-sm text-pitch-400">
-          Result: <span className="font-display text-lg font-bold uppercase text-pitch-50">{outcomeLabel ?? '—'}</span>
-        </span>
-        <ResultBadge res={res} points={points} />
-      </div>
-      {s === 'disputed' && <p className="mt-2 text-sm text-gemini">Flagged. The host is checking the result.</p>}
+    <div className="mt-3 border-t border-night-700 pt-3">
+      {res.kind === 'none' ? (
+        <p className="text-small text-night-400">No stake from you on this one.</p>
+      ) : (
+        <ResultBadge res={res} points={points} animate={!!landed && s === 'resolved'} big />
+      )}
+      {s === 'disputed' && (
+        <p className="mt-2 flex items-center gap-2 text-small text-night-200">
+          <Icon name="flag" size={16} className="text-night-400" /> Flagged. The host is checking the result.
+        </p>
+      )}
       {s === 'resolved' && disputeLeft > 0 && !flagged && (
         <button
           disabled={busy}
@@ -419,64 +585,62 @@ function SettledFooter({ market, now }: { market: Market; now: number }) {
             if (err) setError(err);
             else setFlagged(true);
           }}
-          className="mt-2 flex min-h-[44px] items-center gap-2 rounded-xl px-1 text-sm font-medium text-pitch-200 active:text-pitch-50"
+          className="btn-quiet -ml-3 mt-1 text-small"
         >
-          <Icon name="flag" size={16} /> Wrong result? Flag it <span className="tnum text-pitch-400">({disputeLeft}s)</span>
+          <Icon name="flag" size={16} /> {busy ? 'Flagging…' : 'Wrong result? Flag it'}
+          <span className="font-display font-bold text-night-400 tnum">{disputeLeft}&nbsp;s</span>
         </button>
       )}
-      {flagged && s === 'resolved' && <p className="mt-2 text-sm text-gemini">Thanks, the host will take a look.</p>}
+      {flagged && s === 'resolved' && <p className="mt-2 text-small text-night-200">Thanks. The host will take a look.</p>}
       {error && <InlineError text={error} />}
     </div>
   );
 }
 
-export function ResultBadge({ res, points }: { res: ReturnType<typeof marketResult>; points: boolean }) {
+/**
+ * Your result on a settled market: "Called it +$0.60" (blue, check), "Cooked −$1.00" (orange, cross),
+ * "Refunded". The win gets the floodlight shine when it lands.
+ */
+export function ResultBadge({
+  res,
+  points,
+  animate = false,
+  big = false,
+}: {
+  res: ReturnType<typeof marketResult>;
+  points: boolean;
+  animate?: boolean;
+  big?: boolean;
+}) {
+  const size = big ? 'text-lead' : 'text-body';
   if (res.kind === 'won')
     return (
-      <Pill className="bg-up/15 px-2.5 py-1 text-[12px] text-up">
-        <Icon name="trophy" size={13} /> Won {pnl(res.amount, points)}
-      </Pill>
+      <span className={cx('inline-flex items-center gap-1.5 rounded-chip font-bold text-yes', animate && 'hd-shine hd-stamp')}>
+        <Icon name="check" size={18} strokeWidth={2.6} />
+        Called it <span className={cx('font-display font-extrabold stretch-condensed tnum', size)}>{pnl(res.amount, points)}</span>
+      </span>
     );
   if (res.kind === 'lost')
     return (
-      <Pill className="bg-down/15 px-2.5 py-1 text-[12px] text-down">
-        <Icon name="x" size={13} /> Lost {money(res.amount, points)}
-      </Pill>
+      <span className={cx('inline-flex items-center gap-1.5 font-bold text-no', animate && 'hd-stamp')}>
+        <Icon name="x" size={18} strokeWidth={2.6} />
+        Cooked <span className={cx('font-display font-extrabold stretch-condensed tnum', size)}>{pnl(-res.amount, points)}</span>
+      </span>
     );
-  if (res.kind === 'refunded') return <Pill className="bg-pitch-700 text-pitch-200">Refunded</Pill>;
+  if (res.kind === 'refunded')
+    return (
+      <span className="inline-flex items-center gap-1.5 font-semibold text-night-200">
+        <Icon name="refresh" size={16} /> Refunded {money(res.amount, points)}
+      </span>
+    );
   return null;
 }
 
-function Footer({ children }: { children: ReactNode }) {
-  return <div className="mt-3 flex items-center gap-2 border-t border-pitch-700 pt-3 text-sm">{children}</div>;
-}
-
-// ------------------------------------------------------------------ friends vs. the pros
-
-function ProsStrip({ market, now }: { market: Market; now: number }) {
-  const row = prosRow(market);
-  if (!row) return null;
+function Line({ icon, children }: { icon: 'hourglass' | 'refresh'; children: ReactNode }) {
   return (
-    <div className="mt-3 rounded-xl bg-pitch-950/60 px-3 py-2">
-      <div className="mb-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-pitch-400">
-        Friends vs. the Pros · {row.label}
-      </div>
-      <div className="flex items-end justify-between gap-2">
-        <Stat label="Room" value={<Ticker value={row.room} format={formatPct} />} color="text-volt" />
-        <Stat label="Model" value={formatPct(row.model)} color="text-model" />
-        {row.gemini != null ? (
-          <Stat label={`Gemini · ${ago(row.geminiAsOf, now)}`} value={formatPct(row.gemini)} color="text-gemini" />
-        ) : null}
-      </div>
-    </div>
-  );
-}
-
-function Stat({ label, value, color }: { label: string; value: ReactNode; color: string }) {
-  return (
-    <div className="min-w-0 flex-1">
-      <div className={cx('font-display text-2xl font-bold leading-none tnum', color)}>{value}</div>
-      <div className="mt-0.5 truncate text-[11px] text-pitch-400">{label}</div>
-    </div>
+    <p className="mt-3 flex items-center gap-2 border-t border-night-700 pt-3 text-small">
+      <Icon name={icon} size={16} className="shrink-0 text-night-400" />
+      {children}
+    </p>
   );
 }

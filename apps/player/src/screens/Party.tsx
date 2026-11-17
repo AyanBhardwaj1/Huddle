@@ -1,9 +1,8 @@
-import type { ClientView } from '@huddle/shared';
-import { motion } from 'framer-motion';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import type { ClientView, Position } from '@huddle/shared';
+import { Icon, Mark, Wordmark } from '@huddle/ui';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { PartyCtx, type PartyCtxValue } from '../components/ctx';
-import { Icon, Spinner } from '../components/Icon';
-import { InlineError } from '../components/MarketCard';
+import { Avatar, InlineError, Loading } from '../components/primitives';
 import { getParty, type PartyPreview } from '../lib/api';
 import { friendlyError } from '../lib/markets';
 import { money } from '../lib/money';
@@ -20,6 +19,8 @@ export function PartyRoute({ code }: { code: string }) {
   const [previewErr, setPreviewErr] = useState<'missing' | 'offline' | null>(null);
   const [draftName, setDraftName] = useState('');
   const [joining, setJoining] = useState(false);
+  const [nameError, setNameError] = useState(false);
+  const nameInput = useRef<HTMLInputElement>(null);
   const view = useView(partyCode === code.toUpperCase() ? client : null);
 
   useEffect(() => {
@@ -47,62 +48,86 @@ export function PartyRoute({ code }: { code: string }) {
   const p = preview?.party;
   const players = (preview?.players ?? []).filter((x) => !x.isHouse);
   const joinError = view.lastError ? friendlyError(view.lastError) : null;
+  const upper = code.toUpperCase();
 
   return (
-    <div className="mx-auto flex min-h-[100dvh] max-w-md flex-col px-6 pb-[calc(env(safe-area-inset-bottom)+24px)] pt-[calc(env(safe-area-inset-top)+32px)]">
-      <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-pitch-400">
-        <img src="/icon.svg" alt="" className="h-6 w-6" /> Huddle · party {code.toUpperCase()}
-      </div>
+    <div className="mx-auto flex min-h-[100dvh] max-w-md flex-col px-5 pb-[calc(env(safe-area-inset-bottom)+1.5rem)] pt-[calc(env(safe-area-inset-top)+1.25rem)]">
+      <header className="flex items-center justify-between">
+        <a href="/" className="-m-2 rounded-tile p-2" aria-label="Huddle home">
+          <Wordmark className="text-lead text-night-200" />
+        </a>
+        <span className="font-display text-small font-bold stretch-wide text-night-400" translate="no">
+          {upper}
+        </span>
+      </header>
 
       {previewErr === 'missing' ? (
-        <div className="mt-10">
-          <h1 className="font-display text-4xl font-bold uppercase">Party not found</h1>
-          <p className="mt-2 text-pitch-200">Check the code with the host, or tap your phone on the box again.</p>
-          <a href="/" className="mt-6 inline-flex min-h-[48px] items-center rounded-2xl bg-pitch-800 px-5 font-semibold">
-            Back home
+        <div className="flex flex-1 flex-col justify-center">
+          <Mark size="3rem" className="text-night-600" />
+          <h1 className="mt-5 font-display text-head font-extrabold stretch-semi">No party called {upper}</h1>
+          <p className="mt-2 text-pretty text-body text-night-200">Check the code on the box with the host, or tap your phone on the box again.</p>
+          <a href="/" className="btn-secondary mt-6 w-fit">
+            <Icon name="arrowLeft" size={18} /> Back home
           </a>
         </div>
       ) : (
         <>
-          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mt-8">
-            <h1 className="font-display text-5xl font-bold uppercase leading-[0.95]">{p?.name ?? (previewErr ? 'Watch party' : '…')}</h1>
-            {p && (
-              <div className="mt-3 flex items-center gap-2 text-lg text-pitch-200">
-                <span className="h-2 w-2 rounded-full bg-live" /> {p.game.title}
-              </div>
+          <section className="mt-10" aria-labelledby="party-name">
+            {p ? (
+              <>
+                <p className="hd-fade flex items-center gap-2 text-small text-night-200">
+                  {p.status === 'live' ? (
+                    <>
+                      <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-live" aria-hidden="true" /> Live now
+                    </>
+                  ) : (
+                    'Starting soon'
+                  )}
+                  <span className="text-night-500" aria-hidden="true">
+                    ·
+                  </span>
+                  <span className="truncate">{p.game.title}</span>
+                </p>
+                <h1 id="party-name" className="hd-rise mt-2 text-balance font-display text-head font-extrabold stretch-semi">
+                  {p.name}
+                </h1>
+                <p className="hd-rise mt-2 text-body text-night-200" style={{ ['--d' as string]: '80ms' }}>
+                  Buy-in <span className="font-display font-bold text-chalk tnum">{money(p.config.buyIn, p.config.settlement === 'points')}</span>
+                </p>
+              </>
+            ) : previewErr === 'offline' ? (
+              <>
+                <h1 id="party-name" className="font-display text-head font-extrabold stretch-semi">
+                  Party {upper}
+                </h1>
+                <p className="mt-2 text-pretty text-small text-night-400">Couldn't load the party details. You can still join.</p>
+              </>
+            ) : (
+              <Loading>Finding the party…</Loading>
             )}
-            {p && (
-              <div className="mt-1 text-sm text-pitch-400">
-                Buy-in {money(p.config.buyIn, p.config.settlement === 'points')}
-              </div>
-            )}
-          </motion.div>
+          </section>
 
           {players.length > 0 && (
-            <div className="mt-6">
-              <div className="flex -space-x-2">
+            <div className="hd-rise mt-6 flex items-center gap-3" style={{ ['--d' as string]: '160ms' }}>
+              <div className="flex -space-x-1.5" aria-hidden="true">
                 {players.slice(0, 6).map((pl) => (
-                  <span key={pl.pubkey} className="grid h-10 w-10 place-items-center rounded-full border-2 border-pitch-950 bg-pitch-700 font-display text-lg font-bold uppercase">
-                    {pl.name.slice(0, 1)}
-                  </span>
+                  <Avatar key={pl.pubkey} name={pl.name} className="h-8 w-8 ring-2 ring-night-950" />
                 ))}
               </div>
-              <p className="mt-2 text-sm text-pitch-200">
+              <p className="min-w-0 text-small text-night-200">
                 {players
                   .slice(0, 3)
                   .map((x) => x.name)
                   .join(', ')}
-                {players.length > 3 ? ` +${players.length - 3}` : ''} {players.length === 1 ? 'is' : 'are'} in
+                {players.length > 3 ? ` and ${players.length - 3} more` : ''} {players.length === 1 ? 'is' : 'are'} in
               </p>
             </div>
           )}
 
           <div className="mt-auto pt-10">
             {name ? (
-              <div className="space-y-3 text-center">
-                <div className="flex items-center justify-center gap-2 text-pitch-200">
-                  {joinError ? null : <Spinner />} {joinError ? '' : `Joining as ${name}…`}
-                </div>
+              <div className="space-y-3">
+                {!joinError && <Loading className="justify-center">Joining as {name}…</Loading>}
                 {joinError && <InlineError text={joinError} />}
                 {(joinError || view.status === 'reconnecting') && (
                   <button
@@ -110,9 +135,9 @@ export function PartyRoute({ code }: { code: string }) {
                       useApp.getState().disconnect();
                       void connect(code, remoteParam || remote);
                     }}
-                    className="min-h-[48px] w-full rounded-2xl bg-pitch-800 font-semibold"
+                    className="btn-primary w-full"
                   >
-                    Try again
+                    <Icon name="refresh" size={20} /> Try again
                   </button>
                 )}
               </div>
@@ -120,41 +145,75 @@ export function PartyRoute({ code }: { code: string }) {
               <form
                 onSubmit={async (e) => {
                   e.preventDefault();
-                  if (!draftName.trim()) return;
+                  if (!draftName.trim()) {
+                    setNameError(true);
+                    nameInput.current?.focus();
+                    return;
+                  }
                   setJoining(true);
                   await setName(draftName);
                   await connect(code, remote);
                 }}
-                className="space-y-3"
+                className="space-y-4"
+                noValidate
               >
-                <label htmlFor="name" className="block text-sm text-pitch-200">
-                  What should the room call you?
-                </label>
-                <input
-                  id="name"
-                  data-testid="join-name"
-                  value={draftName}
-                  onChange={(e) => setDraftName(e.target.value)}
-                  maxLength={24}
-                  autoComplete="nickname"
-                  autoCapitalize="words"
-                  enterKeyHint="go"
-                  placeholder="Your name"
-                  className="h-16 w-full rounded-2xl border border-pitch-700 bg-pitch-900 px-5 font-display text-3xl font-bold text-pitch-50 placeholder:text-pitch-600 focus:border-volt focus:outline-none"
-                />
-                <label className="flex min-h-[44px] items-center gap-3 text-sm text-pitch-200">
-                  <input type="checkbox" checked={remote} onChange={(e) => setRemote(e.target.checked)} className="h-5 w-5 accent-[#D4FF3A]" />
-                  <span className="flex items-center gap-1.5">
-                    <Icon name="globe" size={16} className="text-gemini" /> I'm watching from somewhere else
+                <div>
+                  <label htmlFor="name" className="block font-display text-lead font-bold stretch-semi">
+                    What should the room call you?
+                  </label>
+                  <input
+                    ref={nameInput}
+                    id="name"
+                    name="nickname"
+                    data-testid="join-name"
+                    value={draftName}
+                    onChange={(e) => {
+                      setDraftName(e.target.value);
+                      setNameError(false);
+                    }}
+                    maxLength={24}
+                    autoComplete="nickname"
+                    autoCapitalize="words"
+                    spellCheck={false}
+                    enterKeyHint="go"
+                    placeholder="Your name…"
+                    aria-invalid={nameError}
+                    aria-describedby={nameError ? 'name-error' : undefined}
+                    className="field mt-3 h-14 font-display text-title font-bold stretch-semi"
+                  />
+                  {nameError && (
+                    <p id="name-error" className="mt-2 flex items-center gap-2 text-small text-chalk" role="alert">
+                      <Icon name="warn" size={16} className="text-no" /> Type a name first, so everyone knows who called it.
+                    </p>
+                  )}
+                </div>
+                <label className="flex min-h-14 cursor-pointer items-center gap-3 rounded-tile bg-night-900 px-4 py-2.5 has-[:focus-visible]:outline has-[:focus-visible]:outline-[3px] has-[:focus-visible]:outline-offset-[3px] has-[:focus-visible]:outline-flood">
+                  <input type="checkbox" name="remote" checked={remote} onChange={(e) => setRemote(e.target.checked)} className="peer sr-only" />
+                  <span
+                    className="grid h-6 w-6 shrink-0 place-items-center rounded-chip bg-night-800 text-transparent ring-1 ring-inset ring-night-600 transition-colors duration-quick peer-checked:bg-flood peer-checked:text-flood-ink peer-checked:ring-flood"
+                    aria-hidden="true"
+                  >
+                    <Icon name="check" size={16} strokeWidth={3} />
                   </span>
+                  <span className="min-w-0">
+                    <span className="block text-body text-chalk">I'm watching from somewhere else</span>
+                    <span className="block text-cap text-night-400">We'll line you up with the room's TV.</span>
+                  </span>
+                  <Icon name="globe" size={20} className="ml-auto shrink-0 text-night-400" />
                 </label>
                 <button
                   type="submit"
                   data-testid="join-submit"
-                  disabled={!draftName.trim() || joining}
-                  className="flex min-h-[64px] w-full items-center justify-center rounded-2xl bg-volt font-display text-2xl font-bold uppercase tracking-wide text-volt-ink shadow-glow transition-opacity disabled:opacity-40"
+                  disabled={joining}
+                  className="btn-primary w-full shadow-flood disabled:bg-flood disabled:text-flood-ink"
                 >
-                  {joining ? <Spinner size={24} /> : 'Join the party'}
+                  {joining ? (
+                    <>
+                      <Mark size="1.4rem" spin /> Joining…
+                    </>
+                  ) : (
+                    'Join the party'
+                  )}
                 </button>
               </form>
             )}
@@ -173,14 +232,37 @@ export function PartyShell({ client, view, remote }: { client: PartyClient; view
   const meP = snap.players.find((p) => p.pubkey === me);
   const [passed, setPassed] = useState(false);
   const balance = snap.you?.state?.balance ?? meP?.balance ?? 0;
+  const memory = useRef(new Map<string, Position[]>());
+  const positions = useMemo(() => {
+    const current = snap.you?.positions ?? [];
+    const merged = [...current];
+    for (const m of snap.markets) {
+      const mine = current.filter((p) => p.marketId === m.id);
+      // While a market trades, remember exactly what you hold (a cash-out empties it); once it
+      // settles, keep that memory if the engine stops sending the position.
+      if (m.state === 'open' || m.state === 'locked') memory.current.set(m.id, mine);
+      else if (!mine.length) merged.push(...(memory.current.get(m.id) ?? []));
+    }
+    return merged;
+  }, [snap.you?.positions, snap.markets]);
   const value: PartyCtxValue = useMemo(
-    () => ({ client, view, snap, me, meP, points: snap.party.config.settlement === 'points', balance, remote: remote || !!meP?.remote }),
-    [client, view, snap, me, meP, balance, remote],
+    () => ({
+      client,
+      view,
+      snap,
+      me,
+      meP,
+      points: snap.party.config.settlement === 'points',
+      balance,
+      remote: remote || !!meP?.remote,
+      positions,
+    }),
+    [client, view, snap, me, meP, balance, remote, positions],
   );
   const pass = useCallback(() => setPassed(true), []);
   const open = snap.party.status === 'live' || snap.party.status === 'lobby';
   const unfunded = open && (meP ? meP.deposited === 0 : !snap.you?.state);
-  // Once the buy-in screen is up it stays until the player moves on, so the "You're in!" confirmation
+  // Once the buy-in screen is up it stays until the player moves on, so the "You're in" confirmation
   // shows after the deposit lands (before, the credit itself unmounted the screen mid-flow).
   const [buyInShown, setBuyInShown] = useState(false);
   useEffect(() => {

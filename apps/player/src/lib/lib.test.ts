@@ -291,7 +291,8 @@ describe('formatting and errors', () => {
     expect(money(14.2 * USDC, true)).toBe('14.20 pts');
     expect(moneyShort(USDC, false)).toBe('$1');
     expect(moneyShort(2.5 * USDC, false)).toBe('$2.50');
-    expect(moneyShort(5 * USDC, true)).toBe('5 pts');
+    expect(moneyShort(5 * USDC, true)).toBe('5\u00a0pts');
+    expect(moneyShort(USDC, true)).toBe('1\u00a0pt');
     expect(pnl(-3 * USDC, false)).toBe('−$3.00');
     expect(pnl(4.2 * USDC, false)).toBe('+$4.20');
   });

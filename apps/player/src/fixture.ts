@@ -1,6 +1,9 @@
 /**
  * `?fixture=1` mode: a realistic static party so the player UI can be reviewed and screenshotted with
- * no engine. `?fixture=end` shows the end-of-game screen, `?fixture=buyin` the buy-in screen.
+ * no engine. `?fixture=end` shows the end-of-game screen (paid out), `?fixture=closing` the pot
+ * closing, `?fixture=buyin` the buy-in screen, `?fixture=remote` a friend 25 s behind the room
+ * (moment markets view-only), `?fixture=offline` reconnecting plus a co-sign mismatch,
+ * `?fixture=points` points mode. The live fixture has one market per mode and every market state.
  * Requests are simulated just enough for taps to feel real. Isolated here on purpose.
  */
 import {
@@ -138,6 +141,55 @@ function build(variant: string): PartySnapshot {
     },
     {
       ...base,
+      id: 'm-next',
+      question: 'Who scores the next goal?',
+      kind: 'game',
+      mode: 'pool',
+      outcomes: [
+        { id: 'por', label: 'Portugal' },
+        { id: 'none', label: 'No more goals tonight' },
+        { id: 'esp', label: 'Spain' },
+      ],
+      prior: { por: 0.41, none: 0.27, esp: 0.32 },
+      pool: { por: 7 * USDC, none: 3 * USDC, esp: 5 * USDC },
+      price: { por: 0.47, none: 0.2, esp: 0.33 },
+      lock: { manual: true, onEvent: 'minute:85' },
+      openedAt: iso(now - 30 * 60_000),
+      state: 'open',
+      volume: 15 * USDC,
+    },
+    {
+      ...base,
+      id: 'm-shot',
+      question: 'Spain shot on target in the next five minutes?',
+      kind: 'moment',
+      mode: 'amm',
+      outcomes: yn,
+      prior: { yes: 0.4, no: 0.6 },
+      price: { yes: 0.46, no: 0.54 },
+      lock: { manual: true },
+      lockedAt: iso(now - 20_000),
+      state: 'locked',
+      volume: 6 * USDC,
+    },
+    {
+      ...base,
+      id: 'm-offside',
+      question: 'Does the goal stand after the review?',
+      kind: 'moment',
+      mode: 'bet',
+      outcomes: yn,
+      prior: { yes: 0.66, no: 0.34 },
+      price: { yes: 0.66, no: 0.34 },
+      lock: { manual: true },
+      state: 'disputed',
+      outcome: 'no',
+      resolvedAt: iso(now - 50_000),
+      dispute: { by: 'JAKE', reason: 'Player flagged the result', at: iso(now - 40_000) },
+      volume: 4 * USDC,
+    },
+    {
+      ...base,
       id: 'm-free',
       question: 'Free kick ends in a goal?',
       kind: 'moment',
@@ -163,6 +215,9 @@ function build(variant: string): PartySnapshot {
     { partyId: 'party-demo', marketId: 'm-pen', player: ME, outcome: 'yes', stake: 2 * USDC, potential: Math.floor((2 * 20) / 14 * USDC) },
     { partyId: 'party-demo', marketId: 'm-winner', player: ME, outcome: 'por', shares: '6.500000', stake: 3.6 * USDC, potential: 6.5 * USDC },
     { partyId: 'party-demo', marketId: 'm-card', player: ME, outcome: 'yes', stake: 1 * USDC, potential: 1.6 * USDC },
+    { partyId: 'party-demo', marketId: 'm-next', player: ME, outcome: 'none', stake: 1 * USDC, potential: 5 * USDC },
+    { partyId: 'party-demo', marketId: 'm-shot', player: ME, outcome: 'yes', shares: '2.100000', stake: 1 * USDC, potential: 2.1 * USDC },
+    { partyId: 'party-demo', marketId: 'm-offside', player: ME, outcome: 'yes', stake: 1 * USDC, potential: 1.5 * USDC },
   ];
 
   const players: PlayerPublic[] = [
@@ -174,10 +229,11 @@ function build(variant: string): PartySnapshot {
   ];
 
   const announcer: AnnouncerLine[] = [
+    { id: 'a0', text: "Yellow card! The room had it at 62%. Ayan, you're on a heater.", priority: 'high', createdAt: iso(now - 60_000), event: 'market_resolved', marketId: 'm-card', persona: 'soccer' },
     { id: 'a1', text: "Penalty to Portugal! Ronaldo steps up. Room's got him at 70%. Get in!", priority: 'high', createdAt: iso(now - 4_000), event: 'market_opened', marketId: 'm-pen', persona: 'soccer' },
   ];
 
-  const ended = variant === 'end';
+  const ended = variant === 'end' || variant === 'closing';
   if (ended) {
     for (const m of markets) if (m.state === 'open') Object.assign(m, { state: 'final', outcome: m.outcomes[0]!.id, resolvedAt: iso(now - 60_000) });
     players.forEach((p) => {
@@ -205,7 +261,7 @@ function build(variant: string): PartySnapshot {
         source: 'replay',
       },
       config: { ...DEFAULT_PARTY_CONFIG, settlement: 'vault' },
-      status: ended ? 'finalized' : 'live',
+      status: variant === 'end' ? 'finalized' : variant === 'closing' ? 'closing' : 'live',
       createdAt: iso(now - 50 * 60_000),
       chain: { partyAddress: 'PartyDemo11111111111111111111111111111111', explorerBase: 'https://explorer.solana.com', finalizeTx: ended ? '4xDemoFinalize' : undefined },
       joinUrl: '/j/DEMO',
@@ -267,11 +323,30 @@ export class FixtureClient implements PartyClient {
       const me = snapshot.players.find((p) => p.pubkey === ME)!;
       Object.assign(me, { deposited: 0, balance: 0, locked: 0, pnl: 0 });
     }
+    // `remote`: a friend on a stream 25 s behind the room (moment markets view-only).
+    if (variant === 'remote') {
+      snapshot.you!.drafts = [];
+      snapshot.you!.delayMs = 25_000;
+      snapshot.you!.momentMarketsAllowed = false;
+    }
+    // `offline`: the connection dropped and the last balance from the box didn't check out.
+    if (variant === 'offline') snapshot.you!.drafts = [];
+    // `points`: points mode.
+    if (variant === 'points') {
+      snapshot.party.config.settlement = 'points';
+      snapshot.you!.drafts = [];
+    }
     this.view = {
-      status: 'ready',
+      status: variant === 'offline' ? 'reconnecting' : 'ready',
       snapshot,
       lastSigned: null,
-      cosignMismatch: null,
+      cosignMismatch:
+        variant === 'offline'
+          ? {
+              reason: 'balance does not follow from the ledger',
+              state: { member: ME, nonce: 7, balance: 4.6 * USDC, prevBalance: 6.6 * USDC, stateHash: '00', prevStateHash: '00', entries: [], boxSig: '' },
+            }
+          : null,
       lastError: null,
       lastGameEvent: null,
       chainEvents:

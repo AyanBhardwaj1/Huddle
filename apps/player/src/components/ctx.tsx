@@ -1,4 +1,4 @@
-import type { ClientRequest, ClientView, PartySnapshot, PlayerPublic } from '@huddle/shared';
+import type { ClientRequest, ClientView, PartySnapshot, PlayerPublic, Position } from '@huddle/shared';
 import { createContext, useContext, useEffect, useState } from 'react';
 import { create } from 'zustand';
 import { buzz, HAPTIC } from '../lib/haptics';
@@ -16,6 +16,12 @@ export interface PartyCtxValue {
   /** Available cash, base units. */
   balance: number;
   remote: boolean;
+  /**
+   * Your positions, plus the last ones seen on markets that have since settled. The engine drops
+   * settled positions and the client keeps only the last 50 fills, so without this a busy room
+   * would forget that you called it.
+   */
+  positions: Position[];
 }
 
 export const PartyCtx = createContext<PartyCtxValue | null>(null);
@@ -61,10 +67,22 @@ export async function act(client: PartyClient, body: ClientRequest): Promise<str
 interface UiState {
   topUpOpen: boolean;
   setTopUp(open: boolean): void;
+  /**
+   * What the talk button wants in the caption slot ("Listening…", your words, the agent's reply).
+   * One slot for captions, notices and talk, so nothing stacks over the cards or the mic.
+   */
+  talk: { text: string; listening: boolean } | null;
+  setTalk(talk: { text: string; listening: boolean } | null): void;
+  historyOpen: boolean;
+  setHistory(open: boolean): void;
 }
 export const useUi = create<UiState>((set) => ({
   topUpOpen: false,
   setTopUp: (topUpOpen) => set({ topUpOpen }),
+  talk: null,
+  setTalk: (talk) => set({ talk }),
+  historyOpen: false,
+  setHistory: (historyOpen) => set({ historyOpen }),
 }));
 
 export function cx(...parts: (string | false | null | undefined)[]): string {

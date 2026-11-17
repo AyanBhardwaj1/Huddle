@@ -1,5 +1,5 @@
+import { Mark } from '@huddle/ui';
 import { useEffect, useState, type ReactNode } from 'react';
-import { Spinner } from './components/Icon';
 import { FixtureClient, fixtureVariant } from './fixture';
 import { useApp, useView } from './lib/session';
 import { Home } from './screens/Home';
@@ -21,11 +21,18 @@ function RealApp() {
   }, [boot]);
 
   if (bootError)
-    return <Centered>This browser blocked storage. Turn off private browsing and reload.</Centered>;
+    return (
+      <Centered>
+        <Mark size="3rem" className="text-night-600" />
+        <p className="mt-5 max-w-[28ch] text-pretty text-body text-chalk">This browser blocked storage, so Huddle can't keep your seat.</p>
+        <p className="mt-1 text-small text-night-400">Turn off private browsing, then reload.</p>
+      </Centered>
+    );
   if (!booted)
     return (
       <Centered>
-        <Spinner size={28} />
+        <Mark size="2.5rem" spin className="text-night-600" />
+        <span className="sr-only">Opening Huddle…</span>
       </Centered>
     );
 
@@ -44,5 +51,5 @@ function FixtureApp({ variant }: { variant: string }) {
 }
 
 function Centered({ children }: { children: ReactNode }) {
-  return <div className="grid min-h-[100dvh] place-items-center px-8 text-center text-pitch-200">{children}</div>;
+  return <div className="flex min-h-[100dvh] flex-col items-center justify-center px-8 text-center">{children}</div>;
 }

@@ -21,13 +21,13 @@ export default defineConfig(({ mode }) => {
         manifest: {
           name: 'Huddle',
           short_name: 'Huddle',
-          description: 'Bet on every moment of the game with your friends.',
+          description: 'Call every moment of the game with your friends.',
           start_url: '/',
           scope: '/',
           display: 'standalone',
           orientation: 'portrait',
-          background_color: '#07090D',
-          theme_color: '#07090D',
+          background_color: '#08090B',
+          theme_color: '#08090B',
           icons: [
             { src: '/icon-192.png', sizes: '192x192', type: 'image/png' },
             { src: '/icon-512.png', sizes: '512x512', type: 'image/png' },
