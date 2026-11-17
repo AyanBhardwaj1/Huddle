@@ -59,34 +59,42 @@ export function SplitBar({
 }
 
 /**
- * Ticks under a split bar for other forecasters on the same axis (Model, Gemini). Each has a
- * text label; position is `p` of the bar's width.
+ * Notches on the split axis for other forecasters (Model, Gemini): a solid or hollow triangle
+ * pointing at the bar, each at `p` of its width. Pair it with a legend that repeats the shapes and
+ * the numbers, so position, shape and text all say the same thing.
  */
 export function SplitMarkers({
   markers,
   className = '',
 }: {
-  markers: { id: string; label: ReactNode; p: number | null | undefined }[];
+  markers: { id: string; label: string; p: number | null | undefined; shape: 'solid' | 'hollow' }[];
   className?: string;
 }) {
   return (
-    <div className={`hd-markers ${className}`}>
+    <div className={`hd-markers ${className}`} style={{ height: '0.8em' }} aria-hidden="true">
       {markers.map((m) => {
         const p = typeof m.p === 'number' && Number.isFinite(m.p) ? Math.min(1, Math.max(0, m.p)) : null;
         if (p === null) return null;
-        const alignRight = p > 0.72;
         return (
           <div key={m.id} className="hd-marker" style={{ transform: `translateX(${p * 100}%)` }}>
-            <div
-              className="absolute top-0 flex flex-col"
-              style={alignRight ? { right: '100%', alignItems: 'flex-end', marginRight: '-1px' } : { left: '-1px' }}
-            >
-              <span className="block h-[0.6em] w-[2px] bg-current" style={alignRight ? { alignSelf: 'flex-end' } : undefined} />
-              <span className="whitespace-nowrap">{m.label}</span>
-            </div>
+            <MarkerShape shape={m.shape} className="absolute bottom-0 -translate-x-1/2" />
           </div>
         );
       })}
     </div>
+  );
+}
+
+export function MarkerShape({ shape, className = '' }: { shape: 'solid' | 'hollow'; className?: string }) {
+  return (
+    <svg viewBox="0 0 12 10" width="0.8em" height="0.66em" className={className} aria-hidden="true" focusable="false">
+      <path
+        d="M1.2 1.2h9.6L6 8.8z"
+        fill={shape === 'solid' ? 'currentColor' : 'none'}
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinejoin="round"
+      />
+    </svg>
   );
 }

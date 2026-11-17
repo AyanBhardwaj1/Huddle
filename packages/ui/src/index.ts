@@ -5,7 +5,7 @@
  */
 export { Icon, type IconName } from './Icon';
 export { Roll, Pct, DirArrow } from './Roll';
-export { SplitBar, SplitMarkers, toneFor, type SplitPart, type Tone } from './Split';
+export { SplitBar, SplitMarkers, MarkerShape, toneFor, type SplitPart, type Tone } from './Split';
 export { LockRing, type LockState } from './LockRing';
 export { Mark, Wordmark } from './Mark';
 export { DUR, EASE, SPRING, prefersReducedMotion, useReducedMotion, useReplayClass, useDirection } from './motion';

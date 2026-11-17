@@ -30,7 +30,7 @@ const night = {
   700: '#232830', // rules, hairlines
   600: '#343B45', // strong rules, disabled fill
   500: '#535C68', // disabled text
-  400: '#87909B', // muted text (6.3:1 on 950)
+  400: '#87909B', // muted text (about 6:1 on 950)
   300: '#AEB5BD',
   200: '#CED3D8', // secondary text
   100: '#E6E8EA',

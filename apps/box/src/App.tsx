@@ -10,6 +10,7 @@ import { Home } from './screens/Home';
 import { LiveBoard, PartyOverlays } from './screens/LiveBoard';
 import { Lobby } from './screens/Lobby';
 import { useBox } from './store';
+import { Kit } from './screens/Kit';
 
 const FATAL = new Set(['unauthorized', 'not_found', 'party_closed']);
 
@@ -86,6 +87,7 @@ export function App() {
   const session = useBox((s) => s.session);
   const screen = useBox((s) => s.screen);
   const fixture = fixtureParam();
+  if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('fixture') === 'kit') return <Kit />;
   return (
     <div className="relative h-full w-full overflow-hidden bg-pitch-950">
       {fixture ? (
