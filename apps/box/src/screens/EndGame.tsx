@@ -1,14 +1,17 @@
-import type { ChainEvent, PlayerPublic } from '@huddle/shared';
-import { AnimatePresence, motion } from 'framer-motion';
+import type { ChainEvent, Party, PlayerPublic } from '@huddle/shared';
+import { Roll } from '@huddle/ui';
+import { motion } from 'framer-motion';
+import { useRef, type CSSProperties } from 'react';
 import { CaptionBar } from '../components/board';
+import { BoxButtons } from '../components/controls';
 import { Icon, Wordmark } from '../components/ui';
 import { formatSecs, isPoints, leaderboard, moneyShort, settlementSteps } from '../lib/derive';
 import { useNow, useParty } from '../party';
 import { useBox } from '../store';
 import { ScorecardPanel } from './Scorecard';
 
-const PODIUM_H = ['h-[9rem]', 'h-[6.5rem]', 'h-[5rem]'];
 const PODIUM_ORDER = [1, 0, 2]; // 2nd, 1st, 3rd
+const PODIUM_H = ['h-[6.5rem]', 'h-[4.5rem]', 'h-[3.25rem]'];
 
 const CHAIN_LABEL: Record<ChainEvent['kind'], string> = {
   create_party: 'Party opened',
@@ -18,6 +21,48 @@ const CHAIN_LABEL: Record<ChainEvent['kind'], string> = {
   finalize: 'Settled',
   withdraw: 'Payout landed',
 };
+
+function pnlTone(pnl: number) {
+  return pnl > 0 ? 'text-yes' : pnl < 0 ? 'text-no' : 'text-night-200';
+}
+
+function Pnl({ pnl, party, className }: { pnl: number; party: Party; className: string }) {
+  return (
+    <span className={`num flex items-center gap-1 whitespace-nowrap leading-none ${pnlTone(pnl)} ${className}`}>
+      {pnl !== 0 && <Icon name={pnl > 0 ? 'up' : 'down'} className="h-[0.45em] w-[0.45em]" />}
+      {moneyShort(pnl, party, { sign: true })}
+    </span>
+  );
+}
+
+function Podium({ ranked, party }: { ranked: PlayerPublic[]; party: Party }) {
+  return (
+    <div className="flex items-end justify-center gap-3" aria-label="Podium">
+      {PODIUM_ORDER.map((idx) => {
+        const p = ranked[idx];
+        if (!p) return <div key={idx} className="w-[10rem]" aria-hidden="true" />;
+        const first = idx === 0;
+        return (
+          <div key={p.pubkey} className="hd-rise flex w-[10rem] min-w-0 flex-col items-center" style={{ ['--d' as string]: `${(2 - idx) * 220}ms` } as CSSProperties}>
+            {first && <Icon name="crown" className="mb-1 h-7 w-7 text-flood" title="Winner" />}
+            <span
+              className={`max-w-full truncate px-1 font-bold leading-tight ${first && p.name.length <= 8 ? 'hd-shine text-head' : first ? 'hd-shine text-title' : 'text-lead'}`}
+              style={{ ['--d' as string]: '900ms' } as CSSProperties}
+            >
+              {p.name}
+            </span>
+            <Pnl pnl={p.pnl} party={party} className={first ? (moneyShort(p.pnl, party, { sign: true }).length > 7 ? 'text-head' : 'text-display') : 'text-title'} />
+            <div
+              className={`mt-2 flex w-full items-start justify-center rounded-t-tile pt-1.5 ${PODIUM_H[idx]} ${first ? 'bg-flood text-flood-ink' : 'bg-night-800 text-night-200'}`}
+            >
+              <span className="num text-head leading-none">{idx + 1}</span>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
 
 export function EndGame() {
   const { view } = useParty();
@@ -30,139 +75,126 @@ export function EndGame() {
   const steps = settlementSteps(party);
   const challengeLeft =
     party.status === 'closing' && party.chain.challengeEndsAt ? Math.max(0, Date.parse(party.chain.challengeEndsAt) - now) : null;
-  const nameOf = (pk?: string) => s.players.find((p: PlayerPublic) => p.pubkey === pk)?.name;
-  const events = [...view.chainEvents].reverse().slice(0, 6);
   const points = isPoints(party);
+  const pot = ranked.reduce((a, p) => a + p.deposited, 0);
+  const withdrawals = new Map(view.chainEvents.filter((e) => e.kind === 'withdraw' && e.member).map((e) => [e.member!, e]));
+  // Rows already paid on first paint don't replay the coin.
+  const seenPaid = useRef<Set<string> | null>(null);
+  if (seenPaid.current === null) seenPaid.current = new Set(withdrawals.keys());
 
   return (
     <div className="flex h-full flex-col">
-      <div className="grid min-h-0 flex-1 grid-cols-[1.1fr_1fr] gap-4 p-4">
-        {/* Podium + table */}
-        <section className="flex min-h-0 flex-col gap-3">
-          <div className="flex items-baseline gap-3">
-            <Wordmark className="text-[1.5rem] text-pitch-200" />
-            <span className="kicker">Final</span>
-            <span className="tabular ml-auto font-display text-[1.8rem] font-bold">
-              {s.game.home.short} {s.game.score.home} – {s.game.score.away} {s.game.away.short}
+      <div className="grid min-h-0 flex-1 grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] grid-rows-[minmax(0,1fr)]">
+        {/* Standings */}
+        <section className="flex min-h-0 flex-col px-7 pb-4 pt-5" aria-label="Final standings" data-testid="final-leaderboard">
+          <div className="flex items-center gap-4">
+            <Wordmark className="text-lead text-night-400" lit={12} />
+            <span className="num ml-auto whitespace-nowrap text-title">
+              {s.game.home.short} {s.game.score.home}
+              <span className="px-1.5 text-night-400">–</span>
+              {s.game.score.away} {s.game.away.short}
             </span>
           </div>
-          <div className="flex items-end justify-center gap-3">
-            {PODIUM_ORDER.map((idx) => {
-              const p = ranked[idx];
-              if (!p) return <div key={idx} className="w-[10rem]" />;
-              return (
-                <motion.div
-                  key={p.pubkey}
-                  className="flex w-[10.5rem] flex-col items-center"
-                  initial={{ y: 60, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.25 * (2 - idx), type: 'spring', stiffness: 200, damping: 18 }}
-                >
-                  {idx === 0 && <Icon name="crown" className="h-9 w-9 text-volt" />}
-                  <span className="max-w-full truncate font-display text-[2rem] font-bold leading-none">{p.name}</span>
-                  <span className={`tabular font-display text-[1.6rem] font-bold ${p.pnl >= 0 ? 'text-up' : 'text-down'}`}>
-                    {moneyShort(p.pnl, party, { sign: true })}
-                  </span>
-                  <div
-                    className={`mt-1 flex w-full items-start justify-center rounded-t-xl pt-2 ${PODIUM_H[idx]} ${idx === 0 ? 'bg-volt text-volt-ink' : 'bg-pitch-700 text-pitch-50'}`}
-                  >
-                    <span className="font-display text-[3rem] font-bold leading-none">{idx + 1}</span>
-                  </div>
-                </motion.div>
-              );
-            })}
+          <h1 className="q mt-3 text-title leading-tight">Full time. Here’s how the room did.</h1>
+          <div className="mt-auto pt-3">
+            <Podium ranked={ranked} party={party} />
           </div>
-          <div className="flex min-h-0 flex-1 flex-col gap-1 overflow-hidden">
-            {ranked.slice(3).map((p, i) => (
-              <div key={p.pubkey} className="flex items-center gap-3 rounded-lg bg-pitch-900 px-3 py-1.5 ring-1 ring-pitch-700">
-                <span className="w-6 font-display text-[1.3rem] font-bold text-pitch-400">{i + 4}</span>
-                <span className="flex-1 truncate text-[1.1rem] font-semibold">{p.name}</span>
-                <span
-                  className={`tabular flex items-center gap-1 font-display text-[1.4rem] font-bold ${p.pnl >= 0 ? 'text-up' : 'text-down'}`}
-                >
-                  <Icon name={p.pnl >= 0 ? 'up' : 'down'} className="h-3.5 w-3.5" />
-                  {moneyShort(p.pnl, party, { sign: true })}
-                </span>
-              </div>
+          <ol className="flex flex-col border-t border-night-700" start={4} aria-label="Rest of the leaderboard">
+            {ranked.slice(3, 5).map((p, i) => (
+              <motion.li layout="position" key={p.pubkey} className="flex items-baseline gap-3 border-b border-night-700 py-1.5">
+                <span className="num w-6 text-lead text-night-400">{i + 4}</span>
+                <span className="min-w-0 flex-1 truncate text-lead font-semibold">{p.name}</span>
+                <Pnl pnl={p.pnl} party={party} className="text-title" />
+              </motion.li>
             ))}
+          </ol>
+          <div className="mt-3 flex items-center gap-4">
+            <button
+              type="button"
+              className="btn-primary min-h-[3.25rem] px-7"
+              onClick={() => {
+                setSession(null);
+                setScreen('create');
+              }}
+            >
+              New party <Icon name="arrowRight" className="h-5 w-5" strokeWidth={2.6} />
+            </button>
+            <p className="min-w-0 text-body text-night-400">Same box, next game.</p>
           </div>
-          <button
-            className="btn-volt mt-auto"
-            onClick={() => {
-              setSession(null);
-              setScreen('create');
-            }}
-          >
-            New party <Icon name="next" className="h-5 w-5" />
-          </button>
         </section>
 
-        {/* Scorecard + settlement */}
-        <section className="flex min-h-0 flex-col gap-3">
-          <div className="card p-4">
-            <ScorecardPanel scorecard={s.scorecard} compact />
+        {/* Settling up + scorecard */}
+        <section className="flex min-h-0 flex-col gap-2.5 overflow-hidden border-l border-night-700 bg-night-900 px-6 pb-4 pt-4">
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="text-title font-bold">{points ? 'Locking the scores' : 'Settling up'}</h2>
+            {!points && (
+              <span className="ml-auto text-body text-night-400">
+                Pot <span className="num text-lead text-chalk">{moneyShort(pot, party)}</span>
+              </span>
+            )}
+            <BoxButtons canLock={false} showLock={false} compact />
           </div>
-          <div className="card flex min-h-0 flex-1 flex-col gap-2 p-4">
-            <div className="flex items-center gap-2">
-              {steps.map((st, i) => (
-                <div key={st.id} className="flex flex-1 items-center gap-2">
+          <ol className="flex items-start" aria-label="Settlement progress">
+            {steps.map((st, i) => (
+              <li key={st.id} className="flex flex-1 flex-col items-start gap-1" aria-current={st.state === 'active' ? 'step' : undefined}>
+                <span className="flex w-full items-center">
                   <span
-                    className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full font-display text-[1.1rem] font-bold ${
-                      st.state === 'done'
-                        ? 'bg-volt text-volt-ink'
-                        : st.state === 'active'
-                          ? 'bg-up text-up-ink'
-                          : 'bg-pitch-700 text-pitch-400'
+                    className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full font-display text-body font-bold ${
+                      st.state === 'done' ? 'bg-flood text-flood-ink' : st.state === 'active' ? 'bg-chalk text-night-950' : 'bg-night-800 text-night-400'
                     }`}
                   >
-                    {st.state === 'done' ? <Icon name="check" className="h-5 w-5" /> : i + 1}
+                    {st.state === 'done' ? <Icon name="check" className="h-4 w-4" strokeWidth={3} /> : i + 1}
                   </span>
-                  <span className={`text-[0.95rem] font-semibold leading-tight ${st.state === 'todo' ? 'text-pitch-400' : ''}`}>
-                    {st.label}
-                    {st.id === 'closing' && challengeLeft !== null && (
-                      <span className="tabular block font-display text-[1.6rem] text-up">{formatSecs(challengeLeft)}</span>
-                    )}
-                  </span>
-                </div>
-              ))}
+                  {i < steps.length - 1 && <span className={`mx-2 h-[2px] flex-1 ${st.state === 'done' ? 'bg-flood' : 'bg-night-700'}`} aria-hidden="true" />}
+                </span>
+                <span className={`pr-2 text-small font-semibold leading-tight ${st.state === 'todo' ? 'text-night-400' : ''}`}>
+                  {st.label}
+                  {st.id === 'closing' && challengeLeft !== null && <span className="num ml-1.5 text-lead text-chalk">{formatSecs(challengeLeft)}</span>}
+                </span>
+              </li>
+            ))}
+          </ol>
+          <p className="text-small text-night-400">
+            {points
+              ? 'Points party: final scores are locked in, nothing to pay out.'
+              : party.status === 'finalized'
+                ? 'Everyone has been paid out automatically.'
+                : 'Balances are co-signed, so payouts land automatically when the window closes.'}
+          </p>
+          {(
+            <div>
+              <ul className="flex flex-col" aria-label={points ? "Final scores" : "Payouts"} aria-live="polite">
+                {ranked.slice(0, points ? 5 : 3).map((p) => {
+                  const w = withdrawals.get(p.pubkey);
+                  const fresh = !!w && !seenPaid.current!.has(p.pubkey);
+                  return (
+                    <li key={p.pubkey} className="relative flex items-baseline gap-3 border-t border-night-700 py-1">
+                      <span className="min-w-0 flex-1 truncate text-lead">{p.name}</span>
+                      <span className={`text-small ${w || points ? 'text-flood' : 'text-night-400'}`}>{points ? 'Final' : w ? CHAIN_LABEL.withdraw : 'Waiting'}</span>
+                      {w?.explorerUrl && (
+                        <a
+                          href={w.explorerUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-small font-semibold text-night-200 underline decoration-night-600 underline-offset-4 hover:text-chalk"
+                        >
+                          receipt
+                        </a>
+                      )}
+                      <span className={`num text-title ${w || points ? 'text-chalk' : 'text-night-400'}`}>
+                        <Roll text={moneyShort(p.payout ?? p.balance, party)} value={p.payout ?? p.balance} />
+                      </span>
+                      {fresh && (
+                        <span className="hd-coin left-0 top-1/2" style={{ ['--dx' as string]: '20rem', ['--dy' as string]: '0' } as CSSProperties} aria-hidden="true" />
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
             </div>
-            <p className="text-[0.85rem] text-pitch-400">
-              {points
-                ? 'Points party: final scores are locked in, nothing to pay out.'
-                : party.status === 'finalized'
-                  ? 'Everyone has been paid out automatically.'
-                  : 'Every balance is co-signed by its player, so payouts happen automatically after the window.'}
-            </p>
-            <div className="flex min-h-0 flex-1 flex-col gap-1 overflow-hidden">
-              <AnimatePresence initial={false}>
-                {events.map((e) => (
-                  <motion.div
-                    key={e.signature}
-                    initial={{ opacity: 0, x: 20, backgroundColor: 'rgba(212,255,58,0.3)' }}
-                    animate={{ opacity: 1, x: 0, backgroundColor: 'rgba(20,26,36,1)' }}
-                    className="flex items-center gap-2 rounded-lg px-3 py-1 text-[0.95rem] ring-1 ring-pitch-700"
-                  >
-                    <Icon
-                      name={e.kind === 'withdraw' ? 'check' : 'link'}
-                      className={`h-4 w-4 ${e.kind === 'withdraw' ? 'text-volt' : 'text-pitch-400'}`}
-                    />
-                    <span className="font-semibold">{CHAIN_LABEL[e.kind]}</span>
-                    {nameOf(e.member) && <span className="text-pitch-200">· {nameOf(e.member)}</span>}
-                    {e.amount !== undefined && <span className="tabular text-up">{moneyShort(e.amount, party)}</span>}
-                    {e.explorerUrl && (
-                      <a
-                        href={e.explorerUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="ml-auto text-[0.8rem] font-semibold text-up underline underline-offset-2"
-                      >
-                        receipt
-                      </a>
-                    )}
-                  </motion.div>
-                ))}
-              </AnimatePresence>
-            </div>
+          )}
+          <div className={`border-t border-night-700 pt-3 ${points ? '' : 'mt-auto'}`}>
+            <ScorecardPanel scorecard={s.scorecard} compact />
           </div>
         </section>
       </div>

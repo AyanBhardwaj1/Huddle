@@ -1,6 +1,6 @@
 import type { Market, MarketMode, Persona } from '@huddle/shared';
-import { motion } from 'framer-motion';
-import { useState, type ReactNode } from 'react';
+import { pctText } from '@huddle/ui';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { activeMoment, disputed, drafts, MODE_LABEL, moneyShort, roomProb } from '../lib/derive';
 import { useParty } from '../party';
 import { useBox } from '../store';
@@ -14,22 +14,23 @@ const PERSONAS: { value: Persona; label: string }[] = [
 ];
 const SPEEDS = [1, 2, 5, 10];
 const LOCK_SECS = [20, 45, 120, 600];
+const STATE_LABEL: Partial<Record<Market['state'], string>> = { open: 'Open', locked: 'Locked', disputed: 'Disputed', draft: 'Draft' };
 
-function Section({ title, children, accent }: { title: string; children: ReactNode; accent?: boolean }) {
+function Section({ title, children, tone }: { title: string; children: ReactNode; tone?: 'alert' }) {
   return (
-    <section className={`rounded-xl p-3 ring-1 ${accent ? 'bg-down/10 ring-down/60' : 'bg-pitch-900 ring-pitch-700'}`}>
-      <h3 className={`kicker mb-2 text-[0.85rem] ${accent ? 'text-down' : ''}`}>{title}</h3>
-      <div className="flex flex-col gap-2">{children}</div>
+    <section className={`flex flex-col gap-2.5 border-t px-4 py-4 ${tone === 'alert' ? 'border-no-dim bg-no-deep/60' : 'border-night-700'}`}>
+      <h3 className={`text-body font-bold ${tone === 'alert' ? 'text-no-bright' : 'text-night-200'}`}>{title}</h3>
+      {children}
     </section>
   );
 }
 
-/** Two-tap confirm for destructive actions. */
+/** Two-tap confirm for destructive actions (the second tap within 3 s commits). */
 function ConfirmButton({
   label,
   confirmLabel,
   onConfirm,
-  className = 'btn-ghost',
+  className = 'btn-secondary',
 }: {
   label: ReactNode;
   confirmLabel: string;
@@ -37,16 +38,21 @@ function ConfirmButton({
   className?: string;
 }) {
   const [armed, setArmed] = useState(false);
+  const timer = useRef<ReturnType<typeof setTimeout>>();
+  useEffect(() => () => clearTimeout(timer.current), []);
   return (
     <button
-      className={`${armed ? 'btn-down' : className} text-[1.05rem]`}
+      type="button"
+      className={`${armed ? 'btn-danger' : className} min-h-[2.75rem] text-body`}
+      aria-live="polite"
       onClick={() => {
+        clearTimeout(timer.current);
         if (armed) {
           setArmed(false);
           onConfirm();
         } else {
           setArmed(true);
-          setTimeout(() => setArmed(false), 3000);
+          timer.current = setTimeout(() => setArmed(false), 3000);
         }
       }}
     >
@@ -61,44 +67,46 @@ function MarketRow({ m }: { m: Market }) {
   const [open, setOpen] = useState(false);
   const canSwitch = m.state === 'open' && m.volume === 0;
   return (
-    <div className="rounded-lg bg-pitch-800 p-2 ring-1 ring-pitch-700">
-      <button className="flex w-full items-center gap-2 text-left" onClick={() => setOpen((x) => !x)}>
-        <span
-          className={`rounded px-1.5 py-0.5 text-[0.65rem] font-bold uppercase tracking-widest ${m.state === 'open' ? 'bg-volt text-volt-ink' : 'bg-pitch-600 text-pitch-50'}`}
-        >
-          {m.state}
-        </span>
-        <span className="min-w-0 flex-1 truncate text-[0.95rem] font-semibold">{m.question}</span>
-        <span className="tabular text-[0.8rem] text-pitch-400">{moneyShort(m.volume, party)}</span>
-        <Icon name={open ? 'up' : 'down'} className="h-3 w-3 text-pitch-400" />
+    <div className="rounded-tile bg-night-850">
+      <button
+        type="button"
+        className="flex min-h-[3rem] w-full items-center gap-2.5 rounded-tile px-3 text-left transition-colors duration-quick hover:bg-night-800"
+        onClick={() => setOpen((x) => !x)}
+        aria-expanded={open}
+      >
+        <span className={`shrink-0 text-small font-bold ${m.state === 'open' ? 'text-flood' : 'text-night-400'}`}>{STATE_LABEL[m.state] ?? m.state}</span>
+        <span className="min-w-0 flex-1 truncate text-body font-semibold">{m.question}</span>
+        <span className="tnum shrink-0 text-small text-night-400">{moneyShort(m.volume, party)}</span>
+        <Icon name={open ? 'chevronUp' : 'chevronDown'} className="h-4 w-4 shrink-0 text-night-400" />
       </button>
       {open && (
-        <div className="mt-2 flex flex-col gap-2">
+        <div className="flex flex-col gap-2 px-3 pb-3">
           {m.state === 'open' && (
-            <button className="btn-volt text-[1.05rem]" onClick={() => void act({ action: 'lock', marketId: m.id })}>
+            <button type="button" className="btn-primary min-h-[2.75rem] text-body" onClick={() => void act({ action: 'lock', marketId: m.id })}>
               <Icon name="lock" className="h-5 w-5" /> Lock now
             </button>
           )}
-          <div className="text-[0.75rem] font-bold uppercase tracking-widest text-pitch-400">Resolve as</div>
+          <p className="text-small text-night-400">Resolve as</p>
           <div className="grid grid-cols-2 gap-2">
             {m.outcomes.map((o) => (
               <ConfirmButton
                 key={o.id}
-                label={`${o.label} · ${Math.round(roomProb(m, o.id) * 100)}%`}
+                label={`${o.label} · ${pctText(roomProb(m, o.id))}%`}
                 confirmLabel={`Confirm: ${o.label}`}
                 onConfirm={() => void act({ action: 'resolve', marketId: m.id, outcome: o.id })}
               />
             ))}
           </div>
           <ConfirmButton
-            label="Void (refund all)"
+            label="Void and refund everyone"
             confirmLabel="Tap again to void"
             onConfirm={() => void act({ action: 'void', marketId: m.id, reason: 'host' })}
           />
           {canSwitch && (
             <>
-              <div className="text-[0.75rem] font-bold uppercase tracking-widest text-pitch-400">Mode for this question</div>
+              <p className="text-small text-night-400">Mode for this question</p>
               <Segmented
+                label="Mode for this question"
                 options={MODES.map((x) => ({ value: x, label: MODE_LABEL[x] }))}
                 value={m.mode}
                 onChange={(mode) => void act({ action: 'set_mode', mode, marketId: m.id })}
@@ -125,31 +133,45 @@ function CustomMarket() {
     <Section title="Ask your own question">
       <div className="flex flex-wrap gap-1.5">
         {presets.map((p) => (
-          <button key={p} onClick={() => setQ(p)} className="rounded-full bg-pitch-800 px-3 py-1 text-[0.8rem] ring-1 ring-pitch-700">
+          <button
+            key={p}
+            type="button"
+            onClick={() => setQ(p)}
+            className="min-h-[2.5rem] rounded-chip bg-night-800 px-3 text-small text-night-200 transition-colors duration-quick hover:bg-night-700 hover:text-chalk"
+          >
             {p}
           </button>
         ))}
       </div>
+      <label htmlFor="host-question" className="hd-sr">
+        Your question
+      </label>
       <input
+        id="host-question"
+        name="host-question"
+        autoComplete="off"
         value={q}
         onChange={(e) => setQ(e.target.value.slice(0, 140))}
-        placeholder="Type a question…"
-        className="min-h-[3rem] rounded-lg bg-pitch-800 px-3 text-[1.05rem] outline-none ring-1 ring-pitch-600 focus:ring-volt"
+        placeholder="Will he score from here…"
+        className="min-h-[3rem] rounded-tile bg-night-800 px-3 text-lead text-chalk ring-1 ring-inset ring-night-600 placeholder:text-night-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-flood"
       />
       <div className="flex flex-wrap gap-2">
         {outcomes.map((o, i) => (
-          <div key={i} className="flex items-center rounded-lg bg-pitch-800 ring-1 ring-pitch-600">
+          <div key={i} className="flex items-center rounded-tile bg-night-800 ring-1 ring-inset ring-night-600 focus-within:ring-2 focus-within:ring-flood">
             <input
               value={o}
+              name={`outcome-${i + 1}`}
+              autoComplete="off"
               onChange={(e) => setOutcomes(outcomes.map((x, j) => (j === i ? e.target.value.slice(0, 40) : x)))}
-              className="h-10 w-[7rem] bg-transparent px-2 text-[0.95rem] outline-none"
+              className="h-11 w-[7rem] bg-transparent px-3 text-body text-chalk focus-visible:outline-none"
               aria-label={`Outcome ${i + 1}`}
             />
             {outcomes.length > 2 && (
               <button
-                className="px-2 text-pitch-400"
+                type="button"
+                className="flex h-11 w-10 items-center justify-center text-night-400 hover:text-chalk"
                 onClick={() => setOutcomes(outcomes.filter((_, j) => j !== i))}
-                aria-label="Remove outcome"
+                aria-label={`Remove outcome ${i + 1}`}
               >
                 <Icon name="x" className="h-4 w-4" />
               </button>
@@ -158,16 +180,23 @@ function CustomMarket() {
         ))}
         {outcomes.length < 6 && (
           <button
-            className="flex h-10 items-center gap-1 rounded-lg px-3 text-[0.9rem] ring-1 ring-pitch-600"
+            type="button"
+            className="btn-quiet min-h-[2.75rem] px-3 text-body"
             onClick={() => setOutcomes([...outcomes, `Option ${outcomes.length + 1}`])}
           >
             <Icon name="plus" className="h-4 w-4" /> Outcome
           </button>
         )}
       </div>
-      <Segmented options={LOCK_SECS.map((s) => ({ value: s, label: s < 60 ? `${s}s` : `${s / 60}m` }))} value={secs} onChange={setSecs} />
+      <Segmented
+        label="Lock after"
+        options={LOCK_SECS.map((s) => ({ value: s, label: s < 60 ? `${s} s` : `${s / 60} min` }))}
+        value={secs}
+        onChange={setSecs}
+      />
       <button
-        className="btn-volt"
+        type="button"
+        className="btn-primary text-body"
         disabled={!valid}
         onClick={async () => {
           const ok = await act({
@@ -196,21 +225,23 @@ function ReplayControls() {
     <Section title="Replay">
       <div className="flex items-center gap-2">
         <button
-          className="btn-ghost w-[4rem]"
+          type="button"
+          className="btn-secondary min-h-[3rem] w-[3.5rem] px-0"
           onClick={() => void act({ action: r.playing ? 'pause_game' : 'start_game' }, r.playing ? 'Paused' : 'Playing')}
           aria-label={r.playing ? 'Pause' : 'Play'}
         >
-          <Icon name={r.playing ? 'pause' : 'play'} className="h-6 w-6" />
+          <Icon name={r.playing ? 'pause' : 'play'} className="h-5 w-5" strokeWidth={2.6} />
         </button>
         <Segmented
           className="flex-1"
+          label="Replay speed"
           options={SPEEDS.map((s) => ({ value: s, label: `${s}x` }))}
           value={SPEEDS.includes(r.speed) ? r.speed : 1}
           onChange={(speed) => void act({ action: 'set_speed', speed }, `${speed}x speed`)}
         />
       </div>
       <div className="flex items-center gap-3">
-        <span className="tabular w-[3.5rem] text-[0.9rem] text-pitch-200">{fmt(pos)}</span>
+        <span className="tnum w-[3.25rem] text-small text-night-200">{fmt(pos)}</span>
         <input
           type="range"
           min={0}
@@ -226,18 +257,22 @@ function ReplayControls() {
             if (seek !== null) void act({ action: 'seek', positionMs: Math.round(seek) });
             setSeek(null);
           }}
-          className="h-10 flex-1 accent-[#D4FF3A]"
+          className="h-10 flex-1 accent-[#FFE27A]"
           aria-label="Seek replay"
         />
-        <span className="tabular w-[3.5rem] text-right text-[0.9rem] text-pitch-400">{fmt(r.durationMs)}</span>
+        <span className="tnum w-[3.25rem] text-right text-small text-night-400">{fmt(r.durationMs)}</span>
       </div>
-      <div className="text-[0.75rem] text-pitch-400">
+      <p className="tnum text-small text-night-400">
         Event {r.seq} of {r.totalEvents}
-      </div>
+      </p>
     </Section>
   );
 }
 
+/**
+ * Host controls, docked to the right of the party screen: the board shrinks to make room instead
+ * of being covered (NEXT / N opens and cycles; Esc closes).
+ */
 export function HostPanel() {
   const { act, view } = useParty();
   const setView = useBox((s) => s.setView);
@@ -249,42 +284,45 @@ export function HostPanel() {
   const dr = drafts(s.markets);
 
   return (
-    <motion.aside
-      initial={{ x: '100%' }}
-      animate={{ x: 0 }}
-      exit={{ x: '100%' }}
-      transition={{ type: 'spring', stiffness: 320, damping: 34 }}
-      className="absolute inset-y-0 right-0 z-40 flex w-[30rem] max-w-full flex-col border-l border-pitch-700 bg-pitch-950/[0.97] shadow-2xl backdrop-blur"
+    <aside
+      className="dock-in flex h-full min-h-0 w-[23rem] flex-col border-l border-night-700 bg-night-900"
       aria-label="Host controls"
+      data-testid="host-controls"
     >
-      <div className="flex items-center gap-3 border-b border-pitch-700 px-4 py-3">
-        <Icon name="cog" className="h-6 w-6 text-volt" />
-        <h2 className="font-display text-[1.6rem] font-bold uppercase tracking-wide">Host controls</h2>
-        <span className="kicker ml-auto text-[0.75rem]">N = next</span>
-        <button className="btn-ghost min-h-[2.6rem] px-3" onClick={() => setView('board')} aria-label="Close host controls">
+      <div className="flex h-[3.75rem] shrink-0 items-center gap-3 px-4">
+        <Icon name="settings" className="h-6 w-6 text-flood" />
+        <h2 className="text-title font-bold">Host controls</h2>
+        <button type="button" className="btn-quiet ml-auto min-h-[2.75rem] px-3" onClick={() => setView('board')} aria-label="Close host controls (Esc)">
           <Icon name="x" className="h-5 w-5" />
         </button>
       </div>
-      <div className="scroll-thin flex flex-1 flex-col gap-3 overflow-y-auto p-3">
+      <div className="scroll-thin flex min-h-0 flex-1 flex-col overflow-y-auto">
         {current?.state === 'open' && (
-          <button className="btn-volt min-h-[4rem] text-[1.8rem]" onClick={() => void act({ action: 'lock', marketId: current.id })}>
-            <Icon name="lock" className="h-7 w-7" /> Lock now
-          </button>
+          <div className="px-4 pb-4">
+            <button
+              type="button"
+              className="btn-primary min-h-[3.75rem] w-full text-title"
+              onClick={() => void act({ action: 'lock', marketId: current.id })}
+              data-testid="host-lock"
+            >
+              <Icon name="lock" className="h-6 w-6" /> Lock now
+            </button>
+          </div>
         )}
 
         {ds.length > 0 && (
-          <Section title={`Disputed (${ds.length})`} accent>
+          <Section title={`Disputed (${ds.length})`} tone="alert">
             {ds.map((m) => {
               const who = s.players.find((p) => p.pubkey === m.dispute?.by)?.name ?? 'A player';
               const cur = m.outcomes.find((o) => o.id === m.outcome)?.label ?? m.outcome;
               return (
-                <div key={m.id} className="flex flex-col gap-2 rounded-lg bg-pitch-900 p-2">
-                  <div className="text-[0.95rem] font-semibold">{m.question}</div>
-                  <div className="text-[0.85rem] text-pitch-200">
-                    Result: <b>{cur}</b> · flagged by {who}
-                    {m.dispute?.reason ? ` — “${m.dispute.reason}”` : ''}
-                  </div>
-                  <button className="btn-up text-[1.05rem]" onClick={() => void act({ action: 'confirm_result', marketId: m.id })}>
+                <div key={m.id} className="flex flex-col gap-2">
+                  <p className="text-body font-semibold">{m.question}</p>
+                  <p className="text-small text-night-200">
+                    Result: <b className="text-chalk">{cur}</b> · flagged by {who}
+                    {m.dispute?.reason ? `: “${m.dispute.reason}”` : ''}
+                  </p>
+                  <button type="button" className="btn-primary min-h-[2.75rem] text-body" onClick={() => void act({ action: 'confirm_result', marketId: m.id })}>
                     <Icon name="check" className="h-5 w-5" /> Keep {cur}
                   </button>
                   <div className="grid grid-cols-2 gap-2">
@@ -313,31 +351,27 @@ export function HostPanel() {
         {(dr.length > 0 || !cfg.autoApprove) && (
           <Section title={`AI questions waiting (${dr.length})`}>
             {dr.map((m) => (
-              <div key={m.id} className="flex items-center gap-2 rounded-lg bg-pitch-800 p-2">
-                <span className="min-w-0 flex-1 text-[0.95rem] font-semibold">{m.question}</span>
-                <button
-                  className="btn-volt min-h-[2.6rem] px-3 text-[1rem]"
-                  onClick={() => void act({ action: 'approve_draft', marketId: m.id })}
-                >
+              <div key={m.id} className="flex items-center gap-2 rounded-tile bg-night-850 p-2 pl-3">
+                <span className="min-w-0 flex-1 text-body font-semibold">{m.question}</span>
+                <button type="button" className="btn-primary min-h-[2.75rem] px-3 text-body" onClick={() => void act({ action: 'approve_draft', marketId: m.id })}>
                   Open
                 </button>
                 <button
-                  className="btn-ghost min-h-[2.6rem] px-3 text-[1rem]"
+                  type="button"
+                  className="btn-quiet min-h-[2.75rem] px-3"
                   onClick={() => void act({ action: 'discard_draft', marketId: m.id })}
-                  aria-label="Discard"
+                  aria-label={`Discard “${m.question}”`}
                 >
                   <Icon name="x" className="h-5 w-5" />
                 </button>
               </div>
             ))}
-            {dr.length === 0 && <div className="text-[0.9rem] text-pitch-400">No drafts right now.</div>}
+            {dr.length === 0 && <p className="text-body text-night-400">No drafts right now.</p>}
           </Section>
         )}
 
         <Section title={`Markets (${active.length})`}>
-          {active.length === 0 && (
-            <div className="text-[0.9rem] text-pitch-400">Nothing open. The AI will open the next one on a big moment.</div>
-          )}
+          {active.length === 0 && <p className="text-body text-night-400">Nothing open. The AI opens the next one on a big moment.</p>}
           {active.map((m) => (
             <MarketRow key={m.id} m={m} />
           ))}
@@ -346,21 +380,21 @@ export function HostPanel() {
         <ReplayControls />
 
         <Section title="Party">
-          <div className="text-[0.75rem] font-bold uppercase tracking-widest text-pitch-400">Default mode for new questions</div>
+          <p className="text-small text-night-400">Default mode for new questions</p>
           <Segmented
+            label="Default mode for new questions"
             options={MODES.map((x) => ({ value: x, label: MODE_LABEL[x] }))}
             value={cfg.defaultMode}
             onChange={(mode) => void act({ action: 'set_mode', mode }, `New questions: ${MODE_LABEL[mode]}`)}
           />
           <Toggle
             on={cfg.autoApprove}
-            onChange={(value) =>
-              void act({ action: 'set_auto_approve', value }, value ? 'AI questions open automatically' : 'AI questions wait for you')
-            }
+            onChange={(value) => void act({ action: 'set_auto_approve', value }, value ? 'AI questions open automatically' : 'AI questions wait for you')}
             label="Open AI questions automatically"
           />
-          <div className="text-[0.75rem] font-bold uppercase tracking-widest text-pitch-400">Announcer</div>
+          <p className="text-small text-night-400">Announcer</p>
           <Segmented
+            label="Announcer voice"
             options={PERSONAS}
             value={cfg.persona}
             onChange={(persona) => void act({ action: 'set_persona', persona }, `Announcer: ${persona}`)}
@@ -370,14 +404,9 @@ export function HostPanel() {
         <CustomMarket />
 
         <Section title="Finish">
-          <ConfirmButton
-            label="End party"
-            confirmLabel="Tap again: settle everything"
-            className="btn-ghost"
-            onConfirm={() => void act({ action: 'end_party' })}
-          />
+          <ConfirmButton label="End party" confirmLabel="Tap again: settle everything" onConfirm={() => void act({ action: 'end_party' })} />
         </Section>
       </div>
-    </motion.aside>
+    </aside>
   );
 }

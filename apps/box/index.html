@@ -2,9 +2,13 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-    <meta name="theme-color" content="#07090D" />
-    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2307090D'/%3E%3Ccircle cx='16' cy='16' r='9' fill='none' stroke='%23D4FF3A' stroke-width='4'/%3E%3C/svg%3E" />
+    <!-- Kiosk: pinch zoom is disabled by the kiosk browser flags (--disable-pinch), not here, so a
+         mirrored laptop or TV session can still zoom. touch-action: manipulation stops double-tap zoom. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#08090B" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="description" content="Huddle box: the shared screen and voice of the watch party." />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2308090B'/%3E%3Cg fill='%23535C68'%3E%3Ccircle cx='21' cy='7.34' r='1.8'/%3E%3Ccircle cx='24.66' cy='11' r='1.8'/%3E%3Ccircle cx='26' cy='16' r='1.8'/%3E%3Ccircle cx='24.66' cy='21' r='1.8'/%3E%3Ccircle cx='21' cy='24.66' r='1.8'/%3E%3Ccircle cx='16' cy='26' r='1.8'/%3E%3Ccircle cx='11' cy='24.66' r='1.8'/%3E%3Ccircle cx='7.34' cy='21' r='1.8'/%3E%3Ccircle cx='6' cy='16' r='1.8'/%3E%3Ccircle cx='7.34' cy='11' r='1.8'/%3E%3Ccircle cx='11' cy='7.34' r='1.8'/%3E%3C/g%3E%3Ccircle cx='16' cy='6' r='2.8' fill='%23FFE27A'/%3E%3C/svg%3E" />
     <title>Huddle Box</title>
   </head>
   <body>

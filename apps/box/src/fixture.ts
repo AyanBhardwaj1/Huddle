@@ -2,19 +2,23 @@ import {
   buildScorecard,
   USDC,
   DEFAULT_PARTY_CONFIG,
+  type ChainEvent,
   type ClientView,
   type Fill,
   type Market,
   type PartySnapshot,
+  type PartyStatus,
   type PlayerPublic,
 } from '@huddle/shared';
 import { useEffect, useState } from 'react';
 import type { FixtureKind } from './lib/config';
+import type { BoardView } from './lib/derive';
 
 /**
- * Review-only fixture (`?fixture=1|lobby|end|scorecard`): a realistic static party so the kiosk can
- * be reviewed and screenshotted without an engine. The live board gently animates prices and loops
- * the lock countdown so the motion can be judged too. Nothing here is used in normal operation.
+ * Review-only fixtures (`?fixture=<kind>`, see FIXTURE_KINDS in lib/config.ts): a realistic static
+ * party per state so every box screen can be reviewed and screenshotted without an engine. The
+ * live kinds gently animate prices and loop the countdown so the motion can be judged too.
+ * Nothing here is used in normal operation.
  */
 
 const iso = (offsetMs: number) => new Date(Date.now() + offsetMs).toISOString();
@@ -54,24 +58,22 @@ const YN = [
   { id: 'no', label: 'No' },
 ];
 
-function snapshot(kind: FixtureKind): PartySnapshot {
-  const status = kind === 'lobby' ? 'lobby' : kind === 'end' ? 'closing' : 'live';
-  const players: PlayerPublic[] =
-    kind === 'lobby'
-      ? [player(1, 'Jake', 10, 0), player(2, 'Priya', 10, 0, { remote: true }), player(3, 'Ayan', 20, 0)]
-      : [
-          player(1, 'Jake', 10, -4.6, { streak: -2 }),
-          player(2, 'Priya', 10, 7.25, { remote: true, streak: 3 }),
-          player(3, 'Ayan', 20, 3.1, { streak: 1 }),
-          player(4, 'Mia', 10, -1.4),
-          player(5, 'Leo', 10, 0.8),
-          { ...player(9, 'House', 20, -1.15), isHouse: true },
-        ];
-  if (kind === 'end') {
-    for (const p of players) p.payout = p.balance;
-  }
+/** Board view a fixture starts in. */
+export function fixtureFlags(kind: FixtureKind): { view?: BoardView } {
+  if (kind === 'scorecard') return { view: 'scorecard' };
+  if (kind === 'host') return { view: 'host' };
+  return {};
+}
 
-  const penalty = market({
+function statusFor(kind: FixtureKind): PartyStatus {
+  if (kind === 'lobby' || kind === 'lobby-empty') return 'lobby';
+  if (kind === 'end') return 'closing';
+  if (kind === 'final') return 'finalized';
+  return 'live';
+}
+
+function penaltyFor(kind: FixtureKind): Market {
+  const base = market({
     id: 'm-pen',
     question: 'Ronaldo steps up. Does he score this penalty?',
     kind: 'moment',
@@ -86,99 +88,169 @@ function snapshot(kind: FixtureKind): PartySnapshot {
     state: 'open',
     hook: 'Room has him at 71%.',
   });
-  const markets: Market[] =
-    kind === 'lobby'
-      ? []
-      : [
-          penalty,
-          market({
-            id: 'g-win',
-            question: 'Who wins it?',
-            kind: 'game',
-            mode: 'pool',
-            outcomes: [
-              { id: 'POR', label: 'Portugal' },
-              { id: 'draw', label: 'Draw' },
-              { id: 'ESP', label: 'Spain' },
-            ],
-            prior: { POR: 0.46, draw: 0.27, ESP: 0.27 },
-            price: { POR: 0.52, draw: 0.18, ESP: 0.3 },
-            pool: { POR: 26 * USDC, draw: 9 * USDC, ESP: 15 * USDC },
-            volume: 50 * USDC,
-            state: 'open',
-          }),
-          market({
-            id: 'g-seven',
-            question: 'Will Portugal score 7 or more tonight?',
-            kind: 'game',
-            mode: 'amm',
-            outcomes: YN,
-            prior: { yes: 0.04, no: 0.96 },
-            price: { yes: 0.09, no: 0.91 },
-            geminiRef: { eventTicker: 'POR-ESP', contractTicker: 'POR-7', prob: 0.03, asOf: iso(-4000), outcomeId: 'yes' },
-            volume: 12.2 * USDC,
-            state: 'open',
-          }),
-          market({
-            id: 'g-card',
-            question: 'First yellow card goes to…',
-            kind: 'game',
-            mode: 'bet',
-            outcomes: [
-              { id: 'POR', label: 'Portugal' },
-              { id: 'ESP', label: 'Spain' },
-            ],
-            prior: { POR: 0.45, ESP: 0.55 },
-            price: { POR: 0.4, ESP: 0.6 },
-            volume: 8 * USDC,
-            state: 'locked',
-          }),
-          market({
-            id: 'm-goal60',
-            question: 'Goal before the 60th minute?',
-            kind: 'moment',
-            mode: 'pool',
-            outcomes: YN,
-            prior: { yes: 0.42, no: 0.58 },
-            price: { yes: 0.55, no: 0.45 },
-            volume: 14 * USDC,
-            state: 'disputed',
-            outcome: 'no',
-            dispute: { by: PK(2), reason: 'Ramos scored in the 58th, replay was late', at: iso(-6000) },
-          }),
-          market({
-            id: 'd-card',
-            question: 'Spain picks up a card before half time?',
-            kind: 'moment',
-            mode: 'pool',
-            outcomes: YN,
-            prior: { yes: 0.38, no: 0.62 },
-            state: 'draft',
-          }),
-        ];
+  if (kind === 'urgent') return { ...base, lock: { ...base.lock, at: iso(4_600) }, openedAt: iso(-15_400) };
+  if (kind === 'locked') return { ...base, state: 'locked', lockedAt: iso(-1500), roomProbAtLock: base.price };
+  return base;
+}
 
-  const fill = (
-    i: number,
-    who: number,
-    name: string,
-    mId: string,
-    kind: Fill['kind'],
-    outcome: string,
-    amt: number,
-    price?: number,
-  ): Fill => ({
+function marketsFor(kind: FixtureKind): Market[] {
+  if (kind === 'lobby' || kind === 'lobby-empty' || kind === 'idle') return [];
+  const game: Market[] = [
+    market({
+      id: 'g-win',
+      question: 'Who wins it?',
+      kind: 'game',
+      mode: 'pool',
+      outcomes: [
+        { id: 'POR', label: 'Portugal' },
+        { id: 'draw', label: 'Draw' },
+        { id: 'ESP', label: 'Spain' },
+      ],
+      prior: { POR: 0.46, draw: 0.27, ESP: 0.27 },
+      price: { POR: 0.52, draw: 0.18, ESP: 0.3 },
+      pool: { POR: 26 * USDC, draw: 9 * USDC, ESP: 15 * USDC },
+      volume: 50 * USDC,
+      state: 'open',
+    }),
+    market({
+      id: 'g-seven',
+      question: 'Will Portugal score 7 or more tonight?',
+      kind: 'game',
+      mode: 'amm',
+      outcomes: YN,
+      prior: { yes: 0.04, no: 0.96 },
+      price: { yes: 0.09, no: 0.91 },
+      geminiRef: { eventTicker: 'POR-ESP', contractTicker: 'POR-7', prob: 0.03, asOf: iso(-4000), outcomeId: 'yes' },
+      volume: 12.2 * USDC,
+      state: 'open',
+    }),
+    market({
+      id: 'g-card',
+      question: 'First yellow card goes to…',
+      kind: 'game',
+      mode: 'bet',
+      outcomes: [
+        { id: 'POR', label: 'Portugal' },
+        { id: 'ESP', label: 'Spain' },
+      ],
+      prior: { POR: 0.45, ESP: 0.55 },
+      price: { POR: 0.4, ESP: 0.6 },
+      volume: 8 * USDC,
+      state: 'locked',
+    }),
+  ];
+  const disputedGoal = market({
+    id: 'm-goal60',
+    question: 'Goal before the 60th minute?',
+    kind: 'moment',
+    mode: 'pool',
+    outcomes: YN,
+    prior: { yes: 0.42, no: 0.58 },
+    price: { yes: 0.55, no: 0.45 },
+    volume: 14 * USDC,
+    state: 'disputed',
+    outcome: 'no',
+    dispute: { by: PK(2), reason: 'Ramos scored in the 58th, replay was late', at: iso(-6000) },
+  });
+  const draft = market({
+    id: 'd-card',
+    question: 'Spain picks up a card before half time?',
+    kind: 'moment',
+    mode: 'pool',
+    outcomes: YN,
+    prior: { yes: 0.38, no: 0.62 },
+    state: 'draft',
+  });
+  if (kind === 'board') return [...game, draft];
+  if (kind === 'threeway') {
+    return [
+      market({
+        id: 'm-next',
+        question: 'Who scores next before full time?',
+        kind: 'moment',
+        mode: 'pool',
+        outcomes: [
+          { id: 'POR', label: 'Portugal, Ronaldo or anyone' },
+          { id: 'none', label: 'Nobody, it ends like this' },
+          { id: 'ESP', label: 'Spain' },
+        ],
+        prior: { POR: 0.38, none: 0.3, ESP: 0.32 },
+        price: { POR: 0.41, none: 0.26, ESP: 0.33 },
+        pool: { POR: 12.3 * USDC, none: 7.8 * USDC, ESP: 9.9 * USDC },
+        lock: { at: iso(40_000), manual: true },
+        openedAt: iso(-5_000),
+        volume: 30 * USDC,
+        state: 'open',
+      }),
+      ...game,
+    ];
+  }
+  if (kind === 'edge') {
+    return [
+      market({
+        id: 'm-edge',
+        question: 'Does the keeper save it?',
+        kind: 'moment',
+        mode: 'amm',
+        outcomes: YN,
+        prior: { yes: 0.02, no: 0.98 },
+        price: { yes: 0.004, no: 0.996 },
+        lock: { manual: true, onEvent: 'penalty_result' },
+        openedAt: iso(-1_000),
+        volume: 0,
+        state: 'open',
+      }),
+      market({
+        id: 'g-empty',
+        question: 'Total corners: 10 or more?',
+        kind: 'game',
+        mode: 'pool',
+        outcomes: YN,
+        prior: { yes: 0.5, no: 0.5 },
+        price: {},
+        pool: { yes: 0, no: 0 },
+        volume: 0,
+        state: 'open',
+      }),
+    ];
+  }
+  const withDispute = kind === 'live' || kind === 'host' || kind === 'scorecard' || kind === 'reconnecting' || kind === 'end' || kind === 'final';
+  return [penaltyFor(kind), ...game, ...(withDispute ? [disputedGoal] : []), draft];
+}
+
+function snapshot(kind: FixtureKind): PartySnapshot {
+  const status = statusFor(kind);
+  const lobby = status === 'lobby';
+  const ended = status === 'closing' || status === 'finalized';
+  const players: PlayerPublic[] =
+    kind === 'lobby-empty'
+      ? []
+      : lobby
+        ? [player(1, 'Jake', 10, 0), player(2, 'Priya', 10, 0, { remote: true }), player(3, 'Ayan', 20, 0)]
+        : [
+            player(1, 'Jake', 10, -4.6, { streak: -2 }),
+            player(2, 'Priya', 10, 7.25, { remote: true, streak: 3 }),
+            player(3, 'Ayan', 20, 3.1, { streak: 1 }),
+            player(4, 'Mia', 10, -1.4),
+            player(5, 'Leo', 10, 0.8),
+            { ...player(9, 'House', 20, -1.15), isHouse: true },
+          ];
+  if (ended) for (const p of players) p.payout = p.balance;
+
+  const markets = marketsFor(kind);
+  const fill = (i: number, who: number, name: string, mId: string, k: Fill['kind'], outcome: string, amt: number, price?: number): Fill => ({
     id: `f${i}`,
     marketId: mId,
     player: PK(who),
     playerName: name,
-    kind,
+    kind: k,
     outcome,
     amount: amt * USDC,
     price,
     at: iso(-60_000 + i * 4000),
   });
   const fills: Fill[] =
-    kind === 'lobby'
+    lobby || kind === 'idle' || kind === 'edge'
       ? []
       : [
           fill(1, 3, 'Ayan', 'g-win', 'pool_bet', 'POR', 5, 0.52),
@@ -195,6 +267,16 @@ function snapshot(kind: FixtureKind): PartySnapshot {
     { marketId: 'c', question: 'Next goal: Portugal?', outcome: 'yes', room: 0.66, model: 0.6, gemini: 0.63 },
     { marketId: 'd', question: 'Penalty saved?', outcome: 'no', room: 0.71, model: 0.79, gemini: 0.8 },
   ]);
+
+  const lineFor = (): string => {
+    if (lobby) return kind === 'lobby-empty' ? 'Doors are open. Tap your phone on the box to get in.' : "Priya's in for ten from Chicago!";
+    if (ended) return 'Full time! Priya takes the night, up seven and a quarter. The room beat the model by four hundredths.';
+    if (kind === 'idle') return 'Kick-off! Portugal against Spain. Markets open on every big moment.';
+    if (kind === 'threeway') return 'Who scores next? Portugal at 41, nobody at 26, Spain at 33. Get in!';
+    if (kind === 'locked') return 'Locked! No more bets. Here he comes…';
+    if (kind === 'urgent') return 'Five seconds! Last call!';
+    return 'Penalty to Portugal! Ronaldo steps up. Room has him at 71%. Twenty seconds, get in!';
+  };
 
   return {
     party: {
@@ -213,12 +295,12 @@ function snapshot(kind: FixtureKind): PartySnapshot {
         source: 'replay',
         durationMs: 5_400_000,
       },
-      config: { ...DEFAULT_PARTY_CONFIG, defaultMode: 'amm', settlement: kind === 'end' ? 'vault' : 'points' },
+      config: { ...DEFAULT_PARTY_CONFIG, defaultMode: 'amm', settlement: ended ? 'vault' : 'points', autoApprove: kind !== 'host' },
       status,
       createdAt: iso(-900_000),
       chain: {
         partyAddress: 'FxParty11111111111111111111111111111111111',
-        challengeEndsAt: kind === 'end' ? iso(42_000) : undefined,
+        challengeEndsAt: kind === 'end' ? iso(42_000) : kind === 'final' ? iso(-5_000) : undefined,
         explorerBase: 'https://explorer.solana.com',
       },
       joinUrl: 'http://192.168.1.20:8080/j/KICK',
@@ -230,12 +312,11 @@ function snapshot(kind: FixtureKind): PartySnapshot {
     game: {
       gameId: 'replay-por-esp',
       sport: 'soccer',
-      status: kind === 'lobby' ? 'pre' : kind === 'end' ? 'final' : 'live',
+      status: lobby ? 'pre' : ended ? 'final' : 'live',
       home: { name: 'Portugal', short: 'POR', color: '#C8102E' },
       away: { name: 'Spain', short: 'ESP', color: '#F1BF00' },
-      score: kind === 'lobby' ? { home: 0, away: 0 } : kind === 'end' ? { home: 3, away: 2 } : { home: 2, away: 1 },
-      clock:
-        kind === 'lobby' ? { period: 0, display: "0'" } : kind === 'end' ? { period: 2, display: 'FT' } : { period: 2, display: "67'" },
+      score: lobby ? { home: 0, away: 0 } : ended ? { home: 3, away: 2 } : kind === 'idle' ? { home: 0, away: 0 } : { home: 2, away: 1 },
+      clock: lobby ? { period: 0, display: "0'" } : ended ? { period: 2, display: 'FT' } : kind === 'idle' ? { period: 1, display: "1'" } : { period: 2, display: "67'" },
       minute: 67,
       lastSeq: 120,
       counters: {},
@@ -247,13 +328,10 @@ function snapshot(kind: FixtureKind): PartySnapshot {
     announcer: [
       {
         id: 'a1',
-        text:
-          kind === 'lobby'
-            ? "Priya's in for ten from Chicago!"
-            : 'Penalty to Portugal! Ronaldo steps up. Room has him at 71%. Twenty seconds, get in!',
+        text: lineFor(),
         priority: 'high',
         createdAt: iso(-1500),
-        event: kind === 'lobby' ? 'player_joined' : 'market_opened',
+        event: lobby ? 'player_joined' : ended ? 'game_recap' : 'market_opened',
         persona: 'soccer',
       },
     ],
@@ -262,108 +340,149 @@ function snapshot(kind: FixtureKind): PartySnapshot {
   };
 }
 
+function chainEventsFor(kind: FixtureKind, snap: PartySnapshot): ChainEvent[] {
+  if (kind !== 'end' && kind !== 'final') return [];
+  const addr = snap.party.chain.partyAddress;
+  const events: ChainEvent[] = [
+    { kind: 'create_party', signature: '5fXcreate', partyAddress: addr, via: 'mock', explorerUrl: 'https://explorer.solana.com/tx/5fXcreate?cluster=devnet' },
+    { kind: 'deposit', signature: '3aDep1', partyAddress: addr, member: PK(1), amount: 10 * USDC, via: 'quicknode' },
+    { kind: 'deposit', signature: '3aDep2', partyAddress: addr, member: PK(2), amount: 10 * USDC, via: 'quicknode' },
+    { kind: 'request_close', signature: '4cClose', partyAddress: addr, via: 'direct', explorerUrl: 'https://explorer.solana.com/tx/4cClose?cluster=devnet' },
+    { kind: 'submit_state', signature: '2sState', partyAddress: addr, member: PK(2), via: 'quicknode' },
+    {
+      kind: 'withdraw',
+      signature: '9wPay',
+      partyAddress: addr,
+      member: PK(2),
+      amount: 17.25 * USDC,
+      via: 'quicknode',
+      explorerUrl: 'https://explorer.solana.com/tx/9wPay?cluster=devnet',
+    },
+  ];
+  if (kind === 'final') {
+    events.push(
+      { kind: 'withdraw', signature: '9wPay3', partyAddress: addr, member: PK(3), amount: 23.1 * USDC, via: 'quicknode' },
+      { kind: 'finalize', signature: '7fFinal', partyAddress: addr, via: 'direct', explorerUrl: 'https://explorer.solana.com/tx/7fFinal?cluster=devnet' },
+    );
+  }
+  return events;
+}
+
 export function fixtureView(kind: FixtureKind): ClientView {
+  if (kind === 'connecting') {
+    return {
+      status: 'connecting',
+      snapshot: null,
+      lastSigned: null,
+      cosignMismatch: null,
+      lastError: null,
+      lastGameEvent: null,
+      chainEvents: [],
+      led: null,
+      clockSkewMs: 0,
+    };
+  }
   const snap = snapshot(kind);
+  const status = statusFor(kind);
   return {
-    status: 'ready',
+    status: kind === 'reconnecting' ? 'reconnecting' : 'ready',
     snapshot: snap,
     lastSigned: null,
     cosignMismatch: null,
     lastError: null,
     lastGameEvent: null,
-    chainEvents:
-      kind === 'end'
-        ? [
-            {
-              kind: 'create_party',
-              signature: '5fXcreate',
-              partyAddress: snap.party.chain.partyAddress,
-              via: 'mock',
-              explorerUrl: 'https://explorer.solana.com/tx/5fXcreate?cluster=devnet',
-            },
-            {
-              kind: 'deposit',
-              signature: '3aDep1',
-              partyAddress: snap.party.chain.partyAddress,
-              member: PK(1),
-              amount: 10 * USDC,
-              via: 'quicknode',
-            },
-            {
-              kind: 'deposit',
-              signature: '3aDep2',
-              partyAddress: snap.party.chain.partyAddress,
-              member: PK(2),
-              amount: 10 * USDC,
-              via: 'quicknode',
-            },
-            {
-              kind: 'request_close',
-              signature: '4cClose',
-              partyAddress: snap.party.chain.partyAddress,
-              via: 'direct',
-              explorerUrl: 'https://explorer.solana.com/tx/4cClose?cluster=devnet',
-            },
-            { kind: 'submit_state', signature: '2sState', partyAddress: snap.party.chain.partyAddress, member: PK(2), via: 'quicknode' },
-            {
-              kind: 'withdraw',
-              signature: '9wPay',
-              partyAddress: snap.party.chain.partyAddress,
-              member: PK(2),
-              amount: 17.25 * USDC,
-              via: 'quicknode',
-              explorerUrl: 'https://explorer.solana.com/tx/9wPay?cluster=devnet',
-            },
-          ]
-        : [],
+    chainEvents: chainEventsFor(kind, snap),
     led:
-      kind === 'lobby'
-        ? { pattern: 'join', color: '#00E5A0' }
-        : kind === 'live'
-          ? { pattern: 'market_open', color: '#FFD60A' }
-          : { pattern: 'idle', color: '#1E90FF' },
+      status === 'lobby'
+        ? { pattern: 'join', color: '#FFE27A' }
+        : kind === 'urgent'
+          ? { pattern: 'locking', color: '#F4F2EC' }
+          : kind === 'locked'
+            ? { pattern: 'locked', color: '#F4F2EC' }
+            : status === 'live' && kind !== 'idle' && kind !== 'board'
+              ? { pattern: 'market_open', color: '#FFE27A' }
+              : { pattern: 'idle', color: '#4CB8FF' },
     clockSkewMs: 0,
   };
 }
 
-/** Fixture view with light motion: penalty price drifts and its countdown loops. */
+const ANIMATED: FixtureKind[] = ['live', 'scorecard', 'host', 'urgent', 'threeway', 'reconnecting'];
+
+/**
+ * Fixture view with light motion: the penalty price drifts and its countdown loops; `result` and
+ * `voided` settle the penalty shortly after load (and again every 10 s) so the reveal plays.
+ */
 export function useFixtureView(kind: FixtureKind): ClientView {
   const [view, setView] = useState(() => fixtureView(kind));
   useEffect(() => {
-    if (kind !== 'live' && kind !== 'scorecard') return;
+    if (kind !== 'result' && kind !== 'voided') return;
+    let n = 0;
+    const settle = () => {
+      n++;
+      setView((v) => {
+        const s = v.snapshot!;
+        const markets = s.markets.map((m): Market => {
+          if (m.id !== 'm-pen') return m;
+          if (n % 2 === 0) return { ...penaltyFor('live') };
+          return kind === 'voided'
+            ? { ...m, state: 'voided', voidReason: 'host' }
+            : { ...m, state: 'resolved', outcome: 'yes', roomProbAtLock: m.price, resolvedAt: iso(0) };
+        });
+        return { ...v, snapshot: { ...s, markets } };
+      });
+    };
+    const first = setTimeout(settle, 900);
+    const loop = setInterval(settle, 5000);
+    return () => {
+      clearTimeout(first);
+      clearInterval(loop);
+    };
+  }, [kind]);
+  useEffect(() => {
+    if (!ANIMATED.includes(kind)) return;
     let n = 0;
     const t = setInterval(() => {
       n++;
       setView((v) => {
         const s = v.snapshot!;
         const markets = s.markets.map((m) => {
-          if (m.id !== 'm-pen') return m;
-          const lockAt = Date.parse(m.lock.at!);
-          const expired = lockAt < Date.now();
-          const yes = Math.min(0.9, Math.max(0.55, (m.price.yes ?? 0.7) + (n % 3 === 0 ? -0.03 : 0.02)));
+          if (m.kind !== 'moment' || m.state !== 'open') return m;
+          const lockAt = m.lock.at ? Date.parse(m.lock.at) : null;
+          const expired = lockAt !== null && lockAt < Date.now();
+          const ids = m.outcomes.map((o) => o.id);
+          const first = ids[0]!;
+          const p0 = Math.min(0.9, Math.max(0.3, (m.price[first] ?? 0.5) + (n % 3 === 0 ? -0.03 : 0.02)));
+          const rest = ids.slice(1);
+          const restSum = rest.reduce((a, id) => a + (m.price[id] ?? 0), 0) || 1;
+          const price: Record<string, number> = { [first]: p0 };
+          for (const id of rest) price[id] = ((m.price[id] ?? 0) / restSum) * (1 - p0);
+          const window = kind === 'urgent' ? 6_000 : 20_000;
           return {
             ...m,
-            price: { yes, no: 1 - yes },
+            price,
             volume: m.volume + 1.5 * USDC,
-            lock: expired ? { ...m.lock, at: iso(20_000) } : m.lock,
-            openedAt: expired ? iso(0) : m.openedAt,
+            lock: expired ? { ...m.lock, at: iso(window) } : m.lock,
+            openedAt: expired ? iso(kind === 'urgent' ? -14_000 : 0) : m.openedAt,
           };
         });
-        const yes = markets[0]!.price.yes!;
+        const moment = markets.find((m) => m.kind === 'moment' && m.state === 'open');
+        if (!moment) return v;
         const names = ['Mia', 'Leo', 'Ayan', 'Jake'];
         const name = names[n % names.length]!;
+        const out = moment.outcomes[n % 3 === 0 ? 1 : 0]!.id;
         const fill: Fill = {
           id: `fx-${n}`,
-          marketId: 'm-pen',
+          marketId: moment.id,
           player: PK(10 + (n % 4)),
           playerName: name,
           kind: 'amm_buy',
-          outcome: n % 3 === 0 ? 'no' : 'yes',
+          outcome: out,
           amount: (1 + (n % 4)) * USDC,
-          price: n % 3 === 0 ? 1 - yes : yes,
+          price: moment.price[out],
           at: iso(0),
         };
-        return { ...v, snapshot: { ...s, markets, fills: [...s.fills, fill].slice(-50) } };
+        const players = s.players.map((p, i) => (i === n % 5 && !p.isHouse ? { ...p, pnl: p.pnl + (n % 2 ? 1 : -1) * 0.6 * USDC } : p));
+        return { ...v, snapshot: { ...s, markets, players, fills: [...s.fills, fill].slice(-50) } };
       });
     }, 2500);
     return () => clearInterval(t);

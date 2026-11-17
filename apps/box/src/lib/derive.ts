@@ -9,6 +9,7 @@ import {
   type PlayerPublic,
   type Scorecard,
 } from '@huddle/shared';
+import { payoutText } from '@huddle/ui';
 
 /** Pure view logic for the box screens (unit-tested in derive.test.ts). */
 
@@ -32,10 +33,9 @@ export function moneyShort(base: number, party: Party | null | undefined, opts: 
 }
 
 /** "$1 pays $1.30" (points: "1 pt pays 1.30"). */
-export function payoutLine(prob: number, party: Party | null | undefined): string {
-  if (prob <= 0) return '';
-  const x = (1 / prob).toFixed(2);
-  return isPoints(party) ? `1 pt pays ${x}` : `$1 pays $${x}`;
+export function payoutLine(prob: number | null | undefined, party: Party | null | undefined): string {
+  // Long shots read "100+"; missing, 0 and 1 say so in words (never "pays 154.45" or "").
+  return payoutText(prob, { points: isPoints(party) });
 }
 
 const ACTIVE: MarketState[] = ['open', 'locked'];

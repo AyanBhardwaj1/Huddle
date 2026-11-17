@@ -1,28 +1,34 @@
-import type { Market, MarketState } from '@huddle/shared';
-import { AnimatePresence, motion } from 'framer-motion';
+import type { Market, MarketState, Party } from '@huddle/shared';
+import { Mark } from '@huddle/ui';
 import { QRCodeSVG } from 'qrcode.react';
 import { useEffect, useRef, useState } from 'react';
-import { CaptionBar, DisputeBanner, GameTile, LeaderStrip, MarketTakeover, ResultReveal, Scorebug, TradeTicker } from '../components/board';
+import { CaptionBar, DisputeBanner, GameBoard, LeaderRail, MomentStage, ResultReveal, Scorebug, TopBar, TradeTicker } from '../components/board';
 import { BoxButtons } from '../components/controls';
-import { HostPanel } from '../components/HostPanel';
-import { Icon } from '../components/ui';
 import { activeMoment, detectSettled, disputed, gameTiles, resultSummary } from '../lib/derive';
 import { useParty } from '../party';
 import { useBox } from '../store';
 import { ScorecardPanel } from './Scorecard';
 
-const REVEAL_MS = 6500;
+const REVEAL_MS = 5500;
+/** At most this many reveals wait in line; older ones are dropped (the phones and captions keep them). */
+const MAX_QUEUE = 2;
 
-/** Queue of result reveals for markets that settle while the board is up. */
-function useRevealQueue(markets: Market[]): [Market | null, () => void] {
+/**
+ * Queue of result reveals for markets that settle while the board is up. A reveal never covers a
+ * moment market that is open for bets: when one opens (`openMomentId`), the queue is cleared.
+ */
+function useRevealQueue(markets: Market[], openMomentId: string | null): [Market | null, () => void] {
   const prev = useRef<Map<string, MarketState>>(new Map());
   const [queue, setQueue] = useState<Market[]>([]);
   useEffect(() => {
     const settled = detectSettled(prev.current, markets);
     prev.current = new Map(markets.map((m) => [m.id, m.state]));
-    if (settled.length) setQueue((q) => [...q, ...settled.filter((m) => !q.some((x) => x.id === m.id))]);
+    if (settled.length) setQueue((q) => [...q, ...settled.filter((m) => !q.some((x) => x.id === m.id))].slice(-MAX_QUEUE));
   }, [markets]);
-  const head = queue[0] ?? null;
+  useEffect(() => {
+    if (openMomentId) setQueue([]);
+  }, [openMomentId]);
+  const head = openMomentId ? null : (queue[0] ?? null);
   useEffect(() => {
     if (!head) return;
     const t = setTimeout(() => setQueue((q) => q.slice(1)), REVEAL_MS);
@@ -31,119 +37,103 @@ function useRevealQueue(markets: Market[]): [Market | null, () => void] {
   return [head, () => setQueue((q) => q.slice(1))];
 }
 
-function IdleHero({ joinUrl, code }: { joinUrl: string; code: string }) {
+function joinHost(url: string): string {
+  try {
+    const u = new URL(url);
+    return `${u.host}${u.pathname}`;
+  } catch {
+    return url;
+  }
+}
+
+/** Small "join late" chip for the top bar. */
+export function JoinChip({ party }: { party: Party }) {
   return (
-    <div className="flex h-full items-center justify-center gap-10 rounded-card border-2 border-dashed border-pitch-700">
-      <div className="max-w-[30rem]">
-        <div className="kicker mb-2">Stay ready</div>
-        <div className="font-display text-[3.4rem] font-bold uppercase leading-[0.95]">The next question drops on the next big moment</div>
-        <p className="mt-3 text-[1.1rem] text-pitch-200">Penalties, corners, third downs: the AI opens a market the second it happens.</p>
-      </div>
-      <div className="flex flex-col items-center gap-2">
-        <div className="rounded-xl bg-white p-2">
-          <QRCodeSVG value={joinUrl} size={256} style={{ width: '10rem', height: '10rem' }} />
-        </div>
-        <span className="font-display text-[1.4rem] font-bold uppercase tracking-[0.2em]">Join · {code}</span>
-      </div>
+    <div className="flex items-center gap-3">
+      <span className="rounded-[4px] bg-chalk p-[0.18rem]">
+        <QRCodeSVG value={party.joinUrl} size={128} style={{ width: '2.5rem', height: '2.5rem', display: 'block' }} title={`Join at ${party.joinUrl}`} />
+      </span>
+      <span className="flex flex-col leading-none">
+        <span className="text-small text-night-400">Join</span>
+        <span className="font-display text-title font-extrabold tracking-[0.12em]" style={{ fontStretch: '125%' }} translate="no">
+          {party.code}
+        </span>
+      </span>
     </div>
+  );
+}
+
+function IdleStage({ party }: { party: Party }) {
+  return (
+    <section className="hd-fade flex h-full items-center gap-10 rounded-panel bg-night-900 px-10" aria-label="Waiting for the next moment">
+      <div className="min-w-0 flex-1">
+        <Mark size="3.25rem" lit={1} className="hd-breathe mb-5 text-night-600" />
+        <h1 className="q text-display leading-[0.95]">The next question drops on the next big moment.</h1>
+        <p className="mt-4 max-w-[34rem] text-lead text-night-200">
+          Penalties, corners, third downs: the moment it happens, a market opens here and on every phone.
+        </p>
+      </div>
+      <div className="flex shrink-0 flex-col items-center gap-3">
+        <span className="rounded-tile bg-chalk p-3">
+          <QRCodeSVG value={party.joinUrl} size={256} style={{ width: '10.5rem', height: '10.5rem', display: 'block' }} title={`Join at ${party.joinUrl}`} />
+        </span>
+        <span className="text-body text-night-200">Late? Scan to join</span>
+        <span className="font-display text-head font-extrabold tracking-[0.12em]" style={{ fontStretch: '125%' }} translate="no">
+          {party.code}
+        </span>
+        <span className="text-small text-night-400">{joinHost(party.joinUrl)}</span>
+      </div>
+    </section>
   );
 }
 
 export function LiveBoard() {
   const { view } = useParty();
   const s = view.snapshot!;
+  const boardView = useBox((st) => st.view);
   const setView = useBox((st) => st.setView);
+  const docked = boardView === 'host';
   const takeover = activeMoment(s.markets);
   const tiles = gameTiles(s.markets);
   const ds = disputed(s.markets);
-  const [reveal, dismissReveal] = useRevealQueue(s.markets);
+  const [reveal, dismissReveal] = useRevealQueue(s.markets, takeover?.state === "open" ? takeover.id : null);
+
+  let stage;
+  if (boardView === 'scorecard') {
+    stage = (
+      <section className="hd-fade h-full overflow-hidden rounded-panel bg-night-900 px-8 py-6">
+        <ScorecardPanel scorecard={s.scorecard} />
+      </section>
+    );
+  } else if (takeover) stage = <MomentStage key={takeover.id} market={takeover} compact={docked} tight={ds.length > 0} />;
+  else if (tiles.length > 0) stage = <GameBoard markets={tiles} />;
+  else stage = <IdleStage party={s.party} />;
 
   return (
-    <div className="relative flex h-full flex-col">
-      <Scorebug
-        game={s.game}
-        party={s.party}
-        right={
-          <>
-            <div className="flex min-w-0 flex-1 items-center justify-end gap-2">
-              <div className="rounded bg-white p-[0.15rem]">
-                <QRCodeSVG value={s.party.joinUrl} size={128} style={{ width: '2.9rem', height: '2.9rem' }} />
-              </div>
-              <div className="flex flex-col leading-none">
-                <span className="kicker text-[0.65rem]">Join</span>
-                <span className="font-display text-[1.6rem] font-bold tracking-[0.15em]">{s.party.code}</span>
-              </div>
-            </div>
-            <BoxButtons canLock={takeover?.state === 'open'} />
-          </>
-        }
+    <div className="flex h-full min-w-0 flex-col">
+      <TopBar
+        left={<Scorebug game={s.game} party={s.party} />}
+        middle={docked ? null : <JoinChip party={s.party} />}
+        right={<BoxButtons canLock={takeover?.state === "open"} showLock={!!takeover} compact={docked} />}
       />
-      {ds.length > 0 && <DisputeBanner markets={ds} players={s.players} onOpen={() => setView('host')} />}
-      <main className="relative min-h-0 flex-1 px-3 py-2">
-        <AnimatePresence mode="wait">
-          {takeover ? (
-            <MarketTakeover key={takeover.id} market={takeover} compact={ds.length > 0} />
-          ) : tiles.length > 0 ? (
-            <motion.div
-              key="tiles"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className={`grid h-full gap-3 ${tiles.length > 2 ? 'grid-cols-2 grid-rows-2' : tiles.length === 2 ? 'grid-cols-2' : 'grid-cols-1'}`}
-            >
-              {tiles.map((m) => (
-                <GameTile key={m.id} market={m} />
-              ))}
-            </motion.div>
-          ) : (
-            <motion.div key="idle" className="h-full" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-              <IdleHero joinUrl={s.party.joinUrl} code={s.party.code} />
-            </motion.div>
-          )}
-        </AnimatePresence>
-        <AnimatePresence>
-          {reveal && (
+      {ds.length > 0 && (
+        <div className="shrink-0 px-4 pt-3">
+          <DisputeBanner markets={ds} players={s.players} onOpen={() => setView('host')} />
+        </div>
+      )}
+      <main className="relative min-h-0 flex-1 px-4 py-3">
+        {stage}
+        {reveal && boardView !== 'scorecard' && (
+          <div className="absolute inset-x-4 inset-y-3">
             <ResultReveal key={reveal.id} market={reveal} summary={resultSummary(reveal, s.fills)} party={s.party} onDone={dismissReveal} />
-          )}
-        </AnimatePresence>
+          </div>
+        )}
       </main>
-      <div className="flex h-[2.6rem] shrink-0 items-center gap-4 overflow-hidden px-3">
-        <LeaderStrip players={s.players} party={s.party} max={4} />
-        <TradeTicker />
-      </div>
+      <footer className="flex h-[3rem] shrink-0 items-center gap-6 overflow-hidden border-t border-night-700 px-4">
+        <LeaderRail players={s.players} party={s.party} max={docked ? 3 : 4} />
+        {!docked && <TradeTicker />}
+      </footer>
       <CaptionBar lines={s.announcer} />
     </div>
-  );
-}
-
-/** NEXT-cycled overlays (host panel, scorecard), available on every party screen. */
-export function PartyOverlays() {
-  const { view } = useParty();
-  const boardView = useBox((st) => st.view);
-  const setView = useBox((st) => st.setView);
-  const s = view.snapshot;
-  if (!s) return null;
-  return (
-    <AnimatePresence>
-      {boardView === 'host' && <HostPanel key="host" />}
-      {boardView === 'scorecard' && (
-        <motion.div
-          key="scorecard"
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: 30 }}
-          className="absolute inset-x-3 bottom-[3.6rem] top-[4.4rem] z-40 rounded-card bg-pitch-950/[0.97] p-6 shadow-2xl ring-1 ring-pitch-600"
-        >
-          <button
-            className="btn-ghost absolute right-4 top-4 min-h-[2.6rem] px-3"
-            onClick={() => setView('board')}
-            aria-label="Close scorecard"
-          >
-            <Icon name="x" className="h-5 w-5" />
-          </button>
-          <ScorecardPanel scorecard={s.scorecard} />
-        </motion.div>
-      )}
-    </AnimatePresence>
   );
 }

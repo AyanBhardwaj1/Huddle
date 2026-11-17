@@ -1,97 +1,106 @@
 import type { Scorecard } from '@huddle/shared';
-import { motion } from 'framer-motion';
+import { MarkerShape } from '@huddle/ui';
 import { Icon } from '../components/ui';
 import { brierBars } from '../lib/derive';
 
-const BAR_COLOR = { room: 'bg-volt', model: 'bg-model', gemini: 'bg-gemini' } as const;
-const TEXT_COLOR = { room: 'text-volt', model: 'text-model', gemini: 'text-gemini' } as const;
-/** A coin flip on every question scores 0.25; scale bars so that sits at ~70% width. */
+/** Friends = the room (flood, our accent); Model and Gemini are neutrals told apart by fill + shape + label. */
+const BAR: Record<'room' | 'model' | 'gemini', string> = {
+  room: 'bg-flood',
+  model: 'bg-night-200',
+  gemini: 'hd-tone-other-alt ring-1 ring-inset ring-night-200',
+};
+/** A coin flip on every question scores 0.25; scale bars so that sits at about 70% width. */
 const SCALE_MAX = 0.36;
+
+function Who({ id, label, best, big }: { id: 'room' | 'model' | 'gemini'; label: string; best: boolean; big: boolean }) {
+  return (
+    <span className={`flex w-[8rem] shrink-0 items-center gap-2 font-bold ${big ? 'text-title' : 'text-lead'} ${id === 'room' ? 'text-flood' : 'text-chalk'}`}>
+      {id === 'model' && <MarkerShape shape="solid" className="shrink-0 text-night-200" />}
+      {id === 'gemini' && <MarkerShape shape="hollow" className="shrink-0 text-night-200" />}
+      {id === 'room' && <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-flood" aria-hidden="true" />}
+      {label}
+      {best && <Icon name="crown" className="h-[0.85em] w-[0.85em] shrink-0 text-flood" title="Best forecast" />}
+    </span>
+  );
+}
 
 export function ScorecardPanel({ scorecard, compact = false }: { scorecard: Scorecard; compact?: boolean }) {
   const bars = brierBars(scorecard);
   const empty = scorecard.n === 0;
   return (
-    <div className={`flex h-full flex-col ${compact ? 'gap-2' : 'gap-4'}`}>
-      <div className="flex items-baseline gap-3">
-        <h2 className={`font-display font-bold uppercase leading-none tracking-wide ${compact ? 'text-[1.8rem]' : 'text-[3rem]'}`}>
-          Who's smarter?
-        </h2>
-        <span className="kicker">Friends vs. Model vs. Gemini</span>
-      </div>
-      <div className={`flex flex-col ${compact ? 'gap-2' : 'gap-3'}`}>
+    <div className={`flex h-full min-h-0 flex-col ${compact ? 'gap-3' : 'gap-5'}`}>
+      {compact ? (
+        <div className="flex items-baseline justify-between gap-3">
+          <h2 className="q text-title leading-none">Who’s smarter?</h2>
+          <p className="text-small text-night-400">Brier score, shorter bar wins</p>
+        </div>
+      ) : (
+        <div>
+          <h2 className="q text-display leading-none">Who’s smarter?</h2>
+          <p className="mt-1 text-lead text-night-400">
+            Friends vs. the model vs. Gemini, over {scorecard.n} {scorecard.n === 1 ? 'question' : 'questions'}
+          </p>
+        </div>
+      )}
+      <div className={`flex flex-col ${compact ? 'gap-2' : 'gap-3.5'}`}>
         {bars.map((b, i) => (
-          <div key={b.id} className="flex items-center gap-3">
-            <span
-              className={`flex w-[8.5rem] shrink-0 items-center gap-1.5 font-display font-bold uppercase ${TEXT_COLOR[b.id]} ${compact ? 'text-[1.4rem]' : 'text-[2.1rem]'}`}
-            >
-              {b.best && <Icon name="crown" className="h-[0.8em] w-[0.8em] text-volt" aria-label="best" />}
-              {b.label}
-            </span>
-            <div className={`relative flex-1 overflow-hidden rounded-full bg-pitch-800 ${compact ? 'h-5' : 'h-9'}`}>
+          <div key={b.id} className="flex items-center gap-4">
+            <Who id={b.id} label={b.label} best={b.best} big={!compact} />
+            <div className={`relative flex-1 overflow-hidden rounded-chip bg-night-800 ${compact ? 'h-4' : 'h-8'}`}>
               {b.value !== null && (
-                <motion.div
-                  className={`h-full rounded-full ${BAR_COLOR[b.id]} ${b.best ? '' : 'opacity-70'}`}
-                  initial={{ width: 0 }}
-                  animate={{ width: `${Math.max(3, Math.min(100, (b.value / SCALE_MAX) * 100))}%` }}
-                  transition={{ delay: 0.15 * i, type: 'spring', stiffness: 80, damping: 18 }}
+                <div
+                  className={`hd-flood absolute inset-y-0 left-0 rounded-chip ${BAR[b.id]}`}
+                  style={{
+                    width: `${Math.max(3, Math.min(100, (b.value / SCALE_MAX) * 100))}%`,
+                    ['--d' as string]: `${i * 140}ms`,
+                    animationDelay: `${i * 140}ms`,
+                  }}
                 />
               )}
-              <div
-                className="absolute inset-y-0 border-l-2 border-dashed border-pitch-400/60"
-                style={{ left: `${(0.25 / SCALE_MAX) * 100}%` }}
-                title="coin flip"
-              />
+              <div className="absolute inset-y-0 border-l-2 border-dashed border-night-400" style={{ left: `${(0.25 / SCALE_MAX) * 100}%` }} aria-hidden="true" />
             </div>
-            <span className={`tabular w-[5rem] text-right font-display font-bold ${compact ? 'text-[1.5rem]' : 'text-[2.4rem]'}`}>
-              {b.value === null ? '—' : b.value.toFixed(2)}
-            </span>
+            <span className={`num w-[4.5rem] text-right ${compact ? 'text-title' : 'text-head'}`}>{b.value === null ? '–' : b.value.toFixed(2)}</span>
           </div>
         ))}
       </div>
-      {compact ? (
-        <p className="text-[0.8rem] text-pitch-400">Brier score: shorter bar wins.</p>
-      ) : (
-        <p className="text-[1rem] text-pitch-400">
-          Brier score: how far each forecast was from what actually happened. <b className="text-pitch-200">Shorter bar wins</b> — 0 is
-          perfect, the dashed line is a coin flip.
+      {!compact && (
+        <p className="text-body text-night-400">
+          Brier score: how far each forecast landed from what happened. <b className="text-night-200">Shorter bar wins</b>; 0 is perfect, the dashed
+          line is a coin flip.
           {scorecard.nGemini > 0 &&
             scorecard.nGemini < scorecard.n &&
             ` Gemini priced ${scorecard.nGemini} of ${scorecard.n} questions and is scored on those.`}
         </p>
       )}
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.6 }}
-        className={`rounded-xl bg-volt/10 px-4 py-3 font-display font-bold leading-tight text-volt ring-1 ring-volt/50 ${compact ? 'text-[1.25rem]' : 'text-[2.4rem]'}`}
-      >
-        {empty ? 'No results yet — the first resolved question starts the scorecard.' : scorecard.verdict}
-      </motion.div>
+      <p className={`q border-l-4 border-flood pl-4 leading-tight ${compact ? 'line-clamp-2 text-body' : 'text-head'}`}>
+        {empty ? 'No results yet. The first settled question starts the scorecard.' : scorecard.verdict}
+      </p>
       {!compact && scorecard.entries.length > 0 && (
-        <div className="min-h-0 flex-1 overflow-hidden">
-          <div className="grid grid-cols-[1fr_5rem_5rem_5rem] gap-x-3 gap-y-1 text-[1rem]">
-            <span className="kicker text-[0.75rem]">Question · what happened</span>
-            <span className="kicker text-right text-[0.75rem] text-volt">Room</span>
-            <span className="kicker text-right text-[0.75rem] text-model">Model</span>
-            <span className="kicker text-right text-[0.75rem] text-gemini">Gemini</span>
+        <table className="min-h-0 w-full text-body">
+          <thead>
+            <tr className="text-small text-night-400">
+              <th className="pb-1 text-left font-normal">Question · what happened</th>
+              <th className="w-[5rem] pb-1 text-right font-normal">Friends</th>
+              <th className="w-[5rem] pb-1 text-right font-normal">Model</th>
+              <th className="w-[5rem] pb-1 text-right font-normal">Gemini</th>
+            </tr>
+          </thead>
+          <tbody>
             {scorecard.entries
-              .slice(-5)
+              .slice(-4)
               .reverse()
               .map((e) => (
-                <div key={e.marketId} className="contents">
-                  <span className="truncate text-pitch-200">
-                    {e.question} · <b className="text-pitch-50">{e.outcome}</b>
-                  </span>
-                  <span className="tabular text-right font-semibold">{Math.round(e.room * 100)}%</span>
-                  <span className="tabular text-right font-semibold">{Math.round(e.model * 100)}%</span>
-                  <span className="tabular text-right font-semibold">
-                    {e.gemini === undefined ? '—' : `${Math.round(e.gemini * 100)}%`}
-                  </span>
-                </div>
+                <tr key={e.marketId} className="border-t border-night-700">
+                  <td className="max-w-0 truncate py-1 text-night-200">
+                    {e.question} · <b className="text-chalk">{e.outcome}</b>
+                  </td>
+                  <td className="num py-1 text-right text-lead text-flood">{Math.round(e.room * 100)}%</td>
+                  <td className="num py-1 text-right text-lead">{Math.round(e.model * 100)}%</td>
+                  <td className="num py-1 text-right text-lead">{e.gemini === undefined ? '–' : `${Math.round(e.gemini * 100)}%`}</td>
+                </tr>
               ))}
-          </div>
-        </div>
+          </tbody>
+        </table>
       )}
     </div>
   );
