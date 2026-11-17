@@ -38,7 +38,7 @@ export function Live() {
   };
 
   return (
-    <div className="min-h-[100dvh] pb-[calc(env(safe-area-inset-bottom)+168px)]">
+    <div className="min-h-[100dvh] pb-[calc(env(safe-area-inset-bottom)+168px)]" data-testid="party-status" data-status={snap.party.status}>
       <Header speakerOn={speakerOn} onSpeaker={toggleSpeaker} />
       <Banners />
       <main className="mx-auto max-w-xl px-4 pt-4">

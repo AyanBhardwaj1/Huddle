@@ -59,7 +59,7 @@ export function BuyIn({ onDone, onSkip }: { onDone: () => void; onSkip: () => vo
       <div className="relative flex flex-1 flex-col items-center justify-center py-10 text-center">
         <AnimatePresence mode="wait">
           {step === 'done' ? (
-            <motion.div key="done" initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="relative">
+            <motion.div key="done" initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="relative" data-testid="buy-in-done">
               <Confetti count={36} />
               <div className="mx-auto grid h-24 w-24 place-items-center rounded-full bg-volt text-volt-ink shadow-glow">
                 <Icon name="check" size={48} />
@@ -87,6 +87,7 @@ export function BuyIn({ onDone, onSkip }: { onDone: () => void; onSkip: () => vo
           <button
             disabled={step !== 'idle'}
             onClick={go}
+            data-testid="buy-in"
             className="flex min-h-[68px] w-full items-center justify-center gap-3 rounded-2xl bg-volt font-display text-3xl font-bold uppercase tracking-wide text-volt-ink shadow-glow transition-transform active:scale-[0.98] disabled:opacity-80"
           >
             {step === 'idle' ? (

@@ -132,6 +132,7 @@ export function PartyRoute({ code }: { code: string }) {
                 </label>
                 <input
                   id="name"
+                  data-testid="join-name"
                   value={draftName}
                   onChange={(e) => setDraftName(e.target.value)}
                   maxLength={24}
@@ -149,6 +150,7 @@ export function PartyRoute({ code }: { code: string }) {
                 </label>
                 <button
                   type="submit"
+                  data-testid="join-submit"
                   disabled={!draftName.trim() || joining}
                   className="flex min-h-[64px] w-full items-center justify-center rounded-2xl bg-volt font-display text-2xl font-bold uppercase tracking-wide text-volt-ink shadow-glow transition-opacity disabled:opacity-40"
                 >

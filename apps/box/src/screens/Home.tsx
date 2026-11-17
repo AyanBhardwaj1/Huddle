@@ -48,6 +48,7 @@ export function Home() {
         transition={{ delay: 0.15 }}
         className="btn-volt relative min-h-[5.5rem] px-14 text-[2.6rem]"
         onClick={() => setScreen('create')}
+        data-testid="start-party"
         disabled={offline}
       >
         Start a party
