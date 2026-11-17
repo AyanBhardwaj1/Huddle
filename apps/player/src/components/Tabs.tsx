@@ -69,7 +69,9 @@ export function Leaderboard({ title = 'Leaders' }: { title?: string }) {
                 >
                   {i + 1}
                 </span>
-                <Avatar name={p.name} size="2.5rem" />
+                <span className={cx("shrink-0 rounded-[0.85rem]", lead && "ring-2 ring-white/60")}>
+                  <Avatar name={p.name} size="2.5rem" />
+                </span>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
                     <span className="truncate font-head text-lead font-bold">{p.name}</span>
