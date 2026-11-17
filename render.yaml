@@ -11,17 +11,16 @@ services:
     plan: free
     branch: main
     autoDeploy: true
+    # --prod=false: the UIs build with dev tools (Vite, Tailwind, TypeScript) even if NODE_ENV=production.
     buildCommand: >-
-      (corepack enable pnpm || npm install -g pnpm@9.15.9) &&
-      pnpm install --frozen-lockfile --filter @huddle/engine... --filter @huddle/box... --filter @huddle/player... &&
-      pnpm --filter @huddle/box --filter @huddle/player build
+      npx --yes pnpm@9.15.9 install --frozen-lockfile --prod=false
+      --filter @huddle/engine... --filter @huddle/box... --filter @huddle/player... &&
+      npx --yes pnpm@9.15.9 --filter @huddle/box --filter @huddle/player build
     startCommand: cd apps/engine && ./node_modules/.bin/tsx src/index.ts
     healthCheckPath: /health
     envVars:
       - key: NODE_VERSION
         value: "22"
-      - key: NODE_ENV
-        value: production
       # Points mode: no money, no chain calls. Switch to `vault` once the program is on devnet
       # and SOLANA_RPC_URL, HUDDLE_PROGRAM_ID, USDC_MINT and TREASURY_SECRET_KEY are set.
       - key: SETTLEMENT
