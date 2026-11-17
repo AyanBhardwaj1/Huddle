@@ -1,5 +1,7 @@
-import { AnimatePresence, motion } from 'framer-motion';
+import { Roll } from '@huddle/ui';
+import { motion } from 'framer-motion';
 import { QRCodeSVG } from 'qrcode.react';
+import { useRef, type CSSProperties } from 'react';
 import { BoxButtons } from '../components/controls';
 import { Icon, Wordmark } from '../components/ui';
 import { leaderboard, MODE_LABEL, moneyShort } from '../lib/derive';
@@ -11,6 +13,9 @@ export function Lobby() {
   const party = s.party;
   const players = leaderboard(s.players).sort((a, b) => a.joinedAt.localeCompare(b.joinedAt));
   const pot = players.reduce((a, p) => a + p.deposited, 0);
+  // Players already here on first paint do not replay their arrival.
+  const seen = useRef<Set<string> | null>(null);
+  if (seen.current === null) seen.current = new Set(players.map((p) => p.pubkey));
   const joinHost = (() => {
     try {
       const u = new URL(party.joinUrl);
@@ -19,105 +24,113 @@ export function Lobby() {
       return party.joinUrl;
     }
   })();
+  const meta = [
+    `${MODE_LABEL[party.config.defaultMode]} mode`,
+    `${moneyShort(party.config.buyIn, party)} buy-in`,
+    party.game.status === 'replay' ? 'Replay' : null,
+    party.config.settlement === 'points' ? 'Points only, no money' : party.config.settlement === 'vault' ? 'Test money, paid out automatically' : 'Host pays out',
+  ].filter(Boolean);
 
   return (
-    <div className="flex h-full gap-5 p-5">
+    <div className="flex h-full">
       {/* Join */}
-      <section className="flex w-[25rem] shrink-0 flex-col items-center justify-center gap-3 rounded-card bg-pitch-900 p-5 ring-1 ring-pitch-700">
-        <div className="rounded-2xl bg-white p-3 shadow-glow">
+      <section className="flex w-[24rem] shrink-0 flex-col items-center justify-center gap-4 bg-night-900 px-8" aria-label="Join this party">
+        <span className="rounded-panel bg-chalk p-4">
           <QRCodeSVG
             value={party.joinUrl}
             size={512}
             level="M"
-            style={{ width: '17rem', height: '17rem' }}
-            bgColor="#FFFFFF"
-            fgColor="#07090D"
+            style={{ width: '14.5rem', height: '14.5rem', display: 'block' }}
+            bgColor="#F4F2EC"
+            fgColor="#08090B"
+            title={`Join at ${party.joinUrl}`}
           />
-        </div>
-        <div className="flex items-center gap-2 font-display text-[1.7rem] font-bold uppercase leading-none tracking-wide text-volt">
-          <Icon name="nfc" className="h-7 w-7" /> Tap your phone here to join
-        </div>
-        <div className="text-[0.9rem] text-pitch-400">or scan · {joinHost}</div>
-        <div className="mt-1 flex items-baseline gap-3">
-          <span className="kicker">Party code</span>
-          <span className="tabular font-display text-[3.4rem] font-bold leading-none tracking-[0.2em]" data-testid="party-code">
+        </span>
+        <p className="flex flex-col items-center gap-1 text-center text-title font-bold leading-tight text-flood">
+          <Icon name="nfc" className="h-7 w-7 shrink-0" /> Tap your phone here to join
+        </p>
+        <p className="text-body text-night-400">or scan, or open {joinHost}</p>
+        <p className="mt-1 flex flex-col items-center">
+          <span className="text-small text-night-400">Party code</span>
+          <span className="font-display text-[3.5rem] font-black leading-none tracking-[0.14em]" style={{ fontStretch: '125%' }} data-testid="party-code" translate="no">
             {party.code}
           </span>
-        </div>
+        </p>
       </section>
 
       {/* Room */}
-      <section className="flex min-w-0 flex-1 flex-col gap-3">
-        <div className="flex items-start gap-3">
-          <div className="min-w-0 flex-1">
-            <Wordmark className="text-[1.6rem] text-pitch-200" />
-            <h1 className="line-clamp-2 font-display text-[2.3rem] font-bold uppercase leading-[0.95]">{party.game.title}</h1>
-            <div className="mt-1 flex flex-wrap gap-2 text-[0.9rem] text-pitch-200">
-              <span className="rounded-full bg-pitch-800 px-3 py-0.5 ring-1 ring-pitch-700">
-                {MODE_LABEL[party.config.defaultMode]} mode
-              </span>
-              <span className="rounded-full bg-pitch-800 px-3 py-0.5 ring-1 ring-pitch-700">
-                Buy-in {moneyShort(party.config.buyIn, party)}
-              </span>
-              {party.game.status === 'replay' && (
-                <span className="rounded-full bg-pitch-800 px-3 py-0.5 ring-1 ring-pitch-700">Replay</span>
-              )}
-              {party.config.settlement === 'points' && (
-                <span className="rounded-full bg-pitch-800 px-3 py-0.5 ring-1 ring-pitch-700">Points only</span>
-              )}
-            </div>
-          </div>
-          <BoxButtons canLock={false} />
-        </div>
-
-        <div className="flex items-baseline gap-4">
-          <span className="font-display text-[4.2rem] font-bold leading-none text-volt tabular">{players.length}</span>
-          <span className="font-display text-[1.6rem] font-semibold uppercase tracking-wide text-pitch-200">
-            {players.length === 1 ? 'player in' : 'players in'}
-          </span>
-          <span className="ml-auto font-display text-[1.6rem] font-semibold uppercase text-pitch-400">
-            Pot <span className="tabular text-pitch-50">{moneyShort(pot, party)}</span>
+      <section className="flex min-w-0 flex-1 flex-col px-8 pb-6 pt-5">
+        <div className="flex items-center gap-3">
+          <Wordmark className="text-title text-night-400" lit={Math.max(1, Math.min(12, players.length))} />
+          <span className="ml-auto">
+            <BoxButtons canLock={false} showLock={false} />
           </span>
         </div>
+        <h1 className="q mt-5 line-clamp-2 text-display leading-[0.95]">{party.game.title}</h1>
+        <p className="mt-2 text-lead text-night-200">{meta.join(' · ')}</p>
 
-        <div
-          className="grid min-h-0 flex-1 content-start gap-2.5 overflow-hidden"
-          style={{
-            gridTemplateColumns: `repeat(${players.length > 8 ? 3 : 2}, minmax(0, 1fr))`,
-            gridAutoRows: players.length > 6 ? '3.2rem' : '4.2rem',
-          }}
+        <div className="mt-6 flex items-end gap-10 border-b border-night-700 pb-4">
+          <p className="flex flex-col">
+            <span className="text-body text-night-400">In the pot</span>
+            <span className="num text-hero leading-[0.85]">
+              <Roll text={moneyShort(pot, party)} value={pot} arrow />
+            </span>
+          </p>
+          <p className="flex flex-col">
+            <span className="text-body text-night-400">{players.length === 1 ? 'Player' : 'Players'}</span>
+            <span className="num text-hero leading-[0.85] text-night-200">
+              <Roll text={String(players.length)} value={players.length} />
+            </span>
+          </p>
+        </div>
+
+        <ul
+          className="mt-4 grid min-h-0 flex-1 content-start gap-x-6 gap-y-1 overflow-hidden"
+          style={{ gridTemplateColumns: `repeat(${players.length > 6 ? 3 : 2}, minmax(0, 1fr))` }}
+          aria-label="Players in the room"
+          aria-live="polite"
         >
-          <AnimatePresence>
-            {players.map((p) => (
-              <motion.div
+          {players.map((p) => {
+            const fresh = !seen.current!.has(p.pubkey);
+            return (
+              <motion.li
                 key={p.pubkey}
-                layout
-                initial={{ scale: 0.3, opacity: 0, rotate: -4 }}
-                animate={{ scale: 1, opacity: 1, rotate: 0 }}
-                transition={{ type: 'spring', stiffness: 380, damping: 18 }}
+                layout="position"
+                transition={{ type: 'spring', stiffness: 520, damping: 42 }}
                 data-testid="lobby-player"
                 data-player-name={p.name}
-                className="join-flash flex items-center gap-3 rounded-xl bg-pitch-800 px-3 ring-1 ring-pitch-600"
+                className={`relative flex min-h-[3.25rem] items-center gap-3 rounded-tile px-2 ${fresh ? 'hd-pop join-flash' : ''}`}
               >
-                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-volt font-display text-[1.6rem] font-bold uppercase text-volt-ink">
-                  {p.name.slice(0, 1)}
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-tile bg-night-800 font-display text-title font-extrabold text-flood" aria-hidden="true">
+                  {p.name.slice(0, 1).toUpperCase()}
                 </span>
-                <span className="min-w-0 flex-1 truncate font-display text-[1.8rem] font-semibold leading-none">{p.name}</span>
-                {p.remote && <Icon name="remote" className="h-5 w-5 text-pitch-400" aria-label="Remote player" />}
-                <span className="tabular font-display text-[1.4rem] font-semibold text-up">{moneyShort(p.deposited, party)}</span>
-              </motion.div>
-            ))}
-          </AnimatePresence>
+                <span className="min-w-0 flex-1 truncate text-title font-bold">{p.name}</span>
+                {p.remote && <Icon name="globe" className="h-5 w-5 shrink-0 text-night-400" title="Joining remotely" />}
+                <span className="num shrink-0 text-title text-night-200">{moneyShort(p.deposited, party)}</span>
+                {fresh && p.deposited > 0 && (
+                  <span
+                    className="hd-coin right-6 top-1/2"
+                    style={{ ['--dx' as string]: '-4rem', ['--dy' as string]: '-7rem', ['--d' as string]: '200ms' } as CSSProperties}
+                    aria-hidden="true"
+                  />
+                )}
+              </motion.li>
+            );
+          })}
           {players.length === 0 && (
-            <div className="col-span-2 flex h-full items-center justify-center rounded-xl border-2 border-dashed border-pitch-700 text-[1.3rem] text-pitch-400">
-              Waiting for the first player…
-            </div>
+            <li className="col-span-full flex items-center gap-3 py-3 text-lead text-night-400">
+              <span className="hd-breathe h-2.5 w-2.5 rounded-full bg-flood" aria-hidden="true" />
+              Waiting for the first player. Phones join by tapping the box or scanning the code.
+            </li>
           )}
-        </div>
+        </ul>
 
-        <button className="btn-volt min-h-[4.6rem] text-[2.3rem]" onClick={() => void act({ action: 'start_game' }, 'Kick off!')} data-testid="start-game">
-          Start game <Icon name="play" className="h-8 w-8" />
-        </button>
+        <div className="mt-4 flex items-center gap-5">
+          <p className="min-w-0 flex-1 text-body text-night-400">Start when the room is in. Friends can still join after kick-off.</p>
+          <button type="button" className="btn-primary min-h-[4rem] px-10 text-title" onClick={() => void act({ action: 'start_game' }, 'Kick-off')} data-testid="start-game">
+            Start game <Icon name="play" className="h-6 w-6" strokeWidth={2.6} />
+          </button>
+        </div>
       </section>
     </div>
   );

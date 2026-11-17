@@ -24,11 +24,33 @@ export function bridgeUrl(): string {
   return import.meta.env.VITE_BRIDGE_URL || BRIDGE_DEFAULT_URL;
 }
 
-/** `?fixture=1|live|lobby|end|scorecard` renders from a static snapshot without an engine. */
-export type FixtureKind = 'live' | 'lobby' | 'end' | 'scorecard';
+/**
+ * `?fixture=<kind>` renders from a static snapshot without an engine (review and screenshots).
+ * `?fixture=1` (or anything unknown) is the live board.
+ */
+export const FIXTURE_KINDS = [
+  'live', // penalty open + dispute + game markets
+  'urgent', // last five seconds of the countdown
+  'locked', // penalty locked, waiting for the result
+  'result', // penalty resolves: result reveal
+  'voided', // penalty voided: refund reveal
+  'threeway', // 3-way moment market with long labels
+  'edge', // fresh market at the edges: >99% / <1%, 100+ payout, empty pool
+  'board', // game-long markets only
+  'idle', // live game, nothing open yet
+  'host', // live board with the host dock open
+  'lobby', // lobby with players
+  'lobby-empty', // lobby before anyone joins
+  'scorecard', // scorecard view
+  'end', // end of game, challenge window
+  'final', // end of game, everyone paid
+  'connecting', // no snapshot yet
+  'reconnecting', // snapshot + reconnecting banner
+  'kit', // design kit
+] as const;
+export type FixtureKind = (typeof FIXTURE_KINDS)[number];
 export function fixtureParam(search = window.location.search): FixtureKind | null {
   const v = new URLSearchParams(search).get('fixture');
   if (v === null) return null;
-  if (v === 'lobby' || v === 'end' || v === 'scorecard') return v;
-  return 'live';
+  return (FIXTURE_KINDS as readonly string[]).includes(v) ? (v as FixtureKind) : 'live';
 }

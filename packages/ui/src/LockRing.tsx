@@ -90,7 +90,7 @@ export function LockRing({
             {caption && <span style={{ fontSize: `calc(${size} * 0.1)` }}>{caption}</span>}
           </>
         ) : (
-          <span className="text-center font-display font-extrabold leading-tight" style={{ fontSize: `calc(${size} * 0.12)` }}>
+          <span className="max-w-[62%] text-center font-display font-extrabold leading-tight" style={{ fontSize: `calc(${size} * 0.1)` }}>
             {caption ?? 'Open'}
           </span>
         )}

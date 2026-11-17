@@ -3,110 +3,140 @@
 @tailwind utilities;
 
 /*
- * Fluid scale: the layout is designed in rem at 1024x600 (1rem = 16px) and scales with the smaller
- * of width/height, so the 7-inch box and a 1080p TV show the same composition (1rem ≈ 29px at 1080p).
+ * Box kiosk (Floodlight, see DESIGN.md). The layout is designed in rem at 1024x600 (1rem = 16px)
+ * and scales with the smaller of width/height, so the 7-inch box and a 1080p TV show the same
+ * composition (1rem is about 28.8px at 1920x1080).
  */
-html {
-  font-size: clamp(10px, min(1.5625vw, 2.6667vh), 40px);
-  background: #07090d;
-  color-scheme: dark;
-}
-html,
-body,
-#root {
-  height: 100%;
-  overflow: hidden;
-}
-body {
-  @apply bg-pitch-950 font-sans text-pitch-50 antialiased;
-  -webkit-tap-highlight-color: transparent;
-  user-select: none;
-  touch-action: manipulation;
-}
-input,
-textarea {
-  user-select: text;
+@layer base {
+  html {
+    font-size: clamp(10px, min(1.5625vw, 2.6667vh), 40px);
+    background: #08090b;
+    color-scheme: dark;
+  }
+  html,
+  body,
+  #root {
+    height: 100%;
+    overflow: hidden;
+  }
+  body {
+    @apply bg-night-950 font-sans text-chalk antialiased;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    touch-action: manipulation;
+    overscroll-behavior: none;
+  }
+  input,
+  textarea {
+    user-select: text;
+  }
+  :focus-visible {
+    outline: 3px solid #ffe27a;
+    outline-offset: 3px;
+  }
+  button {
+    touch-action: manipulation;
+  }
 }
 
 @layer components {
-  .tabular {
-    font-variant-numeric: tabular-nums;
-  }
-  .kicker {
-    @apply font-display text-[1rem] font-semibold uppercase tracking-[0.18em] text-pitch-400;
-  }
+  /* Buttons: one primary (flood) per view, a secondary, and a quiet text-like one. */
   .btn {
-    @apply inline-flex min-h-[3rem] items-center justify-center gap-2 rounded-xl px-5 font-display text-[1.35rem] font-semibold uppercase tracking-wide transition active:scale-[0.97] disabled:opacity-40;
+    @apply inline-flex min-h-[3rem] select-none items-center justify-center gap-2 rounded-tile px-5 font-sans text-lead font-bold leading-none;
+    transition-property: background-color, color, box-shadow, transform, opacity;
+    transition-duration: 160ms;
+    transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
   }
-  .btn-volt {
-    @apply btn bg-volt text-volt-ink shadow-glow;
+  .btn:active:not(:disabled) {
+    transform: scale(0.97);
+    transition-duration: 90ms;
   }
-  .btn-ghost {
-    @apply btn border border-pitch-600 bg-pitch-800 text-pitch-50;
+  .btn:disabled {
+    @apply cursor-not-allowed bg-night-800 text-night-500 shadow-none;
   }
-  .btn-up {
-    @apply btn bg-up text-up-ink;
+  .btn-primary {
+    @apply btn bg-flood text-flood-ink hover:bg-flood-bright;
   }
-  .btn-down {
-    @apply btn bg-down text-down-ink;
+  .btn-secondary {
+    @apply btn bg-night-800 text-chalk ring-1 ring-inset ring-night-600 hover:bg-night-700;
   }
-  .card {
-    @apply rounded-card bg-pitch-900 shadow-card ring-1 ring-pitch-700;
+  .btn-quiet {
+    @apply btn bg-transparent text-night-200 hover:bg-night-800 hover:text-chalk;
+  }
+  .btn-yes {
+    @apply btn bg-yes text-yes-ink hover:bg-yes-bright;
+  }
+  .btn-no {
+    @apply btn bg-no text-no-ink hover:bg-no-bright;
+  }
+  .btn-danger {
+    @apply btn bg-no-deep text-no-bright ring-1 ring-inset ring-no-dim hover:bg-no-dim hover:text-chalk;
+  }
+
+  /* Big numbers: Archivo condensed, heavy, tabular. */
+  .num {
+    @apply font-display font-extrabold tnum;
+    font-stretch: 75%;
+  }
+  .q {
+    @apply font-display font-bold text-balance;
+    font-stretch: 87.5%;
+  }
+  .rule {
+    @apply border-night-700;
   }
   .scroll-thin {
     scrollbar-width: thin;
-    scrollbar-color: #2c3748 transparent;
-  }
-  /* Broadcast-style slanted panel edge */
-  .slant-r {
-    clip-path: polygon(0 0, 100% 0, calc(100% - 0.9rem) 100%, 0 100%);
-  }
-  .slant-l {
-    clip-path: polygon(0.9rem 0, 100% 0, 100% 100%, 0 100%);
+    scrollbar-color: #343b45 transparent;
+    overscroll-behavior: contain;
   }
 }
 
-/* ---------- On-screen LED ring (mirrors the engine's `led` messages) ---------- */
+/* ---------- On-screen LED ring: the screen edge mirrors the engine's `led` messages ---------- */
 .led-ring {
   position: fixed;
   inset: 0;
   pointer-events: none;
   z-index: 60;
-  border-radius: 0;
   box-shadow:
-    inset 0 0 0 0.22rem var(--led),
-    inset 0 0 1.6rem 0.2rem color-mix(in srgb, var(--led) 55%, transparent);
-  opacity: 0.55;
+    inset 0 0 0 0.2rem var(--led),
+    inset 0 0 2.4rem 0 color-mix(in srgb, var(--led) 45%, transparent);
+  opacity: 0.5;
 }
 .led-idle { animation: led-breathe 4s ease-in-out infinite; }
 .led-join { animation: led-flash 0.35s ease-in-out 4 both, led-settle 0.1s 1.4s forwards; }
 .led-market_open { animation: led-pulse 1.1s ease-in-out infinite; }
 .led-locking { animation: led-blink 0.3s steps(2, jump-none) infinite; }
-.led-locked { opacity: 0.9; }
+.led-locked { opacity: 0.85; }
 .led-win { animation: led-flash 0.25s ease-in-out 8 both, led-settle 0.1s 2s forwards; }
 .led-loss { animation: led-fade 2.2s ease-out forwards; }
 .led-goal { animation: led-strobe 0.12s steps(2, jump-none) 14 both, led-settle 0.1s 1.7s forwards; }
 .led-error { animation: led-blink 0.6s steps(2, jump-none) 6 both; }
 
-@keyframes led-breathe { 0%, 100% { opacity: 0.18; } 50% { opacity: 0.45; } }
-@keyframes led-pulse { 0%, 100% { opacity: 0.45; } 50% { opacity: 1; } }
+@keyframes led-breathe { 0%, 100% { opacity: 0.16; } 50% { opacity: 0.42; } }
+@keyframes led-pulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 0.95; } }
 @keyframes led-blink { 0% { opacity: 1; } 100% { opacity: 0.1; } }
 @keyframes led-flash { 0%, 100% { opacity: 0.2; } 50% { opacity: 1; } }
 @keyframes led-strobe { 0% { opacity: 1; } 100% { opacity: 0; } }
 @keyframes led-fade { 0% { opacity: 1; } 100% { opacity: 0.12; } }
 @keyframes led-settle { to { opacity: 0.25; } }
 
-@keyframes join-flash {
-  0% { background-color: rgba(212, 255, 58, 0.5); }
-  100% { background-color: transparent; }
-}
-.join-flash { animation: join-flash 1.4s ease-out; }
+/* Lobby tile: arrival flash (resting state is plain). */
+@keyframes join-flash { from { background-color: rgba(255, 226, 122, 0.35); } }
+.join-flash { animation: join-flash 1.4s cubic-bezier(0.22, 1, 0.36, 1); }
 
-@keyframes ticker {
-  from { transform: translateX(0); }
-  to { transform: translateX(-50%); }
-}
+/* Trade ticker items slide in from the right edge. */
+@keyframes ticker-in { from { transform: translateX(1.5rem); opacity: 0; } }
+.ticker-in { animation: ticker-in 420ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+/* Host dock slides in from the right edge; the board column reflows next to it. */
+@keyframes dock-in { from { transform: translateX(2rem); opacity: 0; } }
+.dock-in { animation: dock-in 240ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+/* Locked stage: colour drains a little so "no more bets" reads at a glance. */
+.is-locked .hd-split-fill { opacity: 0.55; transition: opacity 420ms cubic-bezier(0.22, 1, 0.36, 1); }
 
 @media (prefers-reduced-motion: reduce) {
-  .led-ring { animation: none !important; opacity: 0.6; }
+  .led-ring { animation: none !important; opacity: 0.55; }
+  .join-flash, .ticker-in, .dock-in { animation: none !important; }
 }
