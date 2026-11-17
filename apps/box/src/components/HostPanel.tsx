@@ -18,8 +18,8 @@ const STATE_LABEL: Partial<Record<Market['state'], string>> = { open: 'Open', lo
 
 function Section({ title, children, tone }: { title: string; children: ReactNode; tone?: 'alert' }) {
   return (
-    <section className={`flex flex-col gap-2.5 border-t px-4 py-4 ${tone === 'alert' ? 'border-no-dim bg-no-deep/60' : 'border-night-700'}`}>
-      <h3 className={`text-body font-bold ${tone === 'alert' ? 'text-no-bright' : 'text-night-200'}`}>{title}</h3>
+    <section className={`mx-3 mb-3 flex flex-col gap-2.5 rounded-panel px-4 py-4 ${tone === 'alert' ? 'bg-hot-50 ring-2 ring-inset ring-hot' : 'bg-card shadow-lift'}`}>
+      <h3 className={`font-head text-lead font-extrabold ${tone === 'alert' ? 'text-hot-600' : 'text-ink'}`}>{title}</h3>
       {children}
     </section>
   );
@@ -67,26 +67,26 @@ function MarketRow({ m }: { m: Market }) {
   const [open, setOpen] = useState(false);
   const canSwitch = m.state === 'open' && m.volume === 0;
   return (
-    <div className="rounded-tile bg-night-850">
+    <div className="rounded-tile bg-canvas ring-1 ring-inset ring-rule">
       <button
         type="button"
-        className="flex min-h-[3rem] w-full items-center gap-2.5 rounded-tile px-3 text-left transition-colors duration-quick hover:bg-night-800"
+        className="flex min-h-[3rem] w-full items-center gap-2.5 rounded-tile px-3 text-left transition-colors duration-quick hover:bg-well"
         onClick={() => setOpen((x) => !x)}
         aria-expanded={open}
       >
-        <span className={`shrink-0 text-small font-bold ${m.state === 'open' ? 'text-flood' : 'text-night-400'}`}>{STATE_LABEL[m.state] ?? m.state}</span>
+        <span className={`shrink-0 rounded-full px-2 py-0.5 text-small font-bold ${m.state === 'open' ? 'bg-zap text-white' : 'bg-well text-ink-2'}`}>{STATE_LABEL[m.state] ?? m.state}</span>
         <span className="min-w-0 flex-1 truncate text-body font-semibold">{m.question}</span>
-        <span className="tnum shrink-0 text-small text-night-400">{moneyShort(m.volume, party)}</span>
-        <Icon name={open ? 'chevronUp' : 'chevronDown'} className="h-4 w-4 shrink-0 text-night-400" />
+        <span className="tnum shrink-0 text-small text-ink-2">{moneyShort(m.volume, party)}</span>
+        <Icon name={open ? 'chevronUp' : 'chevronDown'} className="h-4 w-4 shrink-0 text-ink-muted" />
       </button>
       {open && (
-        <div className="flex flex-col gap-2 px-3 pb-3">
+        <div className="hd-drop flex flex-col gap-2 px-3 pb-3">
           {m.state === 'open' && (
             <button type="button" className="btn-primary min-h-[2.75rem] text-body" onClick={() => void act({ action: 'lock', marketId: m.id })}>
               <Icon name="lock" className="h-5 w-5" /> Lock now
             </button>
           )}
-          <p className="text-small text-night-400">Resolve as</p>
+          <p className="text-small font-semibold text-ink-2">Resolve as</p>
           <div className="grid grid-cols-2 gap-2">
             {m.outcomes.map((o) => (
               <ConfirmButton
@@ -104,7 +104,7 @@ function MarketRow({ m }: { m: Market }) {
           />
           {canSwitch && (
             <>
-              <p className="text-small text-night-400">Mode for this question</p>
+              <p className="text-small font-semibold text-ink-2">Mode for this question</p>
               <Segmented
                 label="Mode for this question"
                 options={MODES.map((x) => ({ value: x, label: MODE_LABEL[x] }))}
@@ -137,7 +137,7 @@ function CustomMarket() {
             key={p}
             type="button"
             onClick={() => setQ(p)}
-            className="min-h-[2.5rem] rounded-chip bg-night-800 px-3 text-small text-night-200 transition-colors duration-quick hover:bg-night-700 hover:text-chalk"
+            className="hd-press min-h-[2.5rem] rounded-full bg-canvas px-3 text-small font-semibold text-ink-2 ring-1 ring-inset ring-rule hover:bg-zap-50 hover:text-ink hover:ring-zap-200"
           >
             {p}
           </button>
@@ -153,23 +153,23 @@ function CustomMarket() {
         value={q}
         onChange={(e) => setQ(e.target.value.slice(0, 140))}
         placeholder="Will he score from here…"
-        className="min-h-[3rem] rounded-tile bg-night-800 px-3 text-lead text-chalk ring-1 ring-inset ring-night-600 placeholder:text-night-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-flood"
+        className="min-h-[3rem] rounded-tile bg-canvas px-3 text-lead text-ink ring-1 ring-inset ring-rule-strong placeholder:text-ink-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zap"
       />
       <div className="flex flex-wrap gap-2">
         {outcomes.map((o, i) => (
-          <div key={i} className="flex items-center rounded-tile bg-night-800 ring-1 ring-inset ring-night-600 focus-within:ring-2 focus-within:ring-flood">
+          <div key={i} className="flex items-center rounded-tile bg-canvas ring-1 ring-inset ring-rule-strong focus-within:ring-2 focus-within:ring-zap">
             <input
               value={o}
               name={`outcome-${i + 1}`}
               autoComplete="off"
               onChange={(e) => setOutcomes(outcomes.map((x, j) => (j === i ? e.target.value.slice(0, 40) : x)))}
-              className="h-11 w-[7rem] bg-transparent px-3 text-body text-chalk focus-visible:outline-none"
+              className="h-11 w-[7rem] bg-transparent px-3 text-body text-ink focus-visible:outline-none"
               aria-label={`Outcome ${i + 1}`}
             />
             {outcomes.length > 2 && (
               <button
                 type="button"
-                className="flex h-11 w-10 items-center justify-center text-night-400 hover:text-chalk"
+                className="flex h-11 w-10 items-center justify-center rounded-tile text-ink-muted hover:text-ink focus-visible:outline-offset-0"
                 onClick={() => setOutcomes(outcomes.filter((_, j) => j !== i))}
                 aria-label={`Remove outcome ${i + 1}`}
               >
@@ -241,7 +241,7 @@ function ReplayControls() {
         />
       </div>
       <div className="flex items-center gap-3">
-        <span className="tnum w-[3.25rem] text-small text-night-200">{fmt(pos)}</span>
+        <span className="tnum w-[3.25rem] text-small text-ink">{fmt(pos)}</span>
         <input
           type="range"
           min={0}
@@ -257,12 +257,12 @@ function ReplayControls() {
             if (seek !== null) void act({ action: 'seek', positionMs: Math.round(seek) });
             setSeek(null);
           }}
-          className="h-10 flex-1 accent-[#FFE27A]"
+          className="h-10 flex-1 accent-[#6C2BFF]"
           aria-label="Seek replay"
         />
-        <span className="tnum w-[3.25rem] text-right text-small text-night-400">{fmt(r.durationMs)}</span>
+        <span className="tnum w-[3.25rem] text-right text-small text-ink-2">{fmt(r.durationMs)}</span>
       </div>
-      <p className="tnum text-small text-night-400">
+      <p className="tnum text-small text-ink-2">
         Event {r.seq} of {r.totalEvents}
       </p>
     </Section>
@@ -285,13 +285,15 @@ export function HostPanel() {
 
   return (
     <aside
-      className="dock-in flex h-full min-h-0 w-[23rem] flex-col border-l border-night-700 bg-night-900"
+      className="dock-in relative z-panel flex h-full min-h-0 w-[23rem] flex-col bg-canvas-deep shadow-pop"
       aria-label="Host controls"
       data-testid="host-controls"
     >
       <div className="flex h-[3.75rem] shrink-0 items-center gap-3 px-4">
-        <Icon name="settings" className="h-6 w-6 text-flood" />
-        <h2 className="text-title font-bold">Host controls</h2>
+        <span className="flex h-9 w-9 items-center justify-center rounded-full bg-prime text-white shadow-zap">
+          <Icon name="settings" className="h-5 w-5" />
+        </span>
+        <h2 className="font-head text-title font-extrabold">Host controls</h2>
         <button type="button" className="btn-quiet ml-auto min-h-[2.75rem] px-3" onClick={() => setView('board')} aria-label="Close host controls (Esc)">
           <Icon name="x" className="h-5 w-5" />
         </button>
@@ -318,8 +320,8 @@ export function HostPanel() {
               return (
                 <div key={m.id} className="flex flex-col gap-2">
                   <p className="text-body font-semibold">{m.question}</p>
-                  <p className="text-small text-night-200">
-                    Result: <b className="text-chalk">{cur}</b> · flagged by {who}
+                  <p className="text-small text-ink-2">
+                    Result: <b className="text-ink">{cur}</b> · flagged by {who}
                     {m.dispute?.reason ? `: “${m.dispute.reason}”` : ''}
                   </p>
                   <button type="button" className="btn-primary min-h-[2.75rem] text-body" onClick={() => void act({ action: 'confirm_result', marketId: m.id })}>
@@ -351,7 +353,7 @@ export function HostPanel() {
         {(dr.length > 0 || !cfg.autoApprove) && (
           <Section title={`AI questions waiting (${dr.length})`}>
             {dr.map((m) => (
-              <div key={m.id} className="flex items-center gap-2 rounded-tile bg-night-850 p-2 pl-3">
+              <div key={m.id} className="hd-rise flex items-center gap-2 rounded-tile bg-canvas p-2 pl-3 ring-1 ring-inset ring-rule">
                 <span className="min-w-0 flex-1 text-body font-semibold">{m.question}</span>
                 <button type="button" className="btn-primary min-h-[2.75rem] px-3 text-body" onClick={() => void act({ action: 'approve_draft', marketId: m.id })}>
                   Open
@@ -366,12 +368,12 @@ export function HostPanel() {
                 </button>
               </div>
             ))}
-            {dr.length === 0 && <p className="text-body text-night-400">No drafts right now.</p>}
+            {dr.length === 0 && <p className="text-body text-ink-2">No drafts right now.</p>}
           </Section>
         )}
 
         <Section title={`Markets (${active.length})`}>
-          {active.length === 0 && <p className="text-body text-night-400">Nothing open. The AI opens the next one on a big moment.</p>}
+          {active.length === 0 && <p className="text-body text-ink-2">Nothing open. The AI opens the next one on a big moment.</p>}
           {active.map((m) => (
             <MarketRow key={m.id} m={m} />
           ))}
@@ -380,7 +382,7 @@ export function HostPanel() {
         <ReplayControls />
 
         <Section title="Party">
-          <p className="text-small text-night-400">Default mode for new questions</p>
+          <p className="text-small font-semibold text-ink-2">Default mode for new questions</p>
           <Segmented
             label="Default mode for new questions"
             options={MODES.map((x) => ({ value: x, label: MODE_LABEL[x] }))}
@@ -392,7 +394,7 @@ export function HostPanel() {
             onChange={(value) => void act({ action: 'set_auto_approve', value }, value ? 'AI questions open automatically' : 'AI questions wait for you')}
             label="Open AI questions automatically"
           />
-          <p className="text-small text-night-400">Announcer</p>
+          <p className="text-small font-semibold text-ink-2">Announcer</p>
           <Segmented
             label="Announcer voice"
             options={PERSONAS}

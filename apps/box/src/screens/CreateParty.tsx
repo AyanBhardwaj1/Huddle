@@ -1,5 +1,5 @@
 import type { GameInfo, MarketMode, Persona, SettlementMode } from '@huddle/shared';
-import { Mark } from '@huddle/ui';
+import { Aurora, Kinetic, Mark } from '@huddle/ui';
 import { useEffect, useMemo, useState } from 'react';
 import { Icon, Segmented, Toggle } from '../components/ui';
 import { api } from '../lib/api';
@@ -70,42 +70,45 @@ export function CreateParty() {
   };
 
   return (
-    <main className="flex h-full flex-col">
-      <header className="flex h-[3.75rem] shrink-0 items-center gap-3 border-b border-night-700 px-4">
-        <button type="button" className="btn-quiet min-h-[2.75rem] px-3" onClick={() => setScreen('home')} aria-label="Back to the home screen">
+    <main className="relative flex h-full flex-col bg-canvas">
+      <Aurora />
+      <header className="relative z-10 flex h-[4rem] shrink-0 items-center gap-3 px-4">
+        <button type="button" className="btn-secondary min-h-[2.75rem] px-3" onClick={() => setScreen('home')} aria-label="Back to the home screen">
           <Icon name="arrowLeft" className="h-5 w-5" />
         </button>
-        <h1 className="text-title font-bold">New party</h1>
-        <p className="ml-auto text-body text-night-400">Pick a game, choose how you play, then everyone joins.</p>
+        <h1 className="q text-head">
+          <Kinetic text="New party" />
+        </h1>
+        <p className="hd-fade ml-auto text-body text-ink-2" style={{ ['--d' as string]: '200ms' }}>Pick a game, choose how you play, then everyone joins.</p>
       </header>
-      <div className="grid min-h-0 flex-1 grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
+      <div className="relative z-10 grid min-h-0 flex-1 grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)] gap-3 px-3 pb-3">
         {/* Game list */}
-        <section className="flex min-h-0 flex-col border-r border-night-700 px-4 py-4" aria-labelledby="pick-game">
-          <h2 id="pick-game" className="mb-2 text-lead font-bold">
+        <section className="hd-slide-l card flex min-h-0 flex-col rounded-blob px-4 py-4" aria-labelledby="pick-game">
+          <h2 id="pick-game" className="mb-2 font-head text-title font-extrabold">
             The game
           </h2>
           <div className="scroll-thin flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto pr-1">
             {games === null && !loadErr && (
-              <p className="flex items-center gap-3 text-lead text-night-400" role="status">
-                <Mark size="1.5rem" spin className="text-night-600" /> Loading games…
+              <p className="flex items-center gap-3 text-lead text-ink-2" role="status">
+                <Mark size="1.5rem" lit={3} spin className="text-rule-strong" /> Loading games…
               </p>
             )}
             {loadErr && (
-              <div className="flex flex-col items-start gap-3 rounded-tile bg-no-deep p-4 ring-1 ring-inset ring-no-dim" role="alert">
+              <div className="flex flex-col items-start gap-3 rounded-tile bg-hot-50 p-4 ring-2 ring-inset ring-hot" role="alert">
                 <p className="flex items-center gap-2 text-lead font-bold">
-                  <Icon name="warn" className="h-5 w-5 text-no" /> Couldn’t load games
+                  <Icon name="warn" className="h-5 w-5 text-hot-600" /> Couldn’t load games
                 </p>
-                <p className="text-body text-night-200">{loadErr}. Check the engine is running.</p>
+                <p className="text-body text-ink-2">{loadErr}. Check the engine is running.</p>
                 <button type="button" className="btn-secondary min-h-[2.75rem] text-body" onClick={() => setN((x) => x + 1)}>
                   <Icon name="refresh" className="h-4 w-4" /> Try again
                 </button>
               </div>
             )}
-            {games?.length === 0 && <p className="text-lead text-night-400">No games available. Add a replay or a live feed key to the engine.</p>}
+            {games?.length === 0 && <p className="text-lead text-ink-2">No games available. Add a replay or a live feed key to the engine.</p>}
             {groups.map((g) => (
               <div key={g.sport} className="flex flex-col gap-1.5" role="radiogroup" aria-label={SPORT_LABEL[g.sport] ?? g.sport}>
-                <h3 className="text-small text-night-400">{SPORT_LABEL[g.sport] ?? g.sport}</h3>
-                {g.games.map((x) => {
+                <h3 className="text-small font-semibold text-ink-2">{SPORT_LABEL[g.sport] ?? g.sport}</h3>
+                {g.games.map((x, gi) => {
                   const on = x.id === gameId;
                   return (
                     <button
@@ -116,25 +119,30 @@ export function CreateParty() {
                       onClick={() => setGameId(x.id)}
                       data-testid="game-option"
                       data-game-id={x.id}
-                      className={`flex min-h-[4rem] items-center gap-3 rounded-tile px-3 text-left transition-[background-color,box-shadow] duration-quick ease-out active:scale-[0.99] ${
-                        on ? 'bg-night-800 ring-2 ring-inset ring-flood' : 'bg-night-900 hover:bg-night-800'
+                      style={{ ['--d' as string]: `${120 + gi * 60}ms` }}
+                      className={`hd-rise hd-press flex min-h-[4rem] items-center gap-3 rounded-tile px-3 text-left ${
+                        on ? 'bg-zap-50 ring-2 ring-inset ring-zap' : 'bg-canvas ring-1 ring-inset ring-rule hover:ring-zap-200'
                       }`}
                     >
                       <span className="flex shrink-0 flex-col gap-1" aria-hidden="true">
-                        <span className="h-3 w-1.5 rounded-full" style={{ background: x.home.color ?? '#87909B' }} />
-                        <span className="h-3 w-1.5 rounded-full" style={{ background: x.away.color ?? '#87909B' }} />
+                        <span className="h-3.5 w-2 rounded-full" style={{ background: x.home.color ?? '#8A86AA' }} />
+                        <span className="h-3.5 w-2 rounded-full" style={{ background: x.away.color ?? '#8A86AA' }} />
                       </span>
                       <span className="flex min-w-0 flex-1 flex-col">
                         <span className="q truncate text-title leading-tight">{x.title}</span>
-                        <span className="truncate text-small text-night-400">
+                        <span className="truncate text-small text-ink-2">
                           {x.home.name} vs {x.away.name}
                         </span>
                       </span>
-                      <span className={`shrink-0 text-small font-semibold ${x.status === 'live' ? 'text-chalk' : 'text-night-400'}`}>
-                        {x.status === 'live' && <span className="mr-1.5 inline-block h-2 w-2 rounded-full bg-live" aria-hidden="true" />}
+                      <span className={`shrink-0 text-small font-semibold ${x.status === 'live' ? 'text-ink' : 'text-ink-2'}`}>
+                        {x.status === 'live' && <span className="live-dot mr-1.5 inline-block h-2 w-2 rounded-full bg-hot" aria-hidden="true" />}
                         {STATUS_LABEL[x.status] ?? x.status}
                       </span>
-                      {on && <Icon name="check" className="h-6 w-6 shrink-0 text-flood" strokeWidth={2.6} />}
+                      {on && (
+                        <span className="hd-pop flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-zap text-white">
+                          <Icon name="check" className="h-4 w-4" strokeWidth={3} />
+                        </span>
+                      )}
                     </button>
                   );
                 })}
@@ -144,9 +152,10 @@ export function CreateParty() {
         </section>
 
         {/* Options */}
-        <section className="scroll-thin flex min-h-0 flex-col gap-4 overflow-y-auto px-5 py-4">
+        <section className="hd-slide-r card flex min-h-0 flex-col overflow-hidden rounded-blob" style={{ ['--d' as string]: '80ms' }}>
+          <div className="scroll-thin flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-5 pb-3 pt-3.5">
           <div>
-            <h2 className="mb-2 text-lead font-bold">How you play</h2>
+            <h2 className="mb-1.5 font-head text-lead font-extrabold">How you play</h2>
             <Segmented
               size="lg"
               label="How you play"
@@ -158,7 +167,7 @@ export function CreateParty() {
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <h2 className="mb-2 text-lead font-bold">Buy-in</h2>
+              <h2 className="mb-1.5 font-head text-lead font-extrabold">Buy-in</h2>
               <Segmented
                 label="Buy-in"
                 options={[5, 10, 20].map((v) => ({ value: v, label: effSettlement === 'points' ? `${v}\u00a0pts` : `$${v}` }))}
@@ -167,7 +176,7 @@ export function CreateParty() {
               />
             </div>
             <div>
-              <h2 className="mb-2 text-lead font-bold">Announcer</h2>
+              <h2 className="mb-1.5 font-head text-lead font-extrabold">Announcer</h2>
               <Segmented
                 label="Announcer"
                 options={[
@@ -181,7 +190,7 @@ export function CreateParty() {
             </div>
           </div>
           <div>
-            <h2 className="mb-2 text-lead font-bold">Money</h2>
+            <h2 className="mb-1.5 font-head text-lead font-extrabold">Money</h2>
             <Segmented
               label="Money"
               options={[
@@ -195,13 +204,14 @@ export function CreateParty() {
             />
           </div>
           <Toggle on={autoApprove} onChange={setAutoApprove} label="Open AI questions automatically (off: you approve each one)" />
-          <div className="mt-auto flex flex-col gap-2 pt-1">
+          </div>
+          <div className="flex shrink-0 flex-col gap-2 border-t border-rule px-5 pb-4 pt-3">
             {err && (
-              <p className="flex items-start gap-2 rounded-tile bg-no-deep px-3 py-2 text-body text-chalk ring-1 ring-inset ring-no-dim" role="alert">
-                <Icon name="warn" className="mt-0.5 h-5 w-5 shrink-0 text-no" /> {err}
+              <p className="hd-drop flex items-start gap-2 rounded-tile bg-hot-50 px-3 py-2 text-body text-ink ring-2 ring-inset ring-hot" role="alert">
+                <Icon name="warn" className="mt-0.5 h-5 w-5 shrink-0 text-hot-600" /> {err}
               </p>
             )}
-            <button type="button" className="btn-primary min-h-[4rem] text-title" disabled={!game || busy} onClick={() => void create()} data-testid="create-party">
+            <button type="button" className="btn-prime min-h-[4rem] rounded-panel text-title" disabled={!game || busy} onClick={() => void create()} data-testid="create-party">
               {busy ? 'Setting up…' : 'Create party'}
               {!busy && <Icon name="arrowRight" className="h-6 w-6" strokeWidth={2.6} />}
             </button>

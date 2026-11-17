@@ -1,5 +1,5 @@
 import type { Market, MarketState, Party } from '@huddle/shared';
-import { Mark } from '@huddle/ui';
+import { Aurora, Kinetic, Mark } from '@huddle/ui';
 import { QRCodeSVG } from 'qrcode.react';
 import { useEffect, useRef, useState } from 'react';
 import { CaptionBar, DisputeBanner, GameBoard, LeaderRail, MomentStage, ResultReveal, Scorebug, TopBar, TradeTicker } from '../components/board';
@@ -37,6 +37,14 @@ function useRevealQueue(markets: Market[], openMomentId: string | null): [Market
   return [head, () => setQueue((q) => q.slice(1))];
 }
 
+/** "#C8102E" + alpha -> rgba(); unknown colours fall back to the brand violet. */
+function hexA(hex: string | undefined, a: number): string {
+  const m = /^#?([0-9a-f]{6})$/i.exec(hex ?? '');
+  if (!m) return `rgba(108,43,255,${a})`;
+  const n = Number.parseInt(m[1]!, 16);
+  return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${a})`;
+}
+
 function joinHost(url: string): string {
   try {
     const u = new URL(url);
@@ -49,13 +57,13 @@ function joinHost(url: string): string {
 /** Small "join late" chip for the top bar. */
 export function JoinChip({ party }: { party: Party }) {
   return (
-    <div className="flex items-center gap-3">
-      <span className="rounded-[4px] bg-chalk p-[0.18rem]">
-        <QRCodeSVG value={party.joinUrl} size={128} style={{ width: '2.5rem', height: '2.5rem', display: 'block' }} title={`Join at ${party.joinUrl}`} />
+    <div className="hd-drop flex items-center gap-2.5 rounded-full bg-card py-1 pl-1 pr-4 shadow-lift" style={{ ['--d' as string]: '80ms' }}>
+      <span className="rounded-full bg-white p-[0.3rem] ring-1 ring-inset ring-rule">
+        <QRCodeSVG value={party.joinUrl} size={128} fgColor="#14123A" style={{ width: '2.25rem', height: '2.25rem', display: 'block' }} title={`Join at ${party.joinUrl}`} />
       </span>
       <span className="flex flex-col leading-none">
-        <span className="text-small text-night-400">Join</span>
-        <span className="font-display text-title font-extrabold tracking-[0.12em]" style={{ fontStretch: '125%' }} translate="no">
+        <span className="text-small font-semibold text-ink-2">Join</span>
+        <span className="font-head text-title font-extrabold tracking-[0.08em]" translate="no">
           {party.code}
         </span>
       </span>
@@ -65,23 +73,25 @@ export function JoinChip({ party }: { party: Party }) {
 
 function IdleStage({ party }: { party: Party }) {
   return (
-    <section className="hd-fade flex h-full items-center gap-10 rounded-panel bg-night-900 px-10" aria-label="Waiting for the next moment">
+    <section className="hd-zoom card flex h-full items-center gap-10 rounded-blob px-10 shadow-pop" aria-label="Waiting for the next moment">
       <div className="min-w-0 flex-1">
-        <Mark size="3.25rem" lit={1} className="hd-breathe mb-5 text-night-600" />
-        <h1 className="q text-display leading-[0.95]">The next question drops on the next big moment.</h1>
-        <p className="mt-4 max-w-[34rem] text-lead text-night-200">
+        <Mark size="3.5rem" lit={12} className="hd-breathe mb-5 text-rule-strong" />
+        <h1 className="q text-display leading-[0.95]">
+          <Kinetic text="The next question drops on the next big moment." delay={100} />
+        </h1>
+        <p className="hd-rise mt-4 max-w-[34rem] text-lead text-ink-2" style={{ ['--d' as string]: '520ms' }}>
           Penalties, corners, third downs: the moment it happens, a market opens here and on every phone.
         </p>
       </div>
-      <div className="flex shrink-0 flex-col items-center gap-3">
-        <span className="rounded-tile bg-chalk p-3">
-          <QRCodeSVG value={party.joinUrl} size={256} style={{ width: '10.5rem', height: '10.5rem', display: 'block' }} title={`Join at ${party.joinUrl}`} />
+      <div className="hd-pop flex shrink-0 flex-col items-center gap-3" style={{ ['--d' as string]: '300ms' }}>
+        <span className="hd-float rounded-panel bg-white p-3 shadow-pop ring-1 ring-inset ring-rule">
+          <QRCodeSVG value={party.joinUrl} size={256} fgColor="#14123A" style={{ width: '10.5rem', height: '10.5rem', display: 'block' }} title={`Join at ${party.joinUrl}`} />
         </span>
-        <span className="text-body text-night-200">Late? Scan to join</span>
-        <span className="font-display text-head font-extrabold tracking-[0.12em]" style={{ fontStretch: '125%' }} translate="no">
+        <span className="text-body font-semibold text-ink-2">Late? Scan to join</span>
+        <span className="font-head text-head font-extrabold tracking-[0.08em]" translate="no">
           {party.code}
         </span>
-        <span className="text-small text-night-400">{joinHost(party.joinUrl)}</span>
+        <span className="text-small text-ink-muted">{joinHost(party.joinUrl)}</span>
       </div>
     </section>
   );
@@ -101,35 +111,46 @@ export function LiveBoard() {
   let stage;
   if (boardView === 'scorecard') {
     stage = (
-      <section className="hd-fade h-full overflow-hidden rounded-panel bg-night-900 px-8 py-6">
-        <ScorecardPanel scorecard={s.scorecard} />
+      <section className="hd-zoom card h-full overflow-hidden rounded-blob px-7 py-5 shadow-pop">
+        <ScorecardPanel scorecard={s.scorecard} stage />
       </section>
     );
   } else if (takeover) stage = <MomentStage key={takeover.id} market={takeover} compact={docked} tight={ds.length > 0} />;
   else if (tiles.length > 0) stage = <GameBoard markets={tiles} />;
   else stage = <IdleStage party={s.party} />;
 
+  // Team colours tint the room while a moment market is up; the brand field otherwise.
+  const g = s.game;
+  const blobs = takeover
+    ? [
+        { c: hexA(g.home.color, 0.2), x: '-14vmax', y: '-10vmax', s: '58vmax', mx: '6vmax', my: '5vmax', dur: '18s' },
+        { c: hexA(g.away.color, 0.2), x: '58vw', y: '20vh', s: '58vmax', mx: '-6vmax', my: '-5vmax', dur: '22s', d: '-5s' },
+        { c: 'rgba(108,43,255,0.16)', x: '20vw', y: '50vh', s: '48vmax', mx: '5vmax', my: '-4vmax', dur: '26s', d: '-9s' },
+      ]
+    : undefined;
+
   return (
-    <div className="flex h-full min-w-0 flex-col">
+    <div className="relative flex h-full min-w-0 flex-col bg-canvas">
+      <Aurora key={takeover ? 'moment' : 'calm'} blobs={blobs} className="hd-fade" />
       <TopBar
         left={<Scorebug game={s.game} party={s.party} />}
         middle={docked ? null : <JoinChip party={s.party} />}
         right={<BoxButtons canLock={takeover?.state === "open"} showLock={!!takeover} compact={docked} />}
       />
       {ds.length > 0 && (
-        <div className="shrink-0 px-4 pt-3">
+        <div className="relative z-10 shrink-0 px-4 pt-1">
           <DisputeBanner markets={ds} players={s.players} onOpen={() => setView('host')} />
         </div>
       )}
-      <main className="relative min-h-0 flex-1 px-4 py-3">
+      <main className="relative z-10 min-h-0 flex-1 px-4 py-2.5">
         {stage}
         {reveal && boardView !== 'scorecard' && (
-          <div className="absolute inset-x-4 inset-y-3">
+          <div className="absolute inset-x-4 inset-y-2.5">
             <ResultReveal key={reveal.id} market={reveal} summary={resultSummary(reveal, s.fills)} party={s.party} onDone={dismissReveal} />
           </div>
         )}
       </main>
-      <footer className="flex h-[3rem] shrink-0 items-center gap-6 overflow-hidden border-t border-night-700 px-4">
+      <footer className="relative z-10 flex h-[3rem] shrink-0 items-center gap-3 overflow-hidden px-4">
         <LeaderRail players={s.players} party={s.party} max={docked ? 3 : 4} />
         {!docked && <TradeTicker />}
       </footer>

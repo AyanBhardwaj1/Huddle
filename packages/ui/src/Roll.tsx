@@ -34,6 +34,7 @@ export function Roll({
   flash = true,
   arrow = false,
   style,
+  duration,
 }: {
   text: string;
   value?: number | null;
@@ -42,6 +43,8 @@ export function Roll({
   flash?: boolean;
   arrow?: boolean;
   style?: CSSProperties;
+  /** Roll duration in ms (default 560). Short for countdown ticks, long for a big payout. */
+  duration?: number;
 }) {
   const parsed = Number.parseFloat(text.replace(/[^0-9.-]/g, ''));
   const numeric = value !== undefined ? value : Number.isFinite(parsed) ? parsed : null;
@@ -50,7 +53,10 @@ export function Roll({
   const chars = [...text];
   let digitIndex = 0;
   return (
-    <span className={`hd-roll ${flash && dir ? flashClass : ''} ${className}`} style={style}>
+    <span
+      className={`hd-roll ${flash && dir ? flashClass : ''} ${className}`}
+      style={duration ? ({ ...style, ['--roll-dur' as string]: `${duration}ms` } as CSSProperties) : style}
+    >
       <span className="hd-sr">{label ?? text}</span>
       <span aria-hidden="true">
         {chars.map((c, i) => {
@@ -75,6 +81,7 @@ export function Pct({
   sign = true,
   flash = true,
   arrow = false,
+  duration,
 }: {
   p: number | null | undefined;
   className?: string;
@@ -82,11 +89,12 @@ export function Pct({
   sign?: boolean;
   flash?: boolean;
   arrow?: boolean;
+  duration?: number;
 }) {
   const text = pctText(p);
   return (
     <span className={`hd-roll ${className}`}>
-      <Roll text={text} value={pctValue(p)} label={pctLabel(p)} flash={flash} arrow={false} />
+      <Roll text={text} value={pctValue(p)} label={pctLabel(p)} flash={flash} arrow={false} duration={duration} />
       {sign && text !== '–' && (
         <span aria-hidden="true" className={signClassName}>
           %

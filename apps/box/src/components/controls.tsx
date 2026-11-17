@@ -1,5 +1,5 @@
 import { BridgeClient } from '@huddle/shared';
-import { Mark } from '@huddle/ui';
+import { Kinetic, Mark } from '@huddle/ui';
 import { useEffect, useRef, useState } from 'react';
 import { bridgeUrl } from '../lib/config';
 import { nextView } from '../lib/derive';
@@ -64,11 +64,11 @@ export function useBoxInputs(): void {
   }, [party.fixture, setBridgeConnected]);
 }
 
-const KEY = 'ml-0.5 hidden rounded-[4px] bg-black/20 px-1.5 py-0.5 font-display text-small font-bold lg:inline';
+const KEY = 'ml-0.5 hidden rounded-[5px] bg-ink/10 px-1.5 py-0.5 font-num text-small font-bold lg:inline';
 
 /**
  * On-screen LOCK / TALK / host buttons. LOCK only appears when there is something to lock (the
- * hardware button is always there); it is the one flood-lit control in the bar while it shows.
+ * hardware button is always there); it is the one zap-filled control in the bar while it shows.
  */
 export function BoxButtons({ canLock, showLock = true, compact = false }: { canLock: boolean; showLock?: boolean; compact?: boolean }) {
   const { act, talk } = useParty();
@@ -140,12 +140,13 @@ export function TalkOverlay() {
   if (t.phase === 'idle') return null;
   return (
     <div
-      className="hd-rise absolute bottom-[4.25rem] left-1/2 z-talk flex w-[42rem] max-w-[92vw] -translate-x-1/2 items-center gap-4 rounded-panel bg-night-800 px-5 py-4 shadow-float ring-1 ring-inset ring-night-600"
+      className="absolute bottom-[4.5rem] left-1/2 z-talk w-[42rem] max-w-[92vw] -translate-x-1/2"
       role="status"
       aria-live="polite"
     >
-      <span className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-flood text-flood-ink">
-        {t.phase === 'listening' && <span className="absolute inset-0 animate-pulse-ring rounded-full bg-flood motion-reduce:hidden" />}
+      <div className="hd-rise flex items-center gap-4 rounded-blob bg-card px-5 py-4 shadow-pop ring-2 ring-inset ring-zap-200">
+      <span className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-prime text-white shadow-zap">
+        {t.phase === 'listening' && <span className="absolute inset-0 animate-pulse-ring rounded-full bg-zap motion-reduce:hidden" />}
         <Icon name="mic" className="relative h-7 w-7" />
       </span>
       {t.phase === 'text' ? (
@@ -169,7 +170,7 @@ export function TalkOverlay() {
             value={text}
             onChange={(e) => setText(e.target.value)}
             placeholder="What are the odds he scores…"
-            className="h-12 min-w-0 flex-1 rounded-tile bg-night-900 px-4 text-lead text-chalk ring-1 ring-inset ring-night-600 placeholder:text-night-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-flood"
+            className="h-12 min-w-0 flex-1 rounded-tile bg-canvas px-4 text-lead text-ink ring-1 ring-inset ring-rule-strong placeholder:text-ink-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zap"
             maxLength={300}
           />
           <button type="submit" className="btn-primary min-h-[3rem]" disabled={!text.trim()}>
@@ -181,7 +182,7 @@ export function TalkOverlay() {
         </form>
       ) : (
         <div className="min-w-0 flex-1">
-          <p className="text-title font-bold leading-tight">
+          <p className="font-head text-title font-extrabold leading-tight">
             {t.phase === 'connecting'
               ? 'Connecting…'
               : t.phase === 'sending'
@@ -190,12 +191,13 @@ export function TalkOverlay() {
                   : 'Asking…'
                 : 'Listening. Let go to ask.'}
           </p>
-          <p className="truncate text-lead text-night-200">
+          <p className="truncate text-lead text-ink-2">
             {t.transcript || (t.mode === 'agent' ? 'Live voice with the announcer' : 'Try “What are the odds he scores?”')}
           </p>
-          {t.error && <p className="text-body text-no-bright">{t.error}</p>}
+          {t.error && <p className="text-body font-semibold text-hot-600">{t.error}</p>}
         </div>
       )}
+      </div>
     </div>
   );
 }
@@ -214,15 +216,17 @@ export function SoundGate() {
     <button
       type="button"
       data-testid="sound-gate"
-      className="hd-fade fixed inset-0 z-gate flex flex-col items-center justify-center gap-5 bg-night-950/90 text-center"
+      className="hd-fade fixed inset-0 z-gate flex flex-col items-center justify-center gap-5 bg-canvas/90 text-center backdrop-blur-sm"
       onClick={async () => {
         await unlockAudio();
         setEnabled(true);
       }}
     >
-      <Mark size="9rem" lit={12} className="hd-breathe text-night-600" />
-      <span className="q text-display">Tap to turn on the announcer</span>
-      <span className="max-w-[36rem] text-lead text-night-200">
+      <span className="hd-pop"><Mark size="9rem" lit={12} className="hd-float text-rule-strong" /></span>
+      <span className="q text-display">
+        <Kinetic text="Tap to turn on the announcer" delay={150} />
+      </span>
+      <span className="max-w-[36rem] text-lead text-ink-2">
         The box calls every market out loud through this speaker. Browsers need one tap first.
       </span>
     </button>
