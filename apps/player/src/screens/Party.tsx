@@ -54,18 +54,18 @@ export function PartyRoute({ code }: { code: string }) {
     <div className="mx-auto flex min-h-[100dvh] max-w-md flex-col px-5 pb-[calc(env(safe-area-inset-bottom)+1.5rem)] pt-[calc(env(safe-area-inset-top)+1.25rem)]">
       <header className="flex items-center justify-between">
         <a href="/" className="-m-2 rounded-tile p-2" aria-label="Huddle home">
-          <Wordmark className="text-lead text-night-200" />
+          <Wordmark className="text-lead text-ink-2" />
         </a>
-        <span className="font-display text-small font-bold stretch-wide text-night-400" translate="no">
+        <span className="font-display text-small font-bold stretch-wide text-ink-muted" translate="no">
           {upper}
         </span>
       </header>
 
       {previewErr === 'missing' ? (
         <div className="flex flex-1 flex-col justify-center">
-          <Mark size="3rem" className="text-night-600" />
+          <Mark size="3rem" className="text-rule-strong" />
           <h1 className="mt-5 font-display text-head font-extrabold stretch-semi">No party called {upper}</h1>
-          <p className="mt-2 text-pretty text-body text-night-200">Check the code on the box with the host, or tap your phone on the box again.</p>
+          <p className="mt-2 text-pretty text-body text-ink-2">Check the code on the box with the host, or tap your phone on the box again.</p>
           <a href="/" className="btn-secondary mt-6 w-fit">
             <Icon name="arrowLeft" size={18} /> Back home
           </a>
@@ -75,15 +75,15 @@ export function PartyRoute({ code }: { code: string }) {
           <section className="mt-10" aria-labelledby="party-name">
             {p ? (
               <>
-                <p className="hd-fade flex items-center gap-2 text-small text-night-200">
+                <p className="hd-fade flex items-center gap-2 text-small text-ink-2">
                   {p.status === 'live' ? (
                     <>
-                      <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-live" aria-hidden="true" /> Live now
+                      <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-hot" aria-hidden="true" /> Live now
                     </>
                   ) : (
                     'Starting soon'
                   )}
-                  <span className="text-night-500" aria-hidden="true">
+                  <span className="text-ink-faint" aria-hidden="true">
                     ·
                   </span>
                   <span className="truncate">{p.game.title}</span>
@@ -91,8 +91,8 @@ export function PartyRoute({ code }: { code: string }) {
                 <h1 id="party-name" className="hd-rise mt-2 text-balance font-display text-head font-extrabold stretch-semi">
                   {p.name}
                 </h1>
-                <p className="hd-rise mt-2 text-body text-night-200" style={{ ['--d' as string]: '80ms' }}>
-                  Buy-in <span className="font-display font-bold text-chalk tnum">{money(p.config.buyIn, p.config.settlement === 'points')}</span>
+                <p className="hd-rise mt-2 text-body text-ink-2" style={{ ['--d' as string]: '80ms' }}>
+                  Buy-in <span className="font-display font-bold text-ink tnum">{money(p.config.buyIn, p.config.settlement === 'points')}</span>
                 </p>
               </>
             ) : previewErr === 'offline' ? (
@@ -100,7 +100,7 @@ export function PartyRoute({ code }: { code: string }) {
                 <h1 id="party-name" className="font-display text-head font-extrabold stretch-semi">
                   Party {upper}
                 </h1>
-                <p className="mt-2 text-pretty text-small text-night-400">Couldn't load the party details. You can still join.</p>
+                <p className="mt-2 text-pretty text-small text-ink-muted">Couldn't load the party details. You can still join.</p>
               </>
             ) : (
               <Loading>Finding the party…</Loading>
@@ -111,10 +111,10 @@ export function PartyRoute({ code }: { code: string }) {
             <div className="hd-rise mt-6 flex items-center gap-3" style={{ ['--d' as string]: '160ms' }}>
               <div className="flex -space-x-1.5" aria-hidden="true">
                 {players.slice(0, 6).map((pl) => (
-                  <Avatar key={pl.pubkey} name={pl.name} className="h-8 w-8 ring-2 ring-night-950" />
+                  <Avatar key={pl.pubkey} name={pl.name} className="h-8 w-8 ring-2 ring-card" />
                 ))}
               </div>
-              <p className="min-w-0 text-small text-night-200">
+              <p className="min-w-0 text-small text-ink-2">
                 {players
                   .slice(0, 3)
                   .map((x) => x.name)
@@ -182,30 +182,30 @@ export function PartyRoute({ code }: { code: string }) {
                     className="field mt-3 h-14 font-display text-title font-bold stretch-semi"
                   />
                   {nameError && (
-                    <p id="name-error" className="mt-2 flex items-center gap-2 text-small text-chalk" role="alert">
-                      <Icon name="warn" size={16} className="text-no" /> Type a name first, so everyone knows who called it.
+                    <p id="name-error" className="mt-2 flex items-center gap-2 text-small text-ink" role="alert">
+                      <Icon name="warn" size={16} className="text-no-600" /> Type a name first, so everyone knows who called it.
                     </p>
                   )}
                 </div>
-                <label className="flex min-h-14 cursor-pointer items-center gap-3 rounded-tile bg-night-900 px-4 py-2.5 has-[:focus-visible]:outline has-[:focus-visible]:outline-[3px] has-[:focus-visible]:outline-offset-[3px] has-[:focus-visible]:outline-flood">
+                <label className="flex min-h-14 cursor-pointer items-center gap-3 rounded-tile bg-card px-4 py-2.5 has-[:focus-visible]:outline has-[:focus-visible]:outline-[3px] has-[:focus-visible]:outline-offset-[3px] has-[:focus-visible]:outline-zap">
                   <input type="checkbox" name="remote" checked={remote} onChange={(e) => setRemote(e.target.checked)} className="peer sr-only" />
                   <span
-                    className="grid h-6 w-6 shrink-0 place-items-center rounded-chip bg-night-800 text-transparent ring-1 ring-inset ring-night-600 transition-colors duration-quick peer-checked:bg-flood peer-checked:text-flood-ink peer-checked:ring-flood"
+                    className="grid h-6 w-6 shrink-0 place-items-center rounded-chip bg-well text-transparent ring-1 ring-inset ring-rule transition-colors duration-quick peer-checked:bg-zap peer-checked:text-zap-ink peer-checked:ring-zap"
                     aria-hidden="true"
                   >
                     <Icon name="check" size={16} strokeWidth={3} />
                   </span>
                   <span className="min-w-0">
-                    <span className="block text-body text-chalk">I'm watching from somewhere else</span>
-                    <span className="block text-cap text-night-400">We'll line you up with the room's TV.</span>
+                    <span className="block text-body text-ink">I'm watching from somewhere else</span>
+                    <span className="block text-cap text-ink-muted">We'll line you up with the room's TV.</span>
                   </span>
-                  <Icon name="globe" size={20} className="ml-auto shrink-0 text-night-400" />
+                  <Icon name="globe" size={20} className="ml-auto shrink-0 text-ink-muted" />
                 </label>
                 <button
                   type="submit"
                   data-testid="join-submit"
                   disabled={joining}
-                  className="btn-primary w-full shadow-flood disabled:bg-flood disabled:text-flood-ink"
+                  className="btn-primary w-full shadow-zap disabled:bg-zap disabled:text-zap-ink"
                 >
                   {joining ? (
                     <>

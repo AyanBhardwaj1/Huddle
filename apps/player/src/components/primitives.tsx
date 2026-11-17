@@ -29,18 +29,18 @@ export function Money({
 /** Ring spinner + a line that says what is happening. */
 export function Loading({ children, className }: { children?: ReactNode; className?: string }) {
   return (
-    <div className={cx('flex items-center gap-3 text-night-200', className)} role="status">
-      <Mark size="1.5rem" spin className="shrink-0 text-night-400" />
+    <div className={cx('flex items-center gap-3 text-ink-2', className)} role="status">
+      <Mark size="1.5rem" spin className="shrink-0 text-ink-muted" />
       <span>{children}</span>
     </div>
   );
 }
 
-/** Inline error: what happened and what to do, chalk on a no-deep field, never colour alone. */
+/** Inline error: what happened and what to do, ink on a hot-50 field with a hot ring, never colour alone. */
 export function InlineError({ text, action }: { text: string; action?: ReactNode }) {
   return (
-    <div className="hd-fade mt-3 flex items-start gap-2.5 rounded-tile bg-no-deep px-3.5 py-3 text-small text-chalk" role="alert">
-      <Icon name="warn" size={18} className="mt-px shrink-0 text-no" />
+    <div className="hd-fade mt-3 flex items-start gap-2.5 rounded-tile bg-no-50 px-3.5 py-3 text-small text-ink" role="alert">
+      <Icon name="warn" size={18} className="mt-px shrink-0 text-no-600" />
       <span className="min-w-0 flex-1 text-pretty">{text}</span>
       {action}
     </div>
@@ -50,9 +50,9 @@ export function InlineError({ text, action }: { text: string; action?: ReactNode
 /** Section heading on the live screen: sentence case, a count whispering beside it. */
 export function SectionTitle({ children, count, id }: { children: ReactNode; count?: number; id?: string }) {
   return (
-    <h2 id={id} className="mb-3 flex items-baseline gap-2 font-display text-lead font-bold stretch-semi text-chalk">
+    <h2 id={id} className="mb-3 flex items-baseline gap-2 font-display text-lead font-bold stretch-semi text-ink">
       {children}
-      {count != null && count > 1 && <span className="font-sans text-small font-normal text-night-400 tnum">{count}</span>}
+      {count != null && count > 1 && <span className="font-sans text-small font-normal text-ink-muted tnum">{count}</span>}
     </h2>
   );
 }
@@ -61,8 +61,8 @@ export function SectionTitle({ children, count, id }: { children: ReactNode; cou
 export function Empty({ children, mark = false }: { children: ReactNode; mark?: boolean }) {
   return (
     <div className="flex flex-col items-center gap-3 px-6 py-10 text-center">
-      {mark && <Mark size="2.5rem" className="hd-breathe text-night-600" />}
-      <p className="max-w-[30ch] text-pretty text-body text-night-400">{children}</p>
+      {mark && <Mark size="2.5rem" className="hd-breathe text-rule-strong" />}
+      <p className="max-w-[30ch] text-pretty text-body text-ink-muted">{children}</p>
     </div>
   );
 }
@@ -72,7 +72,7 @@ export function Avatar({ name, className }: { name: string; className?: string }
   return (
     <span
       className={cx(
-        'grid h-9 w-9 shrink-0 place-items-center rounded-tile bg-night-800 font-display text-body font-extrabold uppercase text-night-200',
+        'grid h-9 w-9 shrink-0 place-items-center rounded-tile bg-well font-display text-body font-extrabold uppercase text-ink-2',
         className,
       )}
       aria-hidden="true"
@@ -125,7 +125,7 @@ export function Sheet({
 
   const node = (
     <div className="fixed inset-0 z-panel">
-      <div className="hd-fade absolute inset-0 bg-night-950/75" onClick={() => dismissable && onClose()} aria-hidden="true" />
+      <div className="hd-fade absolute inset-0 bg-ink/40" onClick={() => dismissable && onClose()} aria-hidden="true" />
       <div
         ref={panel}
         role="dialog"
@@ -134,11 +134,11 @@ export function Sheet({
         aria-label={title ? undefined : label}
         tabIndex={-1}
         data-dragging={String(dragging)}
-        className="pl-sheet absolute inset-x-0 bottom-0 mx-auto max-h-[88dvh] w-full max-w-lg overflow-y-auto overscroll-contain rounded-t-panel bg-night-900 px-5 pb-[calc(env(safe-area-inset-bottom)+1.25rem)] shadow-float outline-none"
+        className="pl-sheet absolute inset-x-0 bottom-0 mx-auto max-h-[88dvh] w-full max-w-lg overflow-y-auto overscroll-contain rounded-t-panel bg-card px-5 pb-[calc(env(safe-area-inset-bottom)+1.25rem)] shadow-pop outline-none"
         style={dy ? { transform: `translateY(${dy}px)` } : undefined}
       >
         <div
-          className="sticky top-0 z-10 -mx-5 bg-night-900 px-5 pt-2.5"
+          className="sticky top-0 z-10 -mx-5 bg-card px-5 pt-2.5"
           style={{ touchAction: 'none' }}
           onPointerDown={(e) => {
             if (!dismissable || (e.target as HTMLElement).closest('button')) return;
@@ -163,7 +163,7 @@ export function Sheet({
             setDy(0);
           }}
         >
-          <div className="mx-auto mb-2 h-1 w-10 rounded-full bg-night-600" aria-hidden="true" />
+          <div className="mx-auto mb-2 h-1 w-10 rounded-full bg-rule-strong" aria-hidden="true" />
           {title ? (
             <div className="flex min-h-12 items-center justify-between gap-3 pb-2">
               <h2 id={titleId} className="font-display text-title font-extrabold stretch-semi">

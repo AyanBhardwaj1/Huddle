@@ -46,29 +46,29 @@ export function Home() {
     <div className="mx-auto flex min-h-[100dvh] max-w-md flex-col px-5 pb-[calc(env(safe-area-inset-bottom)+1.5rem)] pt-[calc(env(safe-area-inset-top)+2rem)]">
       <header>
         <Wordmark className="hd-rise text-head" />
-        <p className="hd-rise mt-5 max-w-[22ch] text-balance font-display text-title font-bold stretch-semi text-night-200" style={{ ['--d' as string]: '80ms' }}>
+        <p className="hd-rise mt-5 max-w-[22ch] text-balance font-display text-title font-bold stretch-semi text-ink-2" style={{ ['--d' as string]: '80ms' }}>
           Call every moment of the game with your friends.
         </p>
       </header>
 
       <section className="mt-10 flex-1" aria-labelledby="on-now">
-        <h2 id="on-now" className="mb-3 text-small text-night-400">
+        <h2 id="on-now" className="mb-3 text-small text-ink-muted">
           Parties on now
         </h2>
         {parties === null && !failed && <Loading className="py-3 text-small">Looking for parties nearby…</Loading>}
         {failed && parties === null && (
-          <div className="rounded-panel bg-night-900 p-4">
-            <p className="text-pretty text-small text-night-200">Can't reach the party box right now. Type the code from the box, or open the invite link again.</p>
+          <div className="rounded-panel bg-card p-4">
+            <p className="text-pretty text-small text-ink-2">Can't reach the party box right now. Type the code from the box, or open the invite link again.</p>
             <button onClick={() => void load(() => true)} className="btn-secondary mt-3">
               <Icon name="refresh" size={18} /> Try again
             </button>
           </div>
         )}
-        {parties?.length === 0 && <p className="text-pretty text-body text-night-400">No parties right now. Ask the host for the code on the box.</p>}
+        {parties?.length === 0 && <p className="text-pretty text-body text-ink-muted">No parties right now. Ask the host for the code on the box.</p>}
         {!!parties?.length && (
-          <ul className="overflow-hidden rounded-panel bg-night-900">
+          <ul className="overflow-hidden rounded-panel bg-card">
             {parties.map((p, i) => (
-              <li key={p.id} className={i > 0 ? 'border-t border-night-700' : undefined}>
+              <li key={p.id} className={i > 0 ? 'border-t border-rule' : undefined}>
                 <a
                   href={`/j/${p.code}`}
                   onClick={(e) => {
@@ -76,15 +76,15 @@ export function Home() {
                     e.preventDefault();
                     navigate(`/j/${p.code}`);
                   }}
-                  className="hd-rise flex min-h-16 items-center gap-3 px-4 py-3 transition-colors duration-quick hover:bg-night-850"
+                  className="hd-rise flex min-h-16 items-center gap-3 px-4 py-3 transition-colors duration-quick hover:bg-well"
                   style={{ ['--d' as string]: `${i * 50}ms` }}
                 >
                   <div className="min-w-0 flex-1">
-                    <div className="truncate font-bold text-chalk">{p.name}</div>
-                    <div className="flex items-center gap-2 truncate text-small text-night-400">
+                    <div className="truncate font-bold text-ink">{p.name}</div>
+                    <div className="flex items-center gap-2 truncate text-small text-ink-muted">
                       {p.status === 'live' ? (
-                        <span className="flex shrink-0 items-center gap-1.5 text-night-200">
-                          <span className="h-1.5 w-1.5 rounded-full bg-live" aria-hidden="true" /> Live
+                        <span className="flex shrink-0 items-center gap-1.5 text-ink-2">
+                          <span className="h-1.5 w-1.5 rounded-full bg-hot" aria-hidden="true" /> Live
                         </span>
                       ) : (
                         <span className="shrink-0">In the lobby</span>
@@ -92,10 +92,10 @@ export function Home() {
                       <span className="truncate">{p.game.title}</span>
                     </div>
                   </div>
-                  <span className="font-display text-lead font-extrabold stretch-wide text-chalk" translate="no">
+                  <span className="font-display text-lead font-extrabold stretch-wide text-ink" translate="no">
                     {p.code}
                   </span>
-                  <Icon name="arrowRight" size={20} className="shrink-0 text-night-400" />
+                  <Icon name="arrowRight" size={20} className="shrink-0 text-ink-muted" />
                 </a>
               </li>
             ))}
@@ -112,7 +112,7 @@ export function Home() {
         }}
         noValidate
       >
-        <label htmlFor="code" className="block text-small text-night-200">
+        <label htmlFor="code" className="block text-small text-ink-2">
           Got a code? It's on the box.
         </label>
         <div className="mt-2 flex gap-2">
@@ -140,7 +140,7 @@ export function Home() {
             Join
           </button>
         </div>
-        <p id="code-hint" className="mt-2 flex items-center gap-1.5 text-small text-night-400">
+        <p id="code-hint" className="mt-2 flex items-center gap-1.5 text-small text-ink-muted">
           {tried && !ready ? (
             'Party codes are at least 3 letters.'
           ) : (
@@ -151,7 +151,7 @@ export function Home() {
         </p>
       </form>
 
-      <p className="mt-8 text-center text-cap text-night-400">Test money and points only. No real-money betting.</p>
+      <p className="mt-8 text-center text-cap text-ink-muted">Test money and points only. No real-money betting.</p>
     </div>
   );
 }

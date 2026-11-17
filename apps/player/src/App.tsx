@@ -23,15 +23,15 @@ function RealApp() {
   if (bootError)
     return (
       <Centered>
-        <Mark size="3rem" className="text-night-600" />
-        <p className="mt-5 max-w-[28ch] text-pretty text-body text-chalk">This browser blocked storage, so Huddle can't keep your seat.</p>
-        <p className="mt-1 text-small text-night-400">Turn off private browsing, then reload.</p>
+        <Mark size="3rem" className="text-rule-strong" />
+        <p className="mt-5 max-w-[28ch] text-pretty text-body text-ink">This browser blocked storage, so Huddle can't keep your seat.</p>
+        <p className="mt-1 text-small text-ink-muted">Turn off private browsing, then reload.</p>
       </Centered>
     );
   if (!booted)
     return (
       <Centered>
-        <Mark size="2.5rem" spin className="text-night-600" />
+        <Mark size="2.5rem" spin className="text-rule-strong" />
         <span className="sr-only">Opening Huddle…</span>
       </Centered>
     );

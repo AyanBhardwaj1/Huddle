@@ -56,45 +56,45 @@ export function BuyIn({ onDone, onSkip }: { onDone: () => void; onSkip: () => vo
   return (
     <div className="mx-auto flex min-h-[100dvh] max-w-md flex-col px-5 pb-[calc(env(safe-area-inset-bottom)+1.5rem)] pt-[calc(env(safe-area-inset-top)+1.25rem)]">
       <header className="flex items-center justify-between">
-        <Wordmark className="text-lead text-night-200" />
-        <span className="font-display text-small font-bold stretch-wide text-night-400" translate="no">
+        <Wordmark className="text-lead text-ink-2" />
+        <span className="font-display text-small font-bold stretch-wide text-ink-muted" translate="no">
           {snap.party.code}
         </span>
       </header>
 
       <div className="mt-10">
-        <p className="text-small text-night-400">{snap.party.name}</p>
+        <p className="text-small text-ink-muted">{snap.party.name}</p>
         <h1 className="mt-1 text-balance font-display text-head font-extrabold stretch-semi">{snap.party.game.title}</h1>
       </div>
 
       <div className="flex flex-1 flex-col justify-center py-8">
         {done ? (
           <div key="done" data-testid="buy-in-done" role="status">
-            <span className="hd-pop grid h-14 w-14 place-items-center rounded-full bg-flood text-flood-ink">
+            <span className="hd-pop grid h-14 w-14 place-items-center rounded-full bg-zap text-zap-ink">
               <Icon name="check" size={30} strokeWidth={2.8} />
             </span>
             <p className="hd-stamp mt-5 font-display text-display font-black stretch-condensed" style={{ ['--d' as string]: '120ms' }}>
               You're in{name ? `, ${name}` : ''}.
             </p>
-            <p className="hd-rise mt-2 text-lead text-night-200" style={{ ['--d' as string]: '260ms' }}>
-              <span className="font-display font-bold text-chalk tnum">{money(amount, points)}</span> ready to play. First question drops on the next big
+            <p className="hd-rise mt-2 text-lead text-ink-2" style={{ ['--d' as string]: '260ms' }}>
+              <span className="font-display font-bold text-ink tnum">{money(amount, points)}</span> ready to play. First question drops on the next big
               moment.
             </p>
           </div>
         ) : (
           <div key="cta">
             <p className="font-display text-hero font-black leading-none stretch-condensed tnum">{moneyShort(amount, points)}</p>
-            <p className="mt-2 text-lead text-night-200">{points ? 'in points to play tonight' : 'to play tonight'}</p>
+            <p className="mt-2 text-lead text-ink-2">{points ? 'in points to play tonight' : 'to play tonight'}</p>
           </div>
         )}
 
-        <div className="mt-8 flex items-center gap-3 border-t border-night-700 pt-4">
+        <div className="mt-8 flex items-center gap-3 border-t border-rule pt-4">
           <div className="flex -space-x-1.5" aria-hidden="true">
             {players.filter((p) => p.deposited > 0).slice(0, 5).map((p) => (
-              <Avatar key={p.pubkey} name={p.name} className="h-8 w-8 ring-2 ring-night-950" />
+              <Avatar key={p.pubkey} name={p.name} className="h-8 w-8 ring-2 ring-card" />
             ))}
           </div>
-          <p className="min-w-0 flex-1 text-small text-night-200">
+          <p className="min-w-0 flex-1 text-small text-ink-2">
             {others.length === 0
               ? 'Be the first one in.'
               : `${others
@@ -103,7 +103,7 @@ export function BuyIn({ onDone, onSkip }: { onDone: () => void; onSkip: () => vo
                   .join(', ')}${others.length > 2 ? ` and ${others.length - 2} more` : ''} ${others.length === 1 ? 'is' : 'are'} in.`}
           </p>
           <span className="shrink-0 text-right">
-            <span className="block text-cap text-night-400">Room pot</span>
+            <span className="block text-cap text-ink-muted">Room pot</span>
             <span ref={potEl} className="font-display text-lead font-extrabold stretch-condensed">
               <Roll text={money(pot, points)} value={pot} />
             </span>
@@ -112,12 +112,12 @@ export function BuyIn({ onDone, onSkip }: { onDone: () => void; onSkip: () => vo
       </div>
 
       {done ? (
-        <button onClick={onDone} className="btn-primary w-full shadow-flood">
+        <button onClick={onDone} className="btn-primary w-full shadow-zap">
           Let's go <Icon name="arrowRight" size={20} />
         </button>
       ) : (
         <>
-          <button ref={button} disabled={working} onClick={go} data-testid="buy-in" className="btn-primary w-full shadow-flood disabled:bg-flood disabled:text-flood-ink">
+          <button ref={button} disabled={working} onClick={go} data-testid="buy-in" className="btn-primary w-full shadow-zap disabled:bg-zap disabled:text-zap-ink">
             {working ? (
               <>
                 <Mark size="1.4rem" spin />
@@ -128,7 +128,7 @@ export function BuyIn({ onDone, onSkip }: { onDone: () => void; onSkip: () => vo
             )}
           </button>
           {error && <InlineError text={error} />}
-          <p className="mt-3 text-pretty text-center text-cap text-night-400">
+          <p className="mt-3 text-pretty text-center text-cap text-ink-muted">
             {points
               ? 'Points only tonight. No money involved.'
               : 'Test money only, nothing real. Your winnings are paid out automatically after the game.'}

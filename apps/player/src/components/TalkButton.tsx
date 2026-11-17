@@ -214,9 +214,9 @@ export function TalkButton({ fixture }: { fixture: boolean }) {
         onKeyUp={keyUp}
         onContextMenu={(e) => e.preventDefault()}
         className={cx(
-          'relative grid h-14 w-14 shrink-0 select-none place-items-center rounded-full shadow-float [-webkit-touch-callout:none]',
+          'relative grid h-14 w-14 shrink-0 select-none place-items-center rounded-full shadow-pop [-webkit-touch-callout:none]',
           'transition-[transform,background-color,color] duration-quick ease-out',
-          holding ? 'scale-110 bg-flood text-flood-ink' : 'bg-night-800 text-flood ring-1 ring-inset ring-night-600 hover:bg-night-700',
+          holding ? 'scale-110 bg-zap text-zap-ink' : 'bg-well text-zap ring-1 ring-inset ring-rule hover:bg-control',
         )}
         style={{ touchAction: 'none' }}
         aria-label={mode === 'text' ? 'Ask the announcer' : 'Hold to talk to the announcer'}
@@ -224,8 +224,8 @@ export function TalkButton({ fixture }: { fixture: boolean }) {
       >
         {holding && (
           <>
-            <span className="pl-listen absolute inset-0 rounded-full border-2 border-flood" aria-hidden="true" />
-            <span className="pl-listen absolute inset-0 rounded-full border-2 border-flood" style={{ ['--d' as string]: '700ms' }} aria-hidden="true" />
+            <span className="pl-listen absolute inset-0 rounded-full border-2 border-zap" aria-hidden="true" />
+            <span className="pl-listen absolute inset-0 rounded-full border-2 border-zap" style={{ ['--d' as string]: '700ms' }} aria-hidden="true" />
           </>
         )}
         {busy ? <Mark size="1.6rem" spin /> : <Icon name="mic" size={26} />}
@@ -264,7 +264,7 @@ function TextAsk({ open, onClose, onSend }: { open: boolean; onClose: () => void
           autoComplete="off"
           enterKeyHint="send"
         />
-        <p className="text-small text-night-400">Try “put 5 on yes”: the announcer drafts it and you confirm.</p>
+        <p className="text-small text-ink-muted">Try “put 5 on yes”: the announcer drafts it and you confirm.</p>
         <button type="submit" className="btn-primary w-full">
           <Icon name="send" size={18} /> Ask the announcer
         </button>

@@ -93,12 +93,12 @@ export function Captions({ speaking }: { speaking: AnnouncerLine | null }) {
   return (
     <div className="min-w-0 flex-1" aria-live="polite" aria-atomic="true">
       {!slot && (
-        <p className="flex h-14 items-center px-1 text-small text-night-400">The announcer's lines show up here. Hold the mic to ask anything.</p>
+        <p className="flex h-14 items-center px-1 text-small text-ink-muted">The announcer's lines show up here. Hold the mic to ask anything.</p>
       )}
       {slot?.kind === 'talk' && (
-        <div key={slot.key} className="pl-caption flex h-14 items-center gap-3 rounded-tile bg-night-800 px-3.5">
-          <Icon name="mic" size={18} className="shrink-0 text-flood" />
-          <span className="line-clamp-2 min-w-0 text-small leading-snug text-chalk">{slot.listening ? 'Listening… let go to send' : slot.text}</span>
+        <div key={slot.key} className="pl-caption flex h-14 items-center gap-3 rounded-tile bg-well px-3.5">
+          <Icon name="mic" size={18} className="shrink-0 text-zap" />
+          <span className="line-clamp-2 min-w-0 text-small leading-snug text-ink">{slot.listening ? 'Listening… let go to send' : slot.text}</span>
         </div>
       )}
       {slot?.kind === 'notice' && (
@@ -107,16 +107,16 @@ export function Captions({ speaking }: { speaking: AnnouncerLine | null }) {
           onClick={() => dismiss(slot.id)}
           className={cx(
             'pl-caption flex h-14 w-full items-center gap-3 rounded-tile px-3.5 text-left',
-            slot.tone === 'error' ? 'bg-no-deep' : 'bg-night-800',
+            slot.tone === 'error' ? 'bg-no-50' : 'bg-well',
           )}
         >
           <Icon
             name={slot.tone === 'error' ? 'warn' : 'check'}
             size={18}
             strokeWidth={2.4}
-            className={cx('shrink-0', slot.tone === 'error' ? 'text-no' : slot.tone === 'loss' ? 'text-no' : 'text-flood')}
+            className={cx('shrink-0', slot.tone === 'error' ? 'text-no-600' : slot.tone === 'loss' ? 'text-no-600' : 'text-zap')}
           />
-          <span className="line-clamp-2 min-w-0 text-small font-semibold leading-snug text-chalk">{slot.text}</span>
+          <span className="line-clamp-2 min-w-0 text-small font-semibold leading-snug text-ink">{slot.text}</span>
           <span className="hd-sr">Dismiss</span>
         </button>
       )}
@@ -124,14 +124,14 @@ export function Captions({ speaking }: { speaking: AnnouncerLine | null }) {
         <button
           key={slot.key}
           onClick={() => setHistory(true)}
-          className="pl-caption flex h-14 w-full items-center gap-3 rounded-tile bg-night-900 px-3.5 text-left transition-colors duration-quick hover:bg-night-850"
+          className="pl-caption flex h-14 w-full items-center gap-3 rounded-tile bg-card px-3.5 text-left transition-colors duration-quick hover:bg-well"
           aria-label={`Announcer: ${slot.text}. Show everything the announcer said`}
         >
-          <Icon name="speaker" size={18} className={cx('shrink-0 transition-colors duration-base', slot.speaking ? 'text-flood' : 'text-night-400')} />
+          <Icon name="speaker" size={18} className={cx('shrink-0 transition-colors duration-base', slot.speaking ? 'text-zap' : 'text-ink-muted')} />
           <span
             className={cx(
               'line-clamp-2 min-w-0 text-small leading-snug transition-colors duration-linger',
-              slot.fresh ? 'text-chalk' : 'text-night-400',
+              slot.fresh ? 'text-ink' : 'text-ink-muted',
             )}
           >
             {slot.text}
@@ -151,13 +151,13 @@ export function CaptionHistory() {
   return (
     <Sheet open={open} onClose={() => setOpen(false)} title="The announcer">
       {lines.length ? (
-        <ol className="divide-y divide-night-700">
+        <ol className="divide-y divide-rule">
           {lines.map((l) => (
             <li key={l.id} className="flex gap-3 py-3">
-              <time className="w-12 shrink-0 pt-0.5 text-cap text-night-400 tnum" dateTime={l.createdAt}>
+              <time className="w-12 shrink-0 pt-0.5 text-cap text-ink-muted tnum" dateTime={l.createdAt}>
                 {TIME.format(new Date(l.createdAt))}
               </time>
-              <p className="min-w-0 text-pretty text-body text-chalk">{l.text}</p>
+              <p className="min-w-0 text-pretty text-body text-ink">{l.text}</p>
             </li>
           ))}
         </ol>

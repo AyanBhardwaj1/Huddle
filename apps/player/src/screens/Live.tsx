@@ -50,7 +50,7 @@ export function Live() {
 
   return (
     <div className="min-h-[100dvh] pb-[calc(env(safe-area-inset-bottom)+10.5rem)]" data-testid="party-status" data-status={snap.party.status}>
-      <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-gate focus:rounded-tile focus:bg-flood focus:px-4 focus:py-3 focus:text-flood-ink">
+      <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-gate focus:rounded-tile focus:bg-zap focus:px-4 focus:py-3 focus:text-zap-ink">
         Skip to the questions
       </a>
       <Header speakerOn={speakerOn} onSpeaker={toggleSpeaker} />
@@ -67,7 +67,7 @@ export function Live() {
         </div>
       </main>
 
-      <div className="fixed inset-x-0 bottom-0 z-rail border-t border-night-700 bg-night-950">
+      <div className="fixed inset-x-0 bottom-0 z-rail border-t border-rule bg-canvas">
         <div className="mx-auto flex max-w-xl items-center gap-3 px-4 py-2">
           <Captions speaking={speaking} />
           {!ended && <TalkButton fixture={fixture} />}
@@ -79,7 +79,7 @@ export function Live() {
               style={{ transform: `translateX(${active * 100}%)` }}
               aria-hidden="true"
             >
-              <span className="mx-auto block h-full w-8 rounded-b-full bg-flood" />
+              <span className="mx-auto block h-full w-8 rounded-b-full bg-zap" />
             </span>
             {TABS.map((t) => (
               <button
@@ -90,7 +90,7 @@ export function Live() {
                 }}
                 className={cx(
                   'flex min-h-16 flex-col items-center justify-center gap-1 text-cap font-semibold transition-colors duration-quick',
-                  tab === t.id ? 'text-flood' : 'text-night-400 hover:text-night-200',
+                  tab === t.id ? 'text-zap' : 'text-ink-muted hover:text-ink-2',
                 )}
                 aria-current={tab === t.id ? 'page' : undefined}
               >
@@ -174,20 +174,20 @@ function Banners() {
   return (
     <>
       {reconnecting && (
-        <div className="hd-drop border-b border-night-700 bg-night-900" role="status">
-          <div className="mx-auto flex max-w-xl items-center gap-2.5 px-4 py-2 text-small text-night-200">
-            <Mark size="1.1rem" spin className="text-night-500" />
+        <div className="hd-drop border-b border-rule bg-card" role="status">
+          <div className="mx-auto flex max-w-xl items-center gap-2.5 px-4 py-2 text-small text-ink-2">
+            <Mark size="1.1rem" spin className="text-ink-faint" />
             Reconnecting… your bets are safe.
           </div>
         </div>
       )}
       {mismatch && (
         <div className="mx-auto max-w-xl px-4 pt-4">
-          <div className="hd-rise rounded-panel bg-no-deep p-4" role="alert">
-            <p className="flex items-center gap-2 font-bold text-chalk">
-              <Icon name="warn" size={20} className="text-no" /> Your balance doesn't match
+          <div className="hd-rise rounded-panel bg-no-50 p-4" role="alert">
+            <p className="flex items-center gap-2 font-bold text-ink">
+              <Icon name="warn" size={20} className="text-no-600" /> Your balance doesn't match
             </p>
-            <p className="mt-1 text-pretty text-small text-night-200">
+            <p className="mt-1 text-pretty text-small text-ink-2">
               The box sent a balance your phone couldn't check, so your phone didn't approve it. Your last good balance is kept. Flag it so the host can
               take a look.
             </p>

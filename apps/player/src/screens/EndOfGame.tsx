@@ -51,31 +51,31 @@ export function EndOfGame() {
 
   return (
     <div className="space-y-8">
-      <section className="rounded-panel bg-night-900 px-5 pb-6 pt-5 text-center" aria-labelledby="ft-title">
-        <p id="ft-title" className="text-small text-night-400">
+      <section className="rounded-panel bg-card px-5 pb-6 pt-5 text-center" aria-labelledby="ft-title">
+        <p id="ft-title" className="text-small text-ink-muted">
           Full time
         </p>
         <p className="mt-1 font-display text-head font-extrabold uppercase stretch-condensed tnum" aria-label={`${g.home.name} ${g.score.home}, ${g.away.name} ${g.score.away}`}>
           {g.home.short} {g.score.home}
-          <span className="mx-2 text-night-500">–</span>
+          <span className="mx-2 text-ink-faint">–</span>
           {g.score.away} {g.away.short}
         </p>
-        <div className="mx-auto my-5 h-px w-16 bg-night-700" />
+        <div className="mx-auto my-5 h-px w-16 bg-rule" />
         <div
           className={cx(
             'inline-flex max-w-full items-center gap-1 font-display font-black stretch-condensed',
             // "+$4.20" fits the hero size at 360 px; "+12.50 pts" steps down a size.
             pnl(profit, points).length > 7 ? 'text-display' : 'text-hero',
-            profit > 0 ? 'hd-shine text-yes' : profit < 0 ? 'text-no' : 'text-chalk',
+            profit > 0 ? 'hd-shine text-yes-600' : profit < 0 ? 'text-no-600' : 'text-ink',
           )}
           style={{ ['--d' as string]: '400ms' }}
         >
           {profit !== 0 && <Icon name={profit > 0 ? 'up' : 'down'} size="0.3em" />}
           <Money value={profit} points={points} signed flash={false} />
         </div>
-        <p className="mt-2 text-lead font-semibold text-chalk">{verdict}</p>
+        <p className="mt-2 text-lead font-semibold text-ink">{verdict}</p>
         {rank > 0 && (
-          <p className="text-small text-night-400">
+          <p className="text-small text-ink-muted">
             You finished {ordinal(rank)} of {ranked.length}
           </p>
         )}
@@ -85,11 +85,11 @@ export function EndOfGame() {
         <h2 id="settle-title" className="mb-3 font-display text-lead font-bold stretch-semi">
           {finalized ? (points ? 'Final points' : 'Paid out') : 'Settling up'}
         </h2>
-        <div className="rounded-panel bg-night-900 p-5">
+        <div className="rounded-panel bg-card p-5">
           <ol className="relative grid grid-cols-3" aria-label="Settlement">
-            <span className="absolute left-[16.67%] right-[16.67%] top-[0.9rem] h-0.5 bg-night-700" aria-hidden="true" />
+            <span className="absolute left-[16.67%] right-[16.67%] top-[0.9rem] h-0.5 bg-rule" aria-hidden="true" />
             <span
-              className="pl-rail absolute left-[16.67%] right-[16.67%] top-[0.9rem] h-0.5 bg-flood"
+              className="pl-rail absolute left-[16.67%] right-[16.67%] top-[0.9rem] h-0.5 bg-zap"
               style={{ transform: `scaleX(${stepIdx / 2})` }}
               aria-hidden="true"
             />
@@ -102,19 +102,19 @@ export function EndOfGame() {
                     ref={i === 2 ? pot : undefined}
                     className={cx(
                       'grid h-7 w-7 place-items-center rounded-full',
-                      done ? 'bg-flood text-flood-ink' : current ? 'bg-night-900 text-flood' : 'bg-night-800 text-night-500',
+                      done ? 'bg-zap text-zap-ink' : current ? 'bg-card text-zap' : 'bg-well text-ink-faint',
                     )}
                   >
                     {done ? <Icon name="check" size={16} strokeWidth={2.8} /> : current ? <Mark size="1.75rem" spin /> : <span className="h-1.5 w-1.5 rounded-full bg-current" />}
                   </span>
-                  <span className={cx('text-cap font-semibold', done || current ? 'text-chalk' : 'text-night-400')}>{s.label}</span>
+                  <span className={cx('text-cap font-semibold', done || current ? 'text-ink' : 'text-ink-muted')}>{s.label}</span>
                 </li>
               );
             })}
           </ol>
 
           {!finalized && (
-            <p className="mt-5 text-pretty text-center text-small text-night-200">
+            <p className="mt-5 text-pretty text-center text-small text-ink-2">
               {status === 'closing'
                 ? `Everyone's final balance is being checked.${points ? '' : ' Your winnings land automatically in about a minute.'}`
                 : 'Settling the last questions…'}
@@ -122,8 +122,8 @@ export function EndOfGame() {
           )}
 
           {finalized && payout != null && (
-            <div className="mt-6 rounded-tile bg-night-850 px-4 py-5 text-center">
-              <p className="text-small font-semibold text-night-200">{points ? 'Your final points' : 'Your winnings are in'}</p>
+            <div className="mt-6 rounded-tile bg-canvas px-4 py-5 text-center">
+              <p className="text-small font-semibold text-ink-2">{points ? 'Your final points' : 'Your winnings are in'}</p>
               <div ref={amount} className="hd-stamp mt-1 inline-block" style={{ ['--d' as string]: '150ms' }}>
                 <span
                   className={cx('block font-display text-display font-black stretch-condensed', profit > 0 && 'hd-shine')}
@@ -146,7 +146,7 @@ export function EndOfGame() {
               )}
             </div>
           )}
-          {!points && <p className="mt-4 text-center text-cap text-night-400">Settled on Solana · devnet test money</p>}
+          {!points && <p className="mt-4 text-center text-cap text-ink-muted">Settled on Solana · devnet test money</p>}
         </div>
       </section>
 
@@ -155,7 +155,7 @@ export function EndOfGame() {
       </div>
       {snap.scorecard.verdict && (
         <section aria-labelledby="verdict-title">
-          <h2 id="verdict-title" className="mb-2 text-small text-night-400">
+          <h2 id="verdict-title" className="mb-2 text-small text-ink-muted">
             Friends vs. Model vs. Gemini
           </h2>
           <p className="text-balance font-display text-title font-bold stretch-semi">{snap.scorecard.verdict}</p>
