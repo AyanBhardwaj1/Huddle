@@ -193,6 +193,14 @@
 @keyframes dock-in { from { transform: translateX(2rem); opacity: 0; } }
 .dock-in { animation: dock-in 360ms var(--ease-spring) both; }
 
+/* Toasts leave the way they came. */
+@keyframes toast-out { to { transform: translateY(-1rem) scale(0.96); opacity: 0; } }
+.toast-out { animation: toast-out 240ms var(--ease-in) both; }
+
+/* A big trade lands on the ticker: a gold ring and a little lift. */
+@keyframes big-trade { 0% { transform: translateY(-0.4rem) scale(1.08); box-shadow: 0 0 0 0.3rem rgba(255, 176, 32, 0.7); } }
+.big-trade { animation: big-trade 900ms var(--ease-bounce) both; }
+
 /* Live dot: a ring pings out of it. */
 .live-dot { position: relative; }
 .live-dot::after {
@@ -206,7 +214,8 @@
 
 @media (prefers-reduced-motion: reduce) {
   .led-ring { animation: none !important; opacity: 0.6; }
-  .dock-in, .tile-kick-a, .tile-kick-b, .lock-veil { animation: none !important; }
+  .dock-in, .tile-kick-a, .tile-kick-b, .lock-veil, .big-trade { animation: none !important; }
+  .toast-out { animation-duration: 1ms !important; }
   .urgent-edge { animation: none !important; opacity: 0.8; }
   .live-dot::after { display: none; }
   .btn { transition-duration: 0ms !important; }

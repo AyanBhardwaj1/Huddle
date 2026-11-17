@@ -1,4 +1,5 @@
 import type { AnnouncerLine, GameState, Market, Party, PlayerPublic } from '@huddle/shared';
+import { USDC } from '@huddle/shared';
 import {
   Avatar,
   Burst,
@@ -52,6 +53,8 @@ const TONE_LINE: Record<Tone, { stroke: string; fill: string }> = {
 };
 export const delay = (ms: number) => ({ ['--d' as string]: `${ms}ms` }) as CSSProperties;
 const LAYOUT_SPRING = { type: 'spring', stiffness: 520, damping: 40 } as const;
+/** A trade this size or bigger is celebrated on the ticker. */
+const BIG_TRADE = 5 * USDC;
 
 /* ---------------- Top bar: scorebug + join + controls ---------------- */
 
@@ -354,7 +357,7 @@ function GameCell({ market, big, index }: { market: Market; big: boolean; index:
                 {o.label}
                 {won && <Icon name="check" className="ml-1.5 inline h-[0.9em] w-[0.9em] text-zap" title="Winner" />}
               </span>
-              <span className={`num ${big ? 'text-display' : 'text-[1.75rem]'} leading-none ${TONE_TEXT[tone]}`}>
+              <span className={`num ${big ? (n > 2 ? 'text-[2.6rem]' : 'text-display') : 'text-[1.75rem]'} leading-none ${TONE_TEXT[tone]}`}>
                 <Pct p={roomProb(market, o.id)} arrow />
               </span>
             </li>
@@ -428,8 +431,14 @@ export function TradeTicker() {
       className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden [mask-image:linear-gradient(90deg,#000_82%,transparent)]"
       aria-label="Recent trades"
     >
-      {items.map((t) => (
-        <li key={t.id} className="hd-slide-r flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full bg-card py-1 pl-1 pr-3 text-body shadow-lift">
+      {items.map((t) => {
+        // A big trade (5+ units) gets a gold ring and a pop; the rest just slide in.
+        const big = t.amount >= BIG_TRADE;
+        return (
+        <li
+          key={t.id}
+          className={`flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full py-1 pl-1 pr-3 text-body ${big ? 'big-trade bg-gold-50 shadow-gold ring-2 ring-inset ring-gold' : 'hd-slide-r bg-card shadow-lift'}`}
+        >
           <Avatar name={t.name} size="1.6rem" />
           <span className="font-bold text-ink">{t.name}</span>
           <span className="text-ink-2">{t.verb}</span>
@@ -440,7 +449,8 @@ export function TradeTicker() {
           <span className="num text-lead text-ink">{moneyShort(t.amount, s.party)}</span>
           {typeof t.price === 'number' && <span className="num text-body text-ink-muted">@ {pctText(t.price)}%</span>}
         </li>
-      ))}
+        );
+      })}
     </ul>
   );
 }
@@ -513,7 +523,12 @@ export function ResultReveal({ market, summary, party, onDone }: { market: Marke
           <SplitBar className="hd-drain absolute inset-0" parts={marketSplit(market)} />
         </div>
         <div className="flex min-h-0 flex-1 items-center gap-8 pt-2">
-          <div className="hd-stamp flex min-w-0 items-center gap-4 font-head text-giant font-extrabold leading-[0.85] tracking-[-0.05em]" style={delay(380)}>
+          <div
+            className={`hd-stamp flex min-w-0 items-center gap-4 font-head font-extrabold leading-[0.85] tracking-[-0.05em] ${
+              (summary.winnerLabel ?? market.outcome ?? '').length <= 4 ? 'text-[6.5rem]' : 'text-hero'
+            }`}
+            style={delay(380)}
+          >
             {voided ? (
               <span className="text-hero">Stakes refunded</span>
             ) : (

@@ -152,9 +152,10 @@ export function CreateParty() {
         </section>
 
         {/* Options */}
-        <section className="hd-slide-r card scroll-thin flex min-h-0 flex-col gap-4 overflow-y-auto rounded-blob px-5 py-4" style={{ ['--d' as string]: '80ms' }}>
+        <section className="hd-slide-r card flex min-h-0 flex-col overflow-hidden rounded-blob" style={{ ['--d' as string]: '80ms' }}>
+          <div className="scroll-thin flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-5 pb-3 pt-3.5">
           <div>
-            <h2 className="mb-2 font-head text-lead font-extrabold">How you play</h2>
+            <h2 className="mb-1.5 font-head text-lead font-extrabold">How you play</h2>
             <Segmented
               size="lg"
               label="How you play"
@@ -166,7 +167,7 @@ export function CreateParty() {
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <h2 className="mb-2 font-head text-lead font-extrabold">Buy-in</h2>
+              <h2 className="mb-1.5 font-head text-lead font-extrabold">Buy-in</h2>
               <Segmented
                 label="Buy-in"
                 options={[5, 10, 20].map((v) => ({ value: v, label: effSettlement === 'points' ? `${v}\u00a0pts` : `$${v}` }))}
@@ -175,7 +176,7 @@ export function CreateParty() {
               />
             </div>
             <div>
-              <h2 className="mb-2 font-head text-lead font-extrabold">Announcer</h2>
+              <h2 className="mb-1.5 font-head text-lead font-extrabold">Announcer</h2>
               <Segmented
                 label="Announcer"
                 options={[
@@ -189,7 +190,7 @@ export function CreateParty() {
             </div>
           </div>
           <div>
-            <h2 className="mb-2 font-head text-lead font-extrabold">Money</h2>
+            <h2 className="mb-1.5 font-head text-lead font-extrabold">Money</h2>
             <Segmented
               label="Money"
               options={[
@@ -203,7 +204,8 @@ export function CreateParty() {
             />
           </div>
           <Toggle on={autoApprove} onChange={setAutoApprove} label="Open AI questions automatically (off: you approve each one)" />
-          <div className="mt-auto flex flex-col gap-2 pt-1">
+          </div>
+          <div className="flex shrink-0 flex-col gap-2 border-t border-rule px-5 pb-4 pt-3">
             {err && (
               <p className="hd-drop flex items-start gap-2 rounded-tile bg-hot-50 px-3 py-2 text-body text-ink ring-2 ring-inset ring-hot" role="alert">
                 <Icon name="warn" className="mt-0.5 h-5 w-5 shrink-0 text-hot-600" /> {err}

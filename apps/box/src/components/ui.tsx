@@ -49,13 +49,25 @@ export function LedRing({ led }: { led: { pattern: LedPattern; color: string } |
 /* ---------------- Toast ---------------- */
 
 export function ToastHost() {
-  const toast = useBox((s) => s.toast);
+  const current = useBox((s) => s.toast);
+  // Keep the last toast for its exit (decorative only: nothing waits on it).
+  const [shown, setShown] = useState<{ toast: NonNullable<typeof current>; leaving: boolean } | null>(null);
+  useEffect(() => {
+    if (current) {
+      setShown({ toast: current, leaving: false });
+      return;
+    }
+    setShown((s) => (s ? { ...s, leaving: true } : s));
+    const t = setTimeout(() => setShown(null), 260);
+    return () => clearTimeout(t);
+  }, [current]);
+  const toast = shown?.toast ?? null;
   return (
     <div className="pointer-events-none fixed inset-x-0 top-[4.75rem] z-toast flex justify-center" aria-live="polite" role="status">
       {toast && (
         <div
           key={toast.id}
-          className={`hd-drop flex max-w-[40rem] items-center gap-3 rounded-full py-2.5 pl-2.5 pr-5 text-lead font-semibold shadow-pop ${
+          className={`${shown?.leaving ? 'toast-out' : 'hd-drop'} flex max-w-[40rem] items-center gap-3 rounded-full py-2.5 pl-2.5 pr-5 text-lead font-semibold shadow-pop ${
             toast.tone === 'error' ? 'bg-card text-ink ring-2 ring-inset ring-hot' : 'bg-ink text-white'
           }`}
         >

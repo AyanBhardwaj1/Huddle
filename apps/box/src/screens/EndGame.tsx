@@ -171,7 +171,6 @@ export function EndGame() {
                       st.state === 'done' ? 'bg-zap text-white shadow-zap' : st.state === 'active' ? 'bg-ink text-white' : 'bg-well text-ink-muted'
                     }`}
                   >
-                    {st.state === 'active' && <span className="absolute inset-0 rounded-full bg-ink hd-ping" aria-hidden="true" />}
                     <span className="relative">
                       {st.state === 'done' ? (
                         <Icon name="check" className="hd-pop h-4 w-4" strokeWidth={3} />
