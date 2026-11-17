@@ -1,0 +1,45 @@
+# Render Blueprint: the Huddle party engine (Fastify + WebSockets + SQLite), which also serves the
+# phone app at / and the box UI at /box/. One click: https://render.com/deploy?repo=https://github.com/AyanBhardwaj1/Huddle
+#
+# Free plan notes: the instance sleeps after ~15 min idle (first request then takes ~1 min), and the
+# disk is ephemeral, so parties do not survive a redeploy or restart. For a demo day, switch `plan` to
+# `starter` and uncomment the disk below so parties and the box signer key persist.
+services:
+  - type: web
+    name: huddle-engine
+    runtime: node
+    plan: free
+    branch: main
+    autoDeploy: true
+    buildCommand: >-
+      (corepack enable pnpm || npm install -g pnpm@9.15.9) &&
+      pnpm install --frozen-lockfile --filter @huddle/engine... --filter @huddle/box... --filter @huddle/player... &&
+      pnpm --filter @huddle/box --filter @huddle/player build
+    startCommand: cd apps/engine && ./node_modules/.bin/tsx src/index.ts
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: NODE_ENV
+        value: production
+      # Points mode: no money, no chain calls. Switch to `vault` once the program is on devnet
+      # and SOLANA_RPC_URL, HUDDLE_PROGRAM_ID, USDC_MINT and TREASURY_SECRET_KEY are set.
+      - key: SETTLEMENT
+        value: points
+      - key: DATA_DIR
+        value: /tmp/huddle
+      - key: HUDDLE_NO_LAN
+        value: "1"
+      - key: SPORTS_PROVIDER
+        value: replay
+      - key: QUICKNODE_STREAM_SECRET
+        generateValue: true
+      - key: AGENT_TOOLS_SECRET
+        generateValue: true
+      # Optional, add in the dashboard when you have them (never commit keys):
+      # ANTHROPIC_API_KEY, ELEVENLABS_API_KEY, ELEVENLABS_AGENT_ID, ELEVENLABS_VOICE_*
+    # disk:
+    #   name: huddle-data
+    #   mountPath: /var/data
+    #   sizeGB: 1
+    # (then set DATA_DIR to /var/data)

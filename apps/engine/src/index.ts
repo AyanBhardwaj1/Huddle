@@ -14,6 +14,11 @@ dotenv.config({ path: path.join(repoRoot, '.env') });
 // DATA_DIR in .env is relative to the repo root, wherever the engine was started from.
 const dataDir = path.resolve(repoRoot, process.env.DATA_DIR ?? './data');
 
+// Hosted on Render: its public URL (set automatically by Render) is the address phones should use.
+if (!(process.env.PUBLIC_ENGINE_URL ?? '').trim() && (process.env.RENDER_EXTERNAL_URL ?? '').trim()) {
+  process.env.PUBLIC_ENGINE_URL = process.env.RENDER_EXTERNAL_URL;
+}
+
 // Without a tunnel URL, advertise the LAN address so phones on the same Wi-Fi can scan the QR code.
 if (!(process.env.PUBLIC_ENGINE_URL ?? '').trim() && process.env.HUDDLE_NO_LAN !== '1') {
   const lan = Object.values(os.networkInterfaces())
