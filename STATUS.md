@@ -11,7 +11,7 @@ Legend:
 
 Per-workstream details are in `docs/workstreams/A1..A6.md`.
 
-_Last updated: Mon Nov 16 2026 (A7 integration pass). Workstreams A1 to A6 are merged. A7 adds the demo runner, e2e, QuickNode, README and CI._
+_Last updated: Mon Nov 16 2026, late (orchestrator). A1 to A7 are merged, plus the UI overhaul: round one ("Floodlight", dark) was replaced at the user's request by round two ("Kickoff", light and vibrant, `DESIGN.md`), now on both the box and the phone. On `main`: `pnpm typecheck` 11/11, `pnpm lint` clean, `pnpm test` all 11 packages green, `pnpm e2e` 3/3 (2.6 min)._
 
 ## Phase 0: foundation
 
@@ -67,6 +67,7 @@ _Last updated: Mon Nov 16 2026 (A7 integration pass). Workstreams A1 to A6 are m
 - [x] Join by link, display name, invisible wallet (IndexedDB), faucet and buy-in: `e2e/party.spec.ts` (real pages, mobile viewport).
 - [x] Pool and Market trading in the browser, plus auto co-sign: e2e. Bet-mode cards and cash out are covered by unit and render tests, not by the browser e2e.
 - [~] Installable PWA: the manifest and service worker build. **Not tried on a real iPhone or Android phone.**
+- [x] Rebuilt and re-skinned on Kickoff (`DESIGN.md` section 9): kinetic text, rolling numbers, price-history line per market, solid outcome tiles, exact "you pay / you get" stake chips, money-flow coins, caption slot, designed loading/empty/error/reconnecting states. Looked at live at 390x844 and 1280x720 in all three modes through to finalize; reduced motion and keyboard focus checked; e2e green after the re-skin.
 - [x] Defects found by the e2e and fixed by A7:
   - The "You're in!" buy-in confirmation never showed (`Party.tsx`).
   - The phone kept showing the markets list instead of the payout screen after finalize, because an `AnimatePresence mode="wait"` exit never completed (`Live.tsx`).
@@ -76,7 +77,8 @@ _Last updated: Mon Nov 16 2026 (A7 integration pass). Workstreams A1 to A6 are m
 - [x] Kiosk screens for home, create party, join QR, live board, takeover, results, scorecard, end of game and host controls.
   - The e2e creates a party from the box UI, starts the game and reaches `finalized`.
   - Every screen has a render test.
-  - The orchestrator reviewed it visually.
+  - The orchestrator reviewed it visually, live against a real engine, after both UI rounds.
+- [x] Rebuilt on Kickoff (`DESIGN.md`): fills 1024x600 and scales to 1920x1080, 17 `?fixture=` states plus `?fixture=kit`, takeover, last-5-seconds escalation, lock snap, result flood with winners' profit from payout fills, money flow, leaderboard springs, LED-ring countdown. Contrast 4.5:1 or better for all text; reduced-motion variants for every animation.
 - [x] Mock bridge (`--mock`): WebSocket on :7777, LED preview, keyboard L / T / N (`bridge.test.ts`). Used by `pnpm demo`.
 - [~] Announcer audio playback and captions on the box. Captions are verified in the e2e. Audio is verified with stubs only (no ElevenLabs key; Web Speech is not checked by ear).
 - [ ] Real `PiHardware` (GPIO, WS2812 ring, NFC): hardware engineer.
@@ -118,6 +120,12 @@ _Last updated: Mon Nov 16 2026 (A7 integration pass). Workstreams A1 to A6 are m
 
 - [ ] Grok Bot recap, a 1% house fee option, a wallet back-up screen, a secure-element signer, network-of-boxes timing.
 
+### Orchestrator additions (Nov 16)
+
+- [x] Real on-chain settlement verified end to end on a local validator (`sh scripts/solana-localnet.sh`): create_party, 3 phone-style signed deposits, close, submit_state, finalize and 4 withdrawals; wallet balances read from the chain matched the engine's payouts (80 USDC in, 80 out, vault empty). Run twice.
+- [x] PRD section 12 outage rule: after more than 60 s offline, open and locked moment markets are voided at cost on restart (D20, `restart.test.ts`).
+- [x] Join links and the lobby QR use the box's LAN address when `PUBLIC_ENGINE_URL` is unset (D19); deeper default market-maker budget so one bet cannot pin a price (D18).
+
 ## Needs human
 
 Most important first.
@@ -158,7 +166,7 @@ Most important first.
 2. `pnpm e2e:install` once, then `pnpm e2e`: 3 Playwright tests, about 3 minutes.
 3. `pnpm demo` to see the product, or `sh scripts/solana-localnet.sh` for real settlement on a local validator.
 4. Read this file's `[~]`, `[!]` and Needs human items. The details for each area are in `docs/workstreams/A1..A6.md`, and A7's decisions are in `DECISIONS.md`.
-5. Before changing the UIs, keep every `data-testid` listed in `e2e/README.md`.
+5. Before changing the UIs, read `DESIGN.md` (Kickoff) and keep every `data-testid` listed in `e2e/README.md`.
 
 ## Environment notes
 

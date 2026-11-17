@@ -27,6 +27,26 @@ Every watch party already has side bets: "$5 says he misses." Today they live in
 | **Market** | An LMSR market maker always quotes a price. Prices move as people trade, and you can cash out before the result. The house's worst-case loss is capped at its per-market budget. | `packages/shared/src/math/lmsr.ts` |
 | **Bet** | Head-to-head between friends: one offers odds, another takes the other side. A one-tap bet first matches the best friend offer within 10% of fair odds, then posts the rest as an offer. | `packages/shared/src/math/bet.ts` |
 
+### Design: game night with the lights on
+
+The box and the phones share one design system, "Kickoff" (`DESIGN.md`; tokens in
+`packages/shared/tailwind-preset.cjs`, shared components and motion in `packages/ui`). The idea:
+playful where it is about people and moments, exact where it is about money.
+
+- **Vibrant, light canvas:** a drifting colour field that takes on the two team colours while a moment
+  market is open; solid game tiles for outcomes (YES blue, NO tangerine: colour-blind safe, never red
+  vs green, always labelled).
+- **Serious numbers:** tabular figures everywhere, exact "you pay / you get" before every bet, a live
+  price-history line per market built from the trade feed, and Room vs Model vs Gemini side by side.
+- **Motion with a job:** questions animate in word by word, every number rolls (odds, pot, balance,
+  P&L, countdown), a broadcast-style takeover opens each moment market, the last five seconds
+  escalate, the lock snaps shut, the winner's colour floods the stage, and coins fly into the pot and
+  back out at payout. Every animation has a reduced-motion variant, and every entrance finishes even
+  in a background tab, so content is never left invisible.
+- **Every state is designed:** connecting, reconnecting, empty, error, voided, disputed, settling.
+  Review them without an engine at `/box/?fixture=kit` (and 17 other `?fixture=` states) and
+  `/?fixture=1|buyin|end|remote|offline|closing|points` on the phone.
+
 ## Quick start
 
 Requirements: Node 20+ and pnpm 9. No `.env`, no API keys and no network are needed.
