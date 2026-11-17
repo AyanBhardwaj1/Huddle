@@ -44,7 +44,7 @@ export function Lobby() {
       />
       {/* Join: the one loud panel on the screen. */}
       <section
-        className="hd-slide-l relative z-10 m-3 mr-0 flex w-[23rem] shrink-0 flex-col items-center justify-center gap-4 overflow-hidden rounded-blob bg-prime px-7 text-white shadow-zap"
+        className="hd-slide-l relative z-10 m-3 mr-0 flex w-[23rem] shrink-0 flex-col items-center justify-center gap-4 overflow-hidden rounded-blob bg-prime-deep px-7 text-white shadow-zap"
         aria-label="Join this party"
       >
         <span className="hd-pop hd-float rounded-panel bg-white p-3.5 shadow-pop" style={{ ['--d' as string]: '160ms' }}>

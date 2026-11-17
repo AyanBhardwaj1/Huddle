@@ -208,7 +208,7 @@ const AVATAR: { bg: string; fg: string }[] = [
   { bg: '#14123A', fg: '#FFFFFF' },
   { bg: '#B9A8FF', fg: '#14123A' },
   { bg: '#FFC83D', fg: '#14123A' },
-  { bg: '#C42BF0', fg: '#FFFFFF' },
+  { bg: '#A41FD0', fg: '#FFFFFF' },
   { bg: '#2BD9C4', fg: '#14123A' },
 ];
 

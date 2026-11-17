@@ -46,9 +46,10 @@ Tokens (Tailwind names; CSS mirrors are `--k-*` in `@huddle/ui/styles.css`):
 | `ink-muted` | `#6B6890` | Muted text (4.8:1 on canvas, 5.2:1 on card) |
 | `ink-faint` | `#8A86AA` | Disabled text only |
 | `zap` | `#6C2BFF` | **The accent.** Primary action fill (white text, 6.1:1), focus ring, lit ring pixels, "now", the room's own number. `zap-bright #8A55FF` hover, `zap-deep`, `zap-50/100/200` tints |
-| `prime` (gradient) | `#6C2BFF → #B22BFF → #FF2E93` | Brand moments only: hero buttons (`btn-prime`), the join panel, the moment-market badge and ribbon, the room's scorecard bar, #1 on the podium. White text, large and bold only |
+| `prime` (gradient) | `#6C2BFF → #B22BFF → #FF2E93` | Brand moments only: hero buttons (`btn-prime`), the moment-market ribbon, the room’s scorecard bar, #1 on the podium. White text, large and bold only |
+| `prime-deep` (gradient) | `#5A1CE0 → #9B1FD6 → #D11A78` | The same moment where small white text sits on it (join panel, the moment-market badge): 5:1 or better at every stop |
 | `yes` | `#1468FF` | YES / up / win fill, white text on it (4.7:1). `yes-600 #0B57E6` for blue text on light (5.6:1), `yes-50/100/200` tints |
-| `no` | `#FF6B00` | NO / down / loss fill, **ink** text on it (6.3:1). `no-600 #C24A00` for orange text on light (4.9:1), `no-50/100/200` tints |
+| `no` | `#FF6B00` | NO / down / loss fill, **ink** text on it (6.3:1). `no-600 #B84300` for orange text on light (5.5:1 on card, 5.0:1 on canvas), `no-50/100/200` tints |
 | `sun` | `#FFC83D` | 3rd outcome on categorical markets, always hatched (`hd-tone-other`); ink text; `sun-600 #8A5F00` text |
 | `lilac` | `#B9A8FF` | 4th+ outcome, hatched the other way (`hd-tone-other-alt`); `lilac-600 #5B46C7` text |
 | `hot` | `#FF2E63` | The LIVE dot and the last five seconds only (ring, "Last call", urgent edge). Errors use a `hot-50` field with a `hot` ring and `hot-600` text plus an icon |
@@ -223,7 +224,7 @@ Box patterns (`apps/box/src/index.css`, `components/`):
 - Box fills 1024x600 and 1920x1080 exactly; no scroll on the board (Create party's options scroll
   inside their card; its Create button is a fixed footer).
 - Contrast: text 4.5:1 or better (ink 16:1, ink-2 7.9:1, ink-muted 4.8:1, white on yes 4.7:1, ink
-  on no 6.3:1, white on zap 6.1:1). Large bold white on the prime gradient only.
+  on no 6.3:1, white on zap 6.1:1). White on `prime` only at large bold sizes (3:1 at its pink end); small white text sits on `prime-deep`.
 - Focus: `:focus-visible` 3px zap outline, 3px offset, on everything.
 - Live regions: captions and toasts `aria-live="polite"`; the countdown is `role="timer"` with
   `aria-live="off"`. Kinetic text puts the whole sentence in the DOM once (`hd-sr`) and hides the

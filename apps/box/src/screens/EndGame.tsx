@@ -168,7 +168,7 @@ export function EndGame() {
                 <span className="flex w-full items-center">
                   <span
                     className={`relative flex h-8 shrink-0 items-center justify-center rounded-full font-num text-body font-bold ${timer ? 'min-w-[3.25rem] px-2' : 'w-8'} ${
-                      st.state === 'done' ? 'bg-zap text-white shadow-zap' : st.state === 'active' ? 'bg-ink text-white' : 'bg-well text-ink-muted'
+                      st.state === 'done' ? 'bg-zap text-white shadow-zap' : st.state === 'active' ? 'bg-ink text-white' : 'bg-well text-ink-2'
                     }`}
                   >
                     <span className="relative">

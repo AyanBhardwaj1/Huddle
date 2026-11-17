@@ -214,7 +214,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .led-ring { animation: none !important; opacity: 0.6; }
-  .dock-in, .tile-kick-a, .tile-kick-b, .lock-veil, .big-trade { animation: none !important; }
+  .dock-in, .tile-kick-a, .tile-kick-b, .lock-veil, .big-trade, .is-locked .hd-split::before { animation: none !important; }
   .toast-out { animation-duration: 1ms !important; }
   .urgent-edge { animation: none !important; opacity: 0.8; }
   .live-dot::after { display: none; }

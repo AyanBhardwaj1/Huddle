@@ -46,7 +46,7 @@ export function Kit() {
         </div>
         <div className="card relative flex flex-col gap-2.5 overflow-hidden rounded-blob p-4 shadow-pop">
           <span className="absolute inset-x-0 top-0 h-1.5 bg-prime" aria-hidden="true" />
-          <span className="flex w-fit items-center gap-2 rounded-full bg-prime px-3 py-1 text-body font-bold text-white shadow-zap">
+          <span className="flex w-fit items-center gap-2 rounded-full bg-prime-deep px-3 py-1 text-body font-bold text-white shadow-zap">
             <Icon name="bolt" className="h-4 w-4" /> Moment market
           </span>
           <h1 className="q text-head leading-[1.02]">

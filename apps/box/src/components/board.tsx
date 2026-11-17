@@ -245,7 +245,7 @@ export function MomentStage({ market, compact = false, tight = false }: { market
                 <Icon name="lock" className="h-[1em] w-[1em]" /> Locked, waiting for the result
               </span>
             ) : (
-              <span key="open" className="hd-pop flex items-center gap-2 rounded-full bg-prime px-3 py-1 font-bold text-white shadow-zap">
+              <span key="open" className="hd-pop flex items-center gap-2 rounded-full bg-prime-deep px-3 py-1 font-bold text-white shadow-zap">
                 <Icon name="bolt" className="h-[1em] w-[1em]" strokeWidth={2.4} />
                 Moment market
               </span>

@@ -82,7 +82,7 @@ const no = {
   50: '#FFF1E6',
   100: '#FFDFC7',
   200: '#FFBE8F',
-  600: '#C24A00', // text on light surfaces (4.9:1 on white)
+  600: '#B84300', // text on light surfaces (5.5:1 on white, 5.0:1 on canvas)
   700: '#943800',
   on: '#14123A',
   bright: '#FFB878',
@@ -188,6 +188,8 @@ module.exports = {
         // The one brand gradient: violet -> magenta -> pink. Big moments only (join panel, the
         // moment-market band, the primary action on home, a win).
         prime: 'linear-gradient(120deg, #6C2BFF 0%, #B22BFF 52%, #FF2E93 100%)',
+        // Deeper stops for panels and badges that carry small white text (5:1 or better everywhere).
+        'prime-deep': 'linear-gradient(150deg, #5A1CE0 0%, #9B1FD6 55%, #D11A78 100%)',
         'prime-soft': 'linear-gradient(120deg, #F2ECFF 0%, #FBEAFF 52%, #FFE9F3 100%)',
       },
       transitionTimingFunction: {
