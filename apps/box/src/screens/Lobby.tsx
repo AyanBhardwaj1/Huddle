@@ -1,4 +1,4 @@
-import { Roll } from '@huddle/ui';
+import { Aurora, Avatar, Burst, Kinetic, Roll } from '@huddle/ui';
 import { motion } from 'framer-motion';
 import { QRCodeSVG } from 'qrcode.react';
 import { useRef, type CSSProperties } from 'react';
@@ -6,6 +6,8 @@ import { BoxButtons } from '../components/controls';
 import { Icon, Wordmark } from '../components/ui';
 import { leaderboard, MODE_LABEL, moneyShort } from '../lib/derive';
 import { useParty } from '../party';
+
+const SPRING = { type: 'spring', stiffness: 520, damping: 38 } as const;
 
 export function Lobby() {
   const { view, act } = useParty();
@@ -16,6 +18,7 @@ export function Lobby() {
   // Players already here on first paint do not replay their arrival.
   const seen = useRef<Set<string> | null>(null);
   if (seen.current === null) seen.current = new Set(players.map((p) => p.pubkey));
+  const fresh = players.filter((p) => !seen.current!.has(p.pubkey));
   const joinHost = (() => {
     try {
       const u = new URL(party.joinUrl);
@@ -32,85 +35,109 @@ export function Lobby() {
   ].filter(Boolean);
 
   return (
-    <div className="flex h-full">
-      {/* Join */}
-      <section className="flex w-[24rem] shrink-0 flex-col items-center justify-center gap-4 bg-night-900 px-8" aria-label="Join this party">
-        <span className="rounded-panel bg-chalk p-4">
+    <div className="relative flex h-full bg-canvas">
+      <Aurora
+        blobs={[
+          { c: 'rgba(255,46,147,0.14)', x: '30vw', y: '-20vmax', s: '60vmax', mx: '-6vmax', my: '8vmax', dur: '28s' },
+          { c: 'rgba(255,176,32,0.16)', x: '60vw', y: '40vh', s: '50vmax', mx: '-8vmax', my: '-5vmax', dur: '32s', d: '-8s' },
+        ]}
+      />
+      {/* Join: the one loud panel on the screen. */}
+      <section
+        className="hd-slide-l relative z-10 m-3 mr-0 flex w-[23rem] shrink-0 flex-col items-center justify-center gap-4 overflow-hidden rounded-blob bg-prime px-7 text-white shadow-zap"
+        aria-label="Join this party"
+      >
+        <span className="hd-pop hd-float rounded-panel bg-white p-3.5 shadow-pop" style={{ ['--d' as string]: '160ms' }}>
           <QRCodeSVG
             value={party.joinUrl}
             size={512}
             level="M"
-            style={{ width: '14.5rem', height: '14.5rem', display: 'block' }}
-            bgColor="#F4F2EC"
-            fgColor="#08090B"
+            style={{ width: '13.5rem', height: '13.5rem', display: 'block' }}
+            bgColor="#FFFFFF"
+            fgColor="#14123A"
             title={`Join at ${party.joinUrl}`}
           />
         </span>
-        <p className="flex flex-col items-center gap-1 text-center text-title font-bold leading-tight text-flood">
+        <p className="flex flex-col items-center gap-1 text-center font-head text-title font-extrabold leading-tight">
           <Icon name="nfc" className="h-7 w-7 shrink-0" /> Tap your phone here to join
         </p>
-        <p className="text-body text-night-400">or scan, or open {joinHost}</p>
-        <p className="mt-1 flex flex-col items-center">
-          <span className="text-small text-night-400">Party code</span>
-          <span className="font-display text-[3.5rem] font-black leading-none tracking-[0.14em]" style={{ fontStretch: '125%' }} data-testid="party-code" translate="no">
-            {party.code}
+        <p className="text-body text-white/90">or scan, or open {joinHost}</p>
+        <div className="mt-1 flex flex-col items-center gap-1.5">
+          <span className="text-small font-semibold text-white/90">Party code</span>
+          {/* Inline tiles (not flex items) so the element's innerText stays exactly the code. */}
+          <span className="block whitespace-nowrap" data-testid="party-code" translate="no">
+            {party.code.split('').map((ch, i) => (
+              <span
+                key={i}
+                className="hd-pop mx-[0.2rem] inline-flex h-[3.75rem] w-[3rem] items-center justify-center rounded-tile bg-white font-head text-[2.5rem] font-extrabold leading-none text-ink shadow-press"
+                style={{ ['--d' as string]: `${320 + i * 90}ms` }}
+              >
+                {ch}
+              </span>
+            ))}
           </span>
-        </p>
+        </div>
       </section>
 
       {/* Room */}
-      <section className="flex min-w-0 flex-1 flex-col px-8 pb-6 pt-5">
+      <section className="relative z-10 flex min-w-0 flex-1 flex-col px-7 pb-5 pt-5">
         <div className="flex items-center gap-3">
-          <Wordmark className="text-title text-night-400" lit={Math.max(1, Math.min(12, players.length))} />
+          <Wordmark className="text-title" lit={Math.max(1, Math.min(12, players.length))} />
           <span className="ml-auto">
             <BoxButtons canLock={false} showLock={false} />
           </span>
         </div>
-        <h1 className="q mt-5 line-clamp-2 text-display leading-[0.95]">{party.game.title}</h1>
-        <p className="mt-2 text-lead text-night-200">{meta.join(' · ')}</p>
+        <h1 className="q mt-4 line-clamp-2 text-display leading-[0.95]">
+          <Kinetic text={party.game.title} delay={120} />
+        </h1>
+        <p className="hd-rise mt-2 text-lead text-ink-2" style={{ ['--d' as string]: '360ms' }}>
+          {meta.join(' · ')}
+        </p>
 
-        <div className="mt-6 flex items-end gap-10 border-b border-night-700 pb-4">
-          <p className="flex flex-col">
-            <span className="text-body text-night-400">In the pot</span>
-            <span className="num text-hero leading-[0.85]">
-              <Roll text={moneyShort(pot, party)} value={pot} arrow />
+        <div className="mt-5 grid grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] gap-3">
+          <p className="hd-rise card relative flex flex-col overflow-hidden px-5 py-3" style={{ ['--d' as string]: '420ms' }}>
+            <span className="flex items-center gap-2 text-body font-semibold text-ink-2">
+              <span className="h-3.5 w-3.5 rounded-full bg-gold shadow-gold" aria-hidden="true" /> In the pot
             </span>
+            <span className="num text-hero leading-[0.88] text-ink">
+              <Roll text={moneyShort(pot, party)} value={pot} arrow duration={900} />
+            </span>
+            {fresh.length > 0 && <Burst key={fresh.length} seed={fresh.length} count={14} spread={7} x="70%" y="55%" colours={['#FFB020', '#FFC83D', '#6C2BFF', '#FF2E93']} />}
           </p>
-          <p className="flex flex-col">
-            <span className="text-body text-night-400">{players.length === 1 ? 'Player' : 'Players'}</span>
-            <span className="num text-hero leading-[0.85] text-night-200">
-              <Roll text={String(players.length)} value={players.length} />
+          <p className="hd-rise card flex flex-col px-5 py-3" style={{ ['--d' as string]: '500ms' }}>
+            <span className="text-body font-semibold text-ink-2">{players.length === 1 ? 'Player' : 'Players'}</span>
+            <span className="num text-hero leading-[0.88] text-zap">
+              <Roll text={String(players.length)} value={players.length} duration={700} />
             </span>
           </p>
         </div>
 
         <ul
-          className="mt-4 grid min-h-0 flex-1 content-start gap-x-6 gap-y-1 overflow-hidden"
+          className="mt-3 grid min-h-0 flex-1 content-start gap-2 overflow-hidden"
           style={{ gridTemplateColumns: `repeat(${players.length > 6 ? 3 : 2}, minmax(0, 1fr))` }}
           aria-label="Players in the room"
           aria-live="polite"
         >
-          {players.map((p) => {
-            const fresh = !seen.current!.has(p.pubkey);
+          {players.map((p, i) => {
+            const isFresh = !seen.current!.has(p.pubkey);
             return (
               <motion.li
                 key={p.pubkey}
                 layout="position"
-                transition={{ type: 'spring', stiffness: 520, damping: 42 }}
+                transition={SPRING}
                 data-testid="lobby-player"
                 data-player-name={p.name}
-                className={`relative flex min-h-[3.25rem] items-center gap-3 rounded-tile px-2 ${fresh ? 'hd-pop join-flash' : ''}`}
+                className={`relative flex min-h-[3.25rem] items-center gap-3 rounded-tile bg-card px-2.5 shadow-lift ${isFresh ? 'hd-pop ring-2 ring-inset ring-zap' : 'hd-rise'}`}
+                style={{ ['--d' as string]: isFresh ? '0ms' : `${560 + i * 60}ms` } as CSSProperties}
               >
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-tile bg-night-800 font-display text-title font-extrabold text-flood" aria-hidden="true">
-                  {p.name.slice(0, 1).toUpperCase()}
-                </span>
-                <span className="min-w-0 flex-1 truncate text-title font-bold">{p.name}</span>
-                {p.remote && <Icon name="globe" className="h-5 w-5 shrink-0 text-night-400" title="Joining remotely" />}
-                <span className="num shrink-0 text-title text-night-200">{moneyShort(p.deposited, party)}</span>
-                {fresh && p.deposited > 0 && (
+                <Avatar name={p.name} size="2.25rem" />
+                <span className="min-w-0 flex-1 truncate font-head text-title font-bold leading-none">{p.name}</span>
+                {p.remote && <Icon name="globe" className="h-5 w-5 shrink-0 text-ink-muted" title="Joining remotely" />}
+                <span className="num shrink-0 text-title text-ink-2">{moneyShort(p.deposited, party)}</span>
+                {isFresh && p.deposited > 0 && (
                   <span
                     className="hd-coin right-6 top-1/2"
-                    style={{ ['--dx' as string]: '-4rem', ['--dy' as string]: '-7rem', ['--d' as string]: '200ms' } as CSSProperties}
+                    style={{ ['--dx' as string]: '-5rem', ['--dy' as string]: '-8rem', ['--d' as string]: '260ms' } as CSSProperties}
                     aria-hidden="true"
                   />
                 )}
@@ -118,16 +145,21 @@ export function Lobby() {
             );
           })}
           {players.length === 0 && (
-            <li className="col-span-full flex items-center gap-3 py-3 text-lead text-night-400">
-              <span className="hd-breathe h-2.5 w-2.5 rounded-full bg-flood" aria-hidden="true" />
+            <li className="hd-rise col-span-full flex items-center gap-3 rounded-tile border-2 border-dashed border-rule-strong px-4 py-4 text-lead text-ink-2" style={{ ['--d' as string]: '560ms' }}>
+              <span className="hd-breathe h-3 w-3 shrink-0 rounded-full bg-zap" aria-hidden="true" />
               Waiting for the first player. Phones join by tapping the box or scanning the code.
             </li>
           )}
         </ul>
 
-        <div className="mt-4 flex items-center gap-5">
-          <p className="min-w-0 flex-1 text-body text-night-400">Start when the room is in. Friends can still join after kick-off.</p>
-          <button type="button" className="btn-primary min-h-[4rem] px-10 text-title" onClick={() => void act({ action: 'start_game' }, 'Kick-off')} data-testid="start-game">
+        <div className="mt-3 flex items-center gap-5">
+          <p className="min-w-0 flex-1 text-body text-ink-2">Start when the room is in. Friends can still join after kick-off.</p>
+          <button
+            type="button"
+            className="btn-prime min-h-[4.25rem] rounded-panel px-10 text-title"
+            onClick={() => void act({ action: 'start_game' }, 'Kick-off')}
+            data-testid="start-game"
+          >
             Start game <Icon name="play" className="h-6 w-6" strokeWidth={2.6} />
           </button>
         </div>

@@ -282,3 +282,25 @@ export function groupGames(games: GameInfo[]): { sport: string; games: GameInfo[
 
 /** Default persona per sport (PRD section 7). */
 export const personaForSport = (sport: string) => (sport === 'nfl' ? 'nfl' : 'soccer') as 'nfl' | 'soccer';
+
+/**
+ * Price history of a market's first outcome (YES), from the public fill feed: the model prior at
+ * open, then the price after every fill that carries one (a fill on another outcome of a binary
+ * market is mirrored). Live `price_update`s are appended on top by `useSeries` in the view.
+ */
+export function priceHistory(m: Market, fills: Fill[]): { t: number; p: number }[] {
+  const first = m.outcomes[0]?.id;
+  if (!first) return [];
+  const binary = m.outcomes.length === 2;
+  const out: { t: number; p: number }[] = [];
+  const start = m.prior?.[first];
+  const t0 = Date.parse(m.openedAt ?? m.createdAt);
+  if (typeof start === 'number') out.push({ t: Number.isFinite(t0) ? t0 : 0, p: start });
+  for (const f of fills) {
+    if (f.marketId !== m.id || typeof f.price !== 'number' || !Number.isFinite(f.price)) continue;
+    const p = f.outcome === first ? f.price : binary ? 1 - f.price : null;
+    if (p === null) continue;
+    out.push({ t: Date.parse(f.at), p: Math.min(1, Math.max(0, p)) });
+  }
+  return out.sort((a, b) => a.t - b.t);
+}

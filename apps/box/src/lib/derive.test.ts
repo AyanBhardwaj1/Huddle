@@ -22,10 +22,35 @@ import {
   nextView,
   payoutLine,
   prosRow,
+  priceHistory,
   resultSummary,
   settlementSteps,
   tickerItems,
 } from './derive';
+
+describe('priceHistory', () => {
+  const m = {
+    id: 'm1',
+    outcomes: [
+      { id: 'yes', label: 'Yes' },
+      { id: 'no', label: 'No' },
+    ],
+    prior: { yes: 0.6, no: 0.4 },
+    openedAt: '2026-01-01T00:00:00.000Z',
+    createdAt: '2026-01-01T00:00:00.000Z',
+  } as unknown as Market;
+  const f = (id: string, outcome: string, price: number | undefined, at: string, marketId = 'm1') =>
+    ({ id, marketId, outcome, price, at, kind: 'amm_buy', amount: 1, player: 'p', playerName: 'P' }) as Fill;
+  it('starts at the prior and follows fills, mirroring the other side of a binary market', () => {
+    const h = priceHistory(m, [
+      f('a', 'yes', 0.65, '2026-01-01T00:00:02.000Z'),
+      f('b', 'no', 0.3, '2026-01-01T00:00:04.000Z'),
+      f('c', 'yes', undefined, '2026-01-01T00:00:05.000Z'),
+      f('d', 'yes', 0.9, '2026-01-01T00:00:06.000Z', 'other'),
+    ]);
+    expect(h.map((x) => x.p)).toEqual([0.6, 0.65, 0.7]);
+  });
+});
 
 const YN = [
   { id: 'yes', label: 'Yes' },

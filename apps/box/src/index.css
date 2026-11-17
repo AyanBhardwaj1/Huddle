@@ -3,15 +3,15 @@
 @tailwind utilities;
 
 /*
- * Box kiosk (Floodlight, see DESIGN.md). The layout is designed in rem at 1024x600 (1rem = 16px)
+ * Box kiosk (Kickoff, see DESIGN.md). The layout is designed in rem at 1024x600 (1rem = 16px)
  * and scales with the smaller of width/height, so the 7-inch box and a 1080p TV show the same
  * composition (1rem is about 28.8px at 1920x1080).
  */
 @layer base {
   html {
     font-size: clamp(10px, min(1.5625vw, 2.6667vh), 40px);
-    background: #08090b;
-    color-scheme: dark;
+    background: #f4f3fa;
+    color-scheme: light;
   }
   html,
   body,
@@ -20,7 +20,7 @@
     overflow: hidden;
   }
   body {
-    @apply bg-night-950 font-sans text-chalk antialiased;
+    @apply bg-canvas font-sans text-ink antialiased;
     -webkit-tap-highlight-color: transparent;
     user-select: none;
     touch-action: manipulation;
@@ -31,7 +31,7 @@
     user-select: text;
   }
   :focus-visible {
-    outline: 3px solid #ffe27a;
+    outline: 3px solid #6c2bff;
     outline-offset: 3px;
   }
   button {
@@ -40,55 +40,87 @@
 }
 
 @layer components {
-  /* Buttons: one primary (flood) per view, a secondary, and a quiet text-like one. */
+  /*
+   * Buttons are chunky game buttons: a solid face with a darker lip at the bottom, they squish on
+   * press and spring back on release (hd-press). One primary (zap or prime) per view.
+   */
   .btn {
     @apply inline-flex min-h-[3rem] select-none items-center justify-center gap-2 rounded-tile px-5 font-sans text-lead font-bold leading-none;
-    transition-property: background-color, color, box-shadow, transform, opacity;
-    transition-duration: 160ms;
-    transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+    transition:
+      transform var(--t-spring) var(--ease-bounce),
+      background-color var(--t-quick) var(--ease-out),
+      box-shadow var(--t-quick) var(--ease-out),
+      color var(--t-quick) var(--ease-out);
+  }
+  .btn:hover:not(:disabled) {
+    transform: translateY(-2px);
   }
   .btn:active:not(:disabled) {
-    transform: scale(0.97);
-    transition-duration: 90ms;
+    transform: translateY(1px) scale(0.95);
+    transition-duration: var(--t-instant);
+    transition-timing-function: var(--ease-out);
   }
   .btn:disabled {
-    @apply cursor-not-allowed bg-night-800 text-night-500 shadow-none;
+    @apply cursor-not-allowed bg-control text-ink-faint shadow-none ring-0;
+    background-image: none;
   }
   .btn-primary {
-    @apply btn bg-flood text-flood-ink hover:bg-flood-bright;
+    @apply btn bg-zap text-zap-ink shadow-zap hover:bg-zap-bright;
+  }
+  /* The hero action of a screen: the brand gradient, with a sheen that passes on hover. */
+  .btn-prime {
+    @apply btn relative overflow-hidden bg-prime text-white shadow-zap;
+  }
+  .btn-prime::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(100deg, transparent 20%, rgba(255, 255, 255, 0.35) 50%, transparent 80%);
+    transform: translateX(-110%);
+    transition: transform 700ms cubic-bezier(0.22, 1, 0.36, 1);
+    pointer-events: none;
+  }
+  .btn-prime:hover:not(:disabled)::after {
+    transform: translateX(110%);
   }
   .btn-secondary {
-    @apply btn bg-night-800 text-chalk ring-1 ring-inset ring-night-600 hover:bg-night-700;
+    @apply btn bg-card text-ink shadow-lift ring-1 ring-inset ring-rule hover:ring-rule-strong;
   }
   .btn-quiet {
-    @apply btn bg-transparent text-night-200 hover:bg-night-800 hover:text-chalk;
+    @apply btn bg-transparent text-ink-2 hover:bg-control hover:text-ink;
   }
   .btn-yes {
-    @apply btn bg-yes text-yes-ink hover:bg-yes-bright;
+    @apply btn bg-yes text-yes-on shadow-yes hover:bg-yes-600;
   }
   .btn-no {
-    @apply btn bg-no text-no-ink hover:bg-no-bright;
+    @apply btn bg-no text-no-on shadow-no hover:bg-no-200;
   }
   .btn-danger {
-    @apply btn bg-no-deep text-no-bright ring-1 ring-inset ring-no-dim hover:bg-no-dim hover:text-chalk;
+    @apply btn bg-hot-50 text-hot-600 ring-2 ring-inset ring-hot hover:bg-hot hover:text-hot-on;
   }
 
   /* Big numbers: Archivo condensed, heavy, tabular. */
   .num {
-    @apply font-display font-extrabold tnum;
+    @apply font-num font-extrabold tnum;
     font-stretch: 75%;
   }
+  /* Questions and headlines: Bricolage, heavy, balanced. */
   .q {
-    @apply font-display font-bold text-balance;
-    font-stretch: 87.5%;
+    @apply font-head font-extrabold text-balance;
+    letter-spacing: -0.025em;
   }
-  .rule {
-    @apply border-night-700;
+  .card {
+    @apply rounded-panel bg-card shadow-lift;
   }
   .scroll-thin {
     scrollbar-width: thin;
-    scrollbar-color: #343b45 transparent;
+    scrollbar-color: #c4c0d8 transparent;
     overscroll-behavior: contain;
+  }
+  /* Arrows and flashes inside a solid outcome fill follow the fill's text colour. */
+  .on-fill {
+    --hd-up: currentColor;
+    --hd-down: currentColor;
   }
 }
 
@@ -99,9 +131,9 @@
   pointer-events: none;
   z-index: 60;
   box-shadow:
-    inset 0 0 0 0.2rem var(--led),
-    inset 0 0 2.4rem 0 color-mix(in srgb, var(--led) 45%, transparent);
-  opacity: 0.5;
+    inset 0 0 0 0.25rem var(--led),
+    inset 0 0 2.6rem 0 color-mix(in srgb, var(--led) 55%, transparent);
+  opacity: 0.55;
 }
 .led-idle { animation: led-breathe 4s ease-in-out infinite; }
 .led-join { animation: led-flash 0.35s ease-in-out 4 both, led-settle 0.1s 1.4s forwards; }
@@ -113,30 +145,65 @@
 .led-goal { animation: led-strobe 0.12s steps(2, jump-none) 14 both, led-settle 0.1s 1.7s forwards; }
 .led-error { animation: led-blink 0.6s steps(2, jump-none) 6 both; }
 
-@keyframes led-breathe { 0%, 100% { opacity: 0.16; } 50% { opacity: 0.42; } }
-@keyframes led-pulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 0.95; } }
+@keyframes led-breathe { 0%, 100% { opacity: 0.2; } 50% { opacity: 0.55; } }
+@keyframes led-pulse { 0%, 100% { opacity: 0.45; } 50% { opacity: 1; } }
 @keyframes led-blink { 0% { opacity: 1; } 100% { opacity: 0.1; } }
 @keyframes led-flash { 0%, 100% { opacity: 0.2; } 50% { opacity: 1; } }
 @keyframes led-strobe { 0% { opacity: 1; } 100% { opacity: 0; } }
 @keyframes led-fade { 0% { opacity: 1; } 100% { opacity: 0.12; } }
-@keyframes led-settle { to { opacity: 0.25; } }
+@keyframes led-settle { to { opacity: 0.3; } }
 
-/* Lobby tile: arrival flash (resting state is plain). */
-@keyframes join-flash { from { background-color: rgba(255, 226, 122, 0.35); } }
-.join-flash { animation: join-flash 1.4s cubic-bezier(0.22, 1, 0.36, 1); }
+/* A price moved: the outcome tile gives a little kick (scale) and a light glints across it. */
+@keyframes tile-kick-a { 0% { transform: scale(1.035); } 100% { transform: scale(1); } }
+@keyframes tile-kick-b { 0% { transform: scale(1.035); } 100% { transform: scale(1); } }
+.tile-kick-a { animation: tile-kick-a 520ms var(--ease-bounce); }
+.tile-kick-b { animation: tile-kick-b 520ms var(--ease-bounce); }
 
-/* Trade ticker items slide in from the right edge. */
-@keyframes ticker-in { from { transform: translateX(1.5rem); opacity: 0; } }
-.ticker-in { animation: ticker-in 420ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+/* Urgency: the stage edge pulses hot once a second in the last five seconds (opacity only). */
+.urgent-edge {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 0.25rem #ff2e63, inset 0 0 3rem -0.5rem rgba(255, 46, 99, 0.55);
+  pointer-events: none;
+  animation: urgent-edge 1s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+  z-index: 15;
+}
+@keyframes urgent-edge { 0% { opacity: 1; } 70%, 100% { opacity: 0.25; } }
+
+/* Locked: a white veil settles over the outcome tiles so "no more bets" reads at a glance. */
+.lock-veil {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: rgba(255, 255, 255, 0.55);
+  animation: hd-fade 420ms var(--ease-out) both;
+  pointer-events: none;
+}
+.is-locked .hd-split-fill { opacity: 0.5; transition: opacity 420ms cubic-bezier(0.22, 1, 0.36, 1); }
 
 /* Host dock slides in from the right edge; the board column reflows next to it. */
 @keyframes dock-in { from { transform: translateX(2rem); opacity: 0; } }
-.dock-in { animation: dock-in 240ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+.dock-in { animation: dock-in 360ms var(--ease-spring) both; }
 
-/* Locked stage: colour drains a little so "no more bets" reads at a glance. */
-.is-locked .hd-split-fill { opacity: 0.55; transition: opacity 420ms cubic-bezier(0.22, 1, 0.36, 1); }
+/* Live dot: a ring pings out of it. */
+.live-dot { position: relative; }
+.live-dot::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: inherit;
+  animation: hd-ping 1.6s var(--ease-out) infinite;
+}
 
 @media (prefers-reduced-motion: reduce) {
-  .led-ring { animation: none !important; opacity: 0.55; }
-  .join-flash, .ticker-in, .dock-in { animation: none !important; }
+  .led-ring { animation: none !important; opacity: 0.6; }
+  .dock-in, .tile-kick-a, .tile-kick-b, .lock-veil { animation: none !important; }
+  .urgent-edge { animation: none !important; opacity: 0.8; }
+  .live-dot::after { display: none; }
+  .btn { transition-duration: 0ms !important; }
+  .btn:hover:not(:disabled) { transform: none; }
+  .btn:active:not(:disabled) { transform: scale(0.97); }
+  .btn-prime::after { display: none; }
 }

@@ -2,6 +2,7 @@ import { MotionConfig } from 'framer-motion';
 import { useEffect } from 'react';
 import { SoundGate, TalkOverlay, useBoxInputs } from './components/controls';
 import { HostPanel } from './components/HostPanel';
+import { Aurora, Kinetic } from '@huddle/ui';
 import { Icon, LedRing, Mark, ToastHost, Wordmark } from './components/ui';
 import { fixtureFlags, useFixtureView } from './fixture';
 import { fixtureParam, type FixtureKind } from './lib/config';
@@ -24,24 +25,27 @@ function Connecting() {
   const err = view.lastError;
   const fatal = err && FATAL.has(err.code);
   return (
-    <main className="flex h-full flex-col items-start justify-center gap-6 px-16">
-      <Wordmark className="text-title text-night-400" />
+    <main className="relative flex h-full flex-col items-start justify-center gap-6 bg-canvas px-16">
+      <Aurora />
+      <Wordmark className="hd-drop relative text-title" />
       {fatal ? (
         <>
-          <h1 className="q text-display">Party {session?.partyCode} isn’t available.</h1>
-          <p className="max-w-[40rem] text-lead text-night-200">
+          <h1 className="q relative text-display">
+            <Kinetic text={`Party ${session?.partyCode ?? ""} isn’t available.`} />
+          </h1>
+          <p className="hd-rise relative max-w-[40rem] text-lead text-ink-2" style={{ ['--d' as string]: '300ms' }}>
             {err.message}. Leave it and start a new party from the home screen.
           </p>
         </>
       ) : (
-        <div className="flex items-center gap-5" role="status" aria-live="polite">
-          <Mark size="4rem" spin className="text-night-600" />
+        <div className="relative flex items-center gap-5" role="status" aria-live="polite">
+          <Mark size="4rem" lit={3} spin className="text-rule-strong" />
           <h1 className="q text-display">
-            {view.status === 'reconnecting' ? 'Reconnecting to the engine…' : `Joining party ${session?.partyCode ?? ''}…`}
+            <Kinetic text={view.status === 'reconnecting' ? 'Reconnecting to the engine…' : `Joining party ${session?.partyCode ?? ''}…`} />
           </h1>
         </div>
       )}
-      <button type="button" className={fatal ? 'btn-primary' : 'btn-secondary'} onClick={() => setSession(null)}>
+      <button type="button" className={`relative ${fatal ? 'btn-primary' : 'btn-secondary'}`} onClick={() => setSession(null)}>
         Leave this party
       </button>
     </main>
@@ -53,11 +57,13 @@ function ScorecardScreen() {
   const { view } = useParty();
   const setView = useBox((s) => s.setView);
   return (
-    <main className="hd-fade relative flex h-full flex-col px-10 py-8">
+    <main className="relative flex h-full flex-col bg-canvas p-4">
+      <div className="hd-zoom card relative flex min-h-0 flex-1 flex-col rounded-blob px-10 py-7 shadow-pop">
       <button type="button" className="btn-secondary absolute right-6 top-6 min-h-[2.75rem] px-3" onClick={() => setView('board')} aria-label="Close the scorecard">
         <Icon name="x" className="h-5 w-5" />
       </button>
       <ScorecardPanel scorecard={view.snapshot!.scorecard} />
+      </div>
     </main>
   );
 }
@@ -84,10 +90,10 @@ export function PartyScreens() {
       </div>
       {s && view.status === 'reconnecting' && (
         <div
-          className="hd-drop fixed left-1/2 top-2 z-toast flex -translate-x-1/2 items-center gap-2 rounded-tile bg-night-800 px-4 py-2 text-body font-semibold shadow-float ring-1 ring-inset ring-night-600"
+          className="hd-drop fixed left-1/2 top-2 z-toast flex -translate-x-1/2 items-center gap-2 rounded-full bg-ink py-2 pl-2 pr-5 text-body font-semibold text-white shadow-pop"
           role="status"
         >
-          <Mark size="1.25rem" spin className="text-night-500" /> Reconnecting… bets and balances are safe on the engine.
+          <Mark size="1.5rem" lit={3} spin className="text-white/40" /> Reconnecting… bets and balances are safe on the engine.
         </div>
       )}
       <LedRing led={view.led} />
@@ -107,7 +113,7 @@ function FixtureApp({ kind }: { kind: FixtureKind }) {
   return (
     <StaticPartyProvider view={view}>
       <PartyScreens />
-      <div className="pointer-events-none fixed bottom-[3.9rem] right-3 z-toast flex items-center gap-1 rounded-chip bg-night-800/90 px-2 py-0.5 text-cap text-night-400">
+      <div className="pointer-events-none fixed bottom-[4.1rem] right-4 z-toast flex items-center gap-1 rounded-full bg-card/90 px-2 py-0.5 text-cap text-ink-muted shadow-lift">
         <Icon name="warn" className="h-3 w-3" /> Fixture: {kind}
       </div>
     </StaticPartyProvider>
@@ -122,7 +128,7 @@ export function App() {
   return (
     // reducedMotion="user": framer layout springs (leaderboard, lobby) honour prefers-reduced-motion.
     <MotionConfig reducedMotion="user">
-    <div className="relative h-full w-full overflow-hidden bg-night-950">
+    <div className="relative h-full w-full overflow-hidden bg-canvas">
       {fixture ? (
         <FixtureApp kind={fixture} />
       ) : session ? (
