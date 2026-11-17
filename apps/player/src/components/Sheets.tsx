@@ -1,5 +1,5 @@
 import type { DraftBet } from '@huddle/shared';
-import { Icon } from '@huddle/ui';
+import { Icon, Kinetic } from '@huddle/ui';
 import { useState, type CSSProperties, type ReactNode } from 'react';
 import { requestFaucet } from '../lib/api';
 import { buzz, HAPTIC } from '../lib/haptics';
@@ -64,25 +64,25 @@ export function DraftSheet() {
     <Sheet open={!!draft} onClose={() => run('reject')} dismissable={busy === null} label="Confirm your bet">
       {draft && (
         <div className="pb-1 pt-1">
-          <p className="flex items-center gap-2 text-small text-night-200">
-            <span className="grid h-8 w-8 place-items-center rounded-full bg-night-800 text-flood">
+          <p className="flex items-center gap-2 text-small text-ink-2">
+            <span className="hd-pop grid h-9 w-9 place-items-center rounded-full bg-prime text-white shadow-zap">
               <Icon name="mic" size={18} />
             </span>
             {draft.source === 'voice' ? 'The announcer drafted a bet for you' : 'The host drafted a bet for you'}
           </p>
-          <p className="hd-stamp mt-4 font-display text-display font-extrabold stretch-condensed">
-            <span className="tnum">{money(draft.amount, points)}</span> <span className="font-sans text-title font-semibold text-night-400">on</span>{' '}
-            <span className={t.text}>{label}</span>
+          <p className="hd-stamp mt-4 flex flex-wrap items-baseline gap-x-2 leading-none">
+            <span className="num text-display">{money(draft.amount, points)}</span> <span className="font-head text-title font-bold text-ink-muted">on</span>{' '}
+            <span className={cx('rounded-tile px-3 py-1 font-head text-head font-extrabold', t.solid, t.ink)}>{label}</span>
           </p>
-          {market && <p className="mt-2 text-balance text-body text-night-200">{market.question}</p>}
+          {market && <Kinetic as="p" text={market.question} className="q mt-3 block text-lead text-ink-2" delay={200} stagger={30} />}
           {closed ? (
-            <p className="mt-5 flex items-center gap-2 rounded-tile bg-night-850 px-3.5 py-3 text-small text-night-200">
-              <Icon name="lock" size={18} className="shrink-0 text-night-400" /> This question locked before you confirmed, so nothing was placed.
+            <p className="mt-5 flex items-center gap-2 rounded-tile bg-canvas px-3.5 py-3 text-small text-ink-2">
+              <Icon name="lock" size={18} className="shrink-0 text-ink-muted" /> This question locked before you confirmed, so nothing was placed.
             </p>
           ) : (
             <>
               <DrainBar key={draft.id} from={left / total} ms={left} />
-              <p className="mt-1.5 text-cap text-night-400 tnum">Expires in {Math.ceil(left / 1000)}&nbsp;s. Nothing moves until you confirm.</p>
+              <p className="mt-1.5 text-cap text-ink-muted tnum">Expires in {Math.ceil(left / 1000)}&nbsp;s. Nothing moves until you confirm.</p>
             </>
           )}
           {closed ? (
@@ -94,7 +94,7 @@ export function DraftSheet() {
             <button disabled={busy !== null} onClick={() => run('reject')} className="btn-secondary min-h-14">
               {busy === 'reject' ? 'Cancelling…' : 'Cancel'}
             </button>
-            <button disabled={busy !== null} onClick={() => run('confirm')} className="btn-primary shadow-flood">
+            <button disabled={busy !== null} onClick={() => run('confirm')} className="btn-prime">
               {busy === 'confirm' ? 'Confirming…' : `Confirm ${moneyShort(draft.amount, points)}`}
             </button>
           </div>
@@ -110,8 +110,8 @@ export function DraftSheet() {
 function DrainBar({ from, ms }: { from: number; ms: number }) {
   const [style] = useState(() => ({ '--from': from, '--dur': `${ms}ms` }) as CSSProperties);
   return (
-    <div className="mt-5 h-1 overflow-hidden rounded-full bg-night-700" aria-hidden="true">
-      <div className="pl-drain h-full bg-night-400" style={style} />
+    <div className="mt-5 h-1 overflow-hidden rounded-full bg-rule" aria-hidden="true">
+      <div className="pl-drain h-full bg-zap" style={style} />
     </div>
   );
 }
@@ -148,7 +148,7 @@ export function TopUpSheet({ wallet }: { wallet: string | null }) {
   return (
     <Sheet open={open} onClose={() => step === 'idle' && setOpen(false)} title="Your balance">
       <div className="space-y-5">
-        <dl className="grid grid-cols-3 divide-x divide-night-700 rounded-tile bg-night-850 py-3">
+        <dl className="grid grid-cols-3 divide-x divide-rule rounded-tile bg-canvas py-3">
           <Mini label="Available">
             <Money value={balance} points={points} />
           </Mini>
@@ -160,18 +160,18 @@ export function TopUpSheet({ wallet }: { wallet: string | null }) {
           </Mini>
         </dl>
         {ended ? (
-          <p className="text-small text-night-400">The game is over, so there are no more top-ups.</p>
+          <p className="text-small text-ink-muted">The game is over, so there are no more top-ups.</p>
         ) : amount > 0 ? (
           <>
-            <button disabled={step !== 'idle'} onClick={go} className="btn-primary w-full shadow-flood">
+            <button disabled={step !== 'idle'} onClick={go} className="btn-prime w-full disabled:bg-prime disabled:text-white">
               {step === 'idle' ? `Add ${moneyShort(amount, points)}` : step === 'funding' ? 'Getting your chips…' : 'Adding…'}
             </button>
-            <p className="text-center text-cap text-night-400">
+            <p className="text-center text-cap text-ink-muted">
               Up to {money(cfg.maxBuyIn, points)} per player tonight. {money(room, points)} left.
             </p>
           </>
         ) : (
-          <p className="text-small text-night-400">You're at the host's max buy-in for tonight ({money(cfg.maxBuyIn, points)}).</p>
+          <p className="text-small text-ink-muted">You're at the host's max buy-in for tonight ({money(cfg.maxBuyIn, points)}).</p>
         )}
         {error && <InlineError text={error} />}
       </div>
@@ -182,8 +182,8 @@ export function TopUpSheet({ wallet }: { wallet: string | null }) {
 function Mini({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div className="px-3 text-center">
-      <dt className="text-cap text-night-400">{label}</dt>
-      <dd className="font-display text-lead font-extrabold stretch-condensed">{children}</dd>
+      <dt className="text-cap text-ink-muted">{label}</dt>
+      <dd className="num text-title">{children}</dd>
     </div>
   );
 }
@@ -209,33 +209,34 @@ export function SyncCheck() {
 
   if (delay != null && !expanded)
     return (
-      <div className="flex items-center justify-between gap-3 border-b border-night-700 pb-3">
-        <span className="flex items-center gap-2 text-small text-night-200">
-          <Icon name="globe" size={18} className="text-night-400" />
+      <div className="hd-rise flex items-center justify-between gap-3 rounded-full bg-card py-1 pl-4 pr-1.5 shadow-lift">
+        <span className="flex items-center gap-2 text-small font-semibold text-ink-2">
+          <Icon name="globe" size={18} className="text-zap" />
           {Math.abs(delay) < 3000 ? "You're in sync with the room" : `You're about ${delayText(delay)}`}
         </span>
-        <button onClick={() => setExpanded(true)} className="btn-quiet -mr-2 text-small">
+        <button onClick={() => setExpanded(true)} className="btn-quiet rounded-full text-small">
           Sync again
         </button>
       </div>
     );
 
   return (
-    <section className="rounded-panel bg-night-900 p-4" aria-labelledby="sync-title">
+    <section className="hd-rise card relative overflow-hidden p-4" aria-labelledby="sync-title">
+      <div className="absolute inset-x-0 top-0 h-1 bg-prime" aria-hidden="true" />
       <div className="flex items-start gap-3">
-        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-tile bg-night-800 text-night-200">
+        <span className="hd-float grid h-11 w-11 shrink-0 place-items-center rounded-tile bg-zap-100 text-zap-deep">
           <Icon name="globe" size={22} />
         </span>
         <div className="min-w-0 flex-1">
-          <h2 id="sync-title" className="font-display text-lead font-bold stretch-semi">
+          <h2 id="sync-title" className="q text-lead">
             {delay == null ? 'Watching on a stream?' : 'Sync with the room again'}
           </h2>
-          <p className="mt-0.5 text-pretty text-small text-night-200">
+          <p className="mt-0.5 text-pretty text-small text-ink-2">
             Tap the button the moment you see {moment}. We line you up with the room's TV so nobody bets on what they've already seen.
           </p>
         </div>
       </div>
-      <button disabled={busy} onClick={mark} className={cx('btn-primary mt-4 w-full', !busy && 'shadow-flood')}>
+      <button disabled={busy} onClick={mark} className="btn-primary mt-4 w-full">
         {busy ? 'Lining you up…' : `I see ${nfl ? 'the snap' : 'it'}!`}
       </button>
       {error && <InlineError text={error} />}

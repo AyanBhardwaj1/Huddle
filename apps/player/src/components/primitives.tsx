@@ -1,4 +1,4 @@
-import { Icon, Mark, Roll } from '@huddle/ui';
+import { Aurora, Avatar as UiAvatar, Icon, Kinetic, Mark, Roll } from '@huddle/ui';
 import { useCallback, useEffect, useId, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { money, pnl } from '../lib/money';
@@ -14,6 +14,7 @@ export function Money({
   className,
   flash = true,
   arrow = false,
+  duration,
 }: {
   value: number;
   points: boolean;
@@ -21,65 +22,88 @@ export function Money({
   className?: string;
   flash?: boolean;
   arrow?: boolean;
+  /** Roll duration in ms: short for ticks, long for a payout landing. */
+  duration?: number;
 }) {
   const text = signed ? pnl(value, points) : money(value, points);
-  return <Roll text={text} value={value} label={text} className={cx('font-display tnum', className)} flash={flash} arrow={arrow} />;
+  return <Roll text={text} value={value} label={text} className={cx('font-num tnum', className)} flash={flash} arrow={arrow} duration={duration} />;
 }
 
-/** Ring spinner + a line that says what is happening. */
+/** The ring spinning with three lit pixels + a line that says what is happening. */
 export function Loading({ children, className }: { children?: ReactNode; className?: string }) {
   return (
-    <div className={cx('flex items-center gap-3 text-night-200', className)} role="status">
-      <Mark size="1.5rem" spin className="shrink-0 text-night-400" />
+    <div className={cx('flex items-center gap-3 text-ink-2', className)} role="status">
+      <Mark size="1.6rem" spin lit={3} className="shrink-0 text-rule-strong" />
       <span>{children}</span>
     </div>
   );
 }
 
-/** Inline error: what happened and what to do, chalk on a no-deep field, never colour alone. */
+/** Inline error: what happened and what to do, on a hot-50 field with a hot ring and an icon. */
 export function InlineError({ text, action }: { text: string; action?: ReactNode }) {
   return (
-    <div className="hd-fade mt-3 flex items-start gap-2.5 rounded-tile bg-no-deep px-3.5 py-3 text-small text-chalk" role="alert">
-      <Icon name="warn" size={18} className="mt-px shrink-0 text-no" />
+    <div className="hd-rise mt-3 flex items-start gap-2.5 rounded-tile bg-hot-50 px-3.5 py-3 text-small text-ink ring-1 ring-inset ring-hot" role="alert">
+      <Icon name="warn" size={18} className="mt-px shrink-0 text-hot-600" />
       <span className="min-w-0 flex-1 text-pretty">{text}</span>
       {action}
     </div>
   );
 }
 
-/** Section heading on the live screen: sentence case, a count whispering beside it. */
+/** Section heading on the live screen: Bricolage, sentence case, a count pill beside it. */
 export function SectionTitle({ children, count, id }: { children: ReactNode; count?: number; id?: string }) {
   return (
-    <h2 id={id} className="mb-3 flex items-baseline gap-2 font-display text-lead font-bold stretch-semi text-chalk">
+    <h2 id={id} className="mb-3 flex items-center gap-2 font-head text-lead font-extrabold tracking-[-0.02em] text-ink">
       {children}
-      {count != null && count > 1 && <span className="font-sans text-small font-normal text-night-400 tnum">{count}</span>}
+      {count != null && count > 1 && (
+        <span className="num grid h-6 min-w-6 place-items-center rounded-full bg-zap-100 px-1.5 text-small text-zap-deep">{count}</span>
+      )}
     </h2>
   );
 }
 
-/** Empty state: a composed line that says what happens next. */
+/** Empty state: a dashed card that says what happens next. */
 export function Empty({ children, mark = false }: { children: ReactNode; mark?: boolean }) {
   return (
-    <div className="flex flex-col items-center gap-3 px-6 py-10 text-center">
-      {mark && <Mark size="2.5rem" className="hd-breathe text-night-600" />}
-      <p className="max-w-[30ch] text-pretty text-body text-night-400">{children}</p>
+    <div className="hd-fade flex flex-col items-center gap-3 rounded-panel border-2 border-dashed border-rule px-6 py-9 text-center">
+      {mark && <Mark size="2.5rem" lit={2} className="hd-float text-rule-strong" />}
+      <p className="max-w-[30ch] text-pretty text-body text-ink-muted">{children}</p>
     </div>
   );
 }
 
-/** Initial in a rounded square (people are tiles here, not circles). */
-export function Avatar({ name, className }: { name: string; className?: string }) {
+/** "#E4002B" + alpha -> "rgba(228,0,43,a)"; anything else passes through. */
+function withAlpha(hex: string, a: number): string {
+  const m = /^#?([0-9a-f]{6})$/i.exec(hex.trim());
+  if (!m) return hex;
+  const n = parseInt(m[1]!, 16);
+  return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${a})`;
+}
+
+/**
+ * The drifting colour field behind a screen (fixed, decorative, static under reduced motion).
+ * Pass the two team colours during an open moment market, as the box does; default blobs otherwise.
+ */
+export function Backdrop({ teams }: { teams?: [string | undefined, string | undefined] }) {
+  const [home, away] = teams ?? [];
+  const blobs =
+    home || away
+      ? [
+          { c: withAlpha(home ?? '#6C2BFF', 0.2), x: '-20vmax', y: '-14vmax', s: '64vmax', mx: '10vmax', my: '8vmax', dur: '18s' },
+          { c: withAlpha(away ?? '#FF2E93', 0.2), x: '40vw', y: '40vh', s: '60vmax', mx: '-9vmax', my: '-7vmax', dur: '22s', d: '-5s' },
+          { c: 'rgba(108,43,255,0.12)', x: '20vw', y: '10vh', s: '40vmax', mx: '6vmax', my: '5vmax', dur: '26s', d: '-9s' },
+        ]
+      : undefined;
   return (
-    <span
-      className={cx(
-        'grid h-9 w-9 shrink-0 place-items-center rounded-tile bg-night-800 font-display text-body font-extrabold uppercase text-night-200',
-        className,
-      )}
-      aria-hidden="true"
-    >
-      {name.trim().slice(0, 1) || '?'}
-    </span>
+    <div className="pointer-events-none fixed inset-0 z-0" aria-hidden="true">
+      <Aurora key={blobs ? 'teams' : 'default'} blobs={blobs} className="hd-fade" />
+    </div>
   );
+}
+
+/** A player's squircle with their initial, coloured from their name (Kickoff `Avatar`). */
+export function Avatar({ name, className, size = '2.25rem' }: { name: string; className?: string; size?: string }) {
+  return <UiAvatar name={name} size={size} className={className} />;
 }
 
 /**
@@ -125,7 +149,7 @@ export function Sheet({
 
   const node = (
     <div className="fixed inset-0 z-panel">
-      <div className="hd-fade absolute inset-0 bg-night-950/75" onClick={() => dismissable && onClose()} aria-hidden="true" />
+      <div className="hd-fade absolute inset-0 bg-ink/40" onClick={() => dismissable && onClose()} aria-hidden="true" />
       <div
         ref={panel}
         role="dialog"
@@ -134,11 +158,11 @@ export function Sheet({
         aria-label={title ? undefined : label}
         tabIndex={-1}
         data-dragging={String(dragging)}
-        className="pl-sheet absolute inset-x-0 bottom-0 mx-auto max-h-[88dvh] w-full max-w-lg overflow-y-auto overscroll-contain rounded-t-panel bg-night-900 px-5 pb-[calc(env(safe-area-inset-bottom)+1.25rem)] shadow-float outline-none"
+        className="pl-sheet absolute inset-x-0 bottom-0 mx-auto max-h-[88dvh] w-full max-w-lg overflow-y-auto overscroll-contain rounded-t-blob bg-card px-5 pb-[calc(env(safe-area-inset-bottom)+1.25rem)] shadow-pop outline-none"
         style={dy ? { transform: `translateY(${dy}px)` } : undefined}
       >
         <div
-          className="sticky top-0 z-10 -mx-5 bg-night-900 px-5 pt-2.5"
+          className="sticky top-0 z-10 -mx-5 bg-card px-5 pt-2.5"
           style={{ touchAction: 'none' }}
           onPointerDown={(e) => {
             if (!dismissable || (e.target as HTMLElement).closest('button')) return;
@@ -163,14 +187,18 @@ export function Sheet({
             setDy(0);
           }}
         >
-          <div className="mx-auto mb-2 h-1 w-10 rounded-full bg-night-600" aria-hidden="true" />
+          <div className="mx-auto mb-2 h-1 w-10 rounded-full bg-rule-strong" aria-hidden="true" />
           {title ? (
             <div className="flex min-h-12 items-center justify-between gap-3 pb-2">
-              <h2 id={titleId} className="font-display text-title font-extrabold stretch-semi">
-                {title}
-              </h2>
+              {typeof title === 'string' ? (
+                <Kinetic as="h2" id={titleId} text={title} className="q text-title" stagger={40} />
+              ) : (
+                <h2 id={titleId} className="q text-title">
+                  {title}
+                </h2>
+              )}
               {dismissable && (
-                <button onClick={onClose} className="btn-quiet -mr-2 w-11 px-0" aria-label="Close">
+                <button onClick={onClose} className="btn-quiet -mr-2 min-h-11 w-11 shrink-0 px-0" aria-label="Close">
                   <Icon name="x" size={22} />
                 </button>
               )}

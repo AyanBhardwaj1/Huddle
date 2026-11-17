@@ -363,6 +363,30 @@ export function rankPlayers(players: PlayerPublic[]): PlayerPublic[] {
   return players.filter((p) => !p.isHouse).sort((a, b) => b.pnl - a.pnl || a.name.localeCompare(b.name));
 }
 
+// ---------------------------------------------------------------- price history
+
+/**
+ * The first outcome's price since the market opened, from the prior and every fill that carries a
+ * price (the same derivation as the box's `priceHistory` in `apps/box/src/lib/derive.ts`). Seeds
+ * `useSeries`, which then appends live price updates.
+ */
+export function priceHistory(m: Market, fills: Fill[]): { t: number; p: number }[] {
+  const first = m.outcomes[0]?.id;
+  if (!first) return [];
+  const binary = m.outcomes.length === 2;
+  const out: { t: number; p: number }[] = [];
+  const start = m.prior?.[first];
+  const t0 = Date.parse(m.openedAt ?? m.createdAt);
+  if (typeof start === 'number') out.push({ t: Number.isFinite(t0) ? t0 : 0, p: start });
+  for (const f of fills) {
+    if (f.marketId !== m.id || typeof f.price !== 'number' || !Number.isFinite(f.price)) continue;
+    const p = f.outcome === first ? f.price : binary ? 1 - f.price : null;
+    if (p === null) continue;
+    out.push({ t: Date.parse(f.at), p: Math.min(1, Math.max(0, p)) });
+  }
+  return out.sort((a, b) => a.t - b.t);
+}
+
 // ---------------------------------------------------------------- lock text
 
 /**

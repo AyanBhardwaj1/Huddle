@@ -1,13 +1,14 @@
 import type { ClientView, Position } from '@huddle/shared';
-import { Icon, Mark, Wordmark } from '@huddle/ui';
+import { Icon, Kinetic, Mark, Wordmark } from '@huddle/ui';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { PartyCtx, type PartyCtxValue } from '../components/ctx';
-import { Avatar, InlineError, Loading } from '../components/primitives';
+import { Avatar, Backdrop, InlineError, Loading } from '../components/primitives';
 import { getParty, type PartyPreview } from '../lib/api';
 import { friendlyError } from '../lib/markets';
 import { money } from '../lib/money';
 import { useApp, useView, type PartyClient } from '../lib/session';
 import { BuyIn } from './BuyIn';
+import { CodeTiles } from './Home';
 import { Live } from './Live';
 
 /** `/j/CODE`: preview, first-time name, connect, then buy-in or the live screen. */
@@ -50,176 +51,182 @@ export function PartyRoute({ code }: { code: string }) {
   const joinError = view.lastError ? friendlyError(view.lastError) : null;
   const upper = code.toUpperCase();
 
+  const d = (ms: number) => ({ ['--d' as string]: `${ms}ms` });
+
   return (
-    <div className="mx-auto flex min-h-[100dvh] max-w-md flex-col px-5 pb-[calc(env(safe-area-inset-bottom)+1.5rem)] pt-[calc(env(safe-area-inset-top)+1.25rem)]">
-      <header className="flex items-center justify-between">
-        <a href="/" className="-m-2 rounded-tile p-2" aria-label="Huddle home">
-          <Wordmark className="text-lead text-night-200" />
-        </a>
-        <span className="font-display text-small font-bold stretch-wide text-night-400" translate="no">
-          {upper}
-        </span>
-      </header>
-
-      {previewErr === 'missing' ? (
-        <div className="flex flex-1 flex-col justify-center">
-          <Mark size="3rem" className="text-night-600" />
-          <h1 className="mt-5 font-display text-head font-extrabold stretch-semi">No party called {upper}</h1>
-          <p className="mt-2 text-pretty text-body text-night-200">Check the code on the box with the host, or tap your phone on the box again.</p>
-          <a href="/" className="btn-secondary mt-6 w-fit">
-            <Icon name="arrowLeft" size={18} /> Back home
+    <div className="relative min-h-[100dvh]">
+      <Backdrop />
+      <div className="relative z-[1] mx-auto flex min-h-[100dvh] max-w-md flex-col px-5 pb-[calc(env(safe-area-inset-bottom)+1.5rem)] pt-[calc(env(safe-area-inset-top)+1.25rem)]">
+        <header className="flex items-center justify-between">
+          <a href="/" className="-m-2 rounded-tile p-2" aria-label="Huddle home">
+            <Wordmark className="text-lead text-ink" lit={3} />
           </a>
-        </div>
-      ) : (
-        <>
-          <section className="mt-10" aria-labelledby="party-name">
-            {p ? (
-              <>
-                <p className="hd-fade flex items-center gap-2 text-small text-night-200">
-                  {p.status === 'live' ? (
-                    <>
-                      <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-live" aria-hidden="true" /> Live now
-                    </>
-                  ) : (
-                    'Starting soon'
-                  )}
-                  <span className="text-night-500" aria-hidden="true">
-                    ·
-                  </span>
-                  <span className="truncate">{p.game.title}</span>
-                </p>
-                <h1 id="party-name" className="hd-rise mt-2 text-balance font-display text-head font-extrabold stretch-semi">
-                  {p.name}
-                </h1>
-                <p className="hd-rise mt-2 text-body text-night-200" style={{ ['--d' as string]: '80ms' }}>
-                  Buy-in <span className="font-display font-bold text-chalk tnum">{money(p.config.buyIn, p.config.settlement === 'points')}</span>
-                </p>
-              </>
-            ) : previewErr === 'offline' ? (
-              <>
-                <h1 id="party-name" className="font-display text-head font-extrabold stretch-semi">
-                  Party {upper}
-                </h1>
-                <p className="mt-2 text-pretty text-small text-night-400">Couldn't load the party details. You can still join.</p>
-              </>
-            ) : (
-              <Loading>Finding the party…</Loading>
-            )}
-          </section>
+          <span className="num text-lead tracking-[0.12em] text-ink-muted" translate="no">
+            {upper}
+          </span>
+        </header>
 
-          {players.length > 0 && (
-            <div className="hd-rise mt-6 flex items-center gap-3" style={{ ['--d' as string]: '160ms' }}>
-              <div className="flex -space-x-1.5" aria-hidden="true">
-                {players.slice(0, 6).map((pl) => (
-                  <Avatar key={pl.pubkey} name={pl.name} className="h-8 w-8 ring-2 ring-night-950" />
-                ))}
-              </div>
-              <p className="min-w-0 text-small text-night-200">
-                {players
-                  .slice(0, 3)
-                  .map((x) => x.name)
-                  .join(', ')}
-                {players.length > 3 ? ` and ${players.length - 3} more` : ''} {players.length === 1 ? 'is' : 'are'} in
-              </p>
-            </div>
-          )}
-
-          <div className="mt-auto pt-10">
-            {name ? (
-              <div className="space-y-3">
-                {!joinError && <Loading className="justify-center">Joining as {name}…</Loading>}
-                {joinError && <InlineError text={joinError} />}
-                {(joinError || view.status === 'reconnecting') && (
-                  <button
-                    onClick={() => {
-                      useApp.getState().disconnect();
-                      void connect(code, remoteParam || remote);
-                    }}
-                    className="btn-primary w-full"
-                  >
-                    <Icon name="refresh" size={20} /> Try again
-                  </button>
-                )}
-              </div>
-            ) : (
-              <form
-                onSubmit={async (e) => {
-                  e.preventDefault();
-                  if (!draftName.trim()) {
-                    setNameError(true);
-                    nameInput.current?.focus();
-                    return;
-                  }
-                  setJoining(true);
-                  await setName(draftName);
-                  await connect(code, remote);
-                }}
-                className="space-y-4"
-                noValidate
-              >
-                <div>
-                  <label htmlFor="name" className="block font-display text-lead font-bold stretch-semi">
-                    What should the room call you?
-                  </label>
-                  <input
-                    ref={nameInput}
-                    id="name"
-                    name="nickname"
-                    data-testid="join-name"
-                    value={draftName}
-                    onChange={(e) => {
-                      setDraftName(e.target.value);
-                      setNameError(false);
-                    }}
-                    maxLength={24}
-                    autoComplete="nickname"
-                    autoCapitalize="words"
-                    spellCheck={false}
-                    enterKeyHint="go"
-                    placeholder="Your name…"
-                    aria-invalid={nameError}
-                    aria-describedby={nameError ? 'name-error' : undefined}
-                    className="field mt-3 h-14 font-display text-title font-bold stretch-semi"
-                  />
-                  {nameError && (
-                    <p id="name-error" className="mt-2 flex items-center gap-2 text-small text-chalk" role="alert">
-                      <Icon name="warn" size={16} className="text-no" /> Type a name first, so everyone knows who called it.
+        {previewErr === 'missing' ? (
+          <div className="flex flex-1 flex-col justify-center">
+            <Mark size="3rem" className="hd-float text-rule-strong" />
+            <Kinetic as="h1" text={`No party called ${upper}`} className="q mt-5 block text-head" />
+            <p className="hd-rise mt-2 text-pretty text-body text-ink-2" style={d(300)}>
+              Check the code on the box with the host, or tap your phone on the box again.
+            </p>
+            <a href="/" className="btn-secondary mt-6 w-fit">
+              <Icon name="arrowLeft" size={18} /> Back home
+            </a>
+          </div>
+        ) : (
+          <>
+            <section className="mt-8" aria-labelledby="party-name">
+              {p ? (
+                <>
+                  <Kinetic as="h1" id="party-name" text={p.name} className="q block text-[2.5rem] leading-[1] tracking-[-0.04em]" stagger={60} />
+                  <div className="hd-rise card mt-5 p-4" style={d(260)}>
+                    <p className="flex items-center gap-2 text-small font-semibold text-ink-2">
+                      {p.status === 'live' ? (
+                        <>
+                          <span className="live-dot h-2 w-2 shrink-0 rounded-full bg-hot" aria-hidden="true" /> Live now
+                        </>
+                      ) : (
+                        <>
+                          <span className="h-2 w-2 shrink-0 rounded-full bg-zap" aria-hidden="true" /> Starting soon
+                        </>
+                      )}
                     </p>
+                    <p className="mt-1 font-head text-title font-extrabold tracking-[-0.02em] text-ink">{p.game.title}</p>
+                    <div className="mt-3 flex items-end justify-between gap-3">
+                      <div>
+                        <p className="text-cap font-semibold text-ink-muted">Buy-in</p>
+                        <p className="num text-title text-ink">{money(p.config.buyIn, p.config.settlement === 'points')}</p>
+                      </div>
+                      <CodeTiles code={upper} delay={420} />
+                    </div>
+                  </div>
+                </>
+              ) : previewErr === 'offline' ? (
+                <>
+                  <Kinetic as="h1" id="party-name" text={`Party ${upper}`} className="q block text-head" />
+                  <p className="mt-2 text-pretty text-small text-ink-muted">Couldn't load the party details. You can still join.</p>
+                </>
+              ) : (
+                <Loading>Finding the party…</Loading>
+              )}
+            </section>
+
+            {players.length > 0 && (
+              <div className="hd-rise mt-5 flex items-center gap-3" style={d(520)}>
+                <div className="flex -space-x-2" aria-hidden="true">
+                  {players.slice(0, 6).map((pl, i) => (
+                    <span key={pl.pubkey} className="hd-pop rounded-[0.8rem] ring-[3px] ring-canvas" style={d(560 + i * 70)}>
+                      <Avatar name={pl.name} size="2.25rem" />
+                    </span>
+                  ))}
+                </div>
+                <p className="min-w-0 text-small text-ink-2">
+                  {players
+                    .slice(0, 3)
+                    .map((x) => x.name)
+                    .join(', ')}
+                  {players.length > 3 ? ` and ${players.length - 3} more` : ''} {players.length === 1 ? 'is' : 'are'} in
+                </p>
+              </div>
+            )}
+
+            <div className="mt-auto pt-9">
+              {name ? (
+                <div className="space-y-3">
+                  {!joinError && <Loading className="justify-center">Joining as {name}…</Loading>}
+                  {joinError && <InlineError text={joinError} />}
+                  {(joinError || view.status === 'reconnecting') && (
+                    <button
+                      onClick={() => {
+                        useApp.getState().disconnect();
+                        void connect(code, remoteParam || remote);
+                      }}
+                      className="btn-primary w-full"
+                    >
+                      <Icon name="refresh" size={20} /> Try again
+                    </button>
                   )}
                 </div>
-                <label className="flex min-h-14 cursor-pointer items-center gap-3 rounded-tile bg-night-900 px-4 py-2.5 has-[:focus-visible]:outline has-[:focus-visible]:outline-[3px] has-[:focus-visible]:outline-offset-[3px] has-[:focus-visible]:outline-flood">
-                  <input type="checkbox" name="remote" checked={remote} onChange={(e) => setRemote(e.target.checked)} className="peer sr-only" />
-                  <span
-                    className="grid h-6 w-6 shrink-0 place-items-center rounded-chip bg-night-800 text-transparent ring-1 ring-inset ring-night-600 transition-colors duration-quick peer-checked:bg-flood peer-checked:text-flood-ink peer-checked:ring-flood"
-                    aria-hidden="true"
-                  >
-                    <Icon name="check" size={16} strokeWidth={3} />
-                  </span>
-                  <span className="min-w-0">
-                    <span className="block text-body text-chalk">I'm watching from somewhere else</span>
-                    <span className="block text-cap text-night-400">We'll line you up with the room's TV.</span>
-                  </span>
-                  <Icon name="globe" size={20} className="ml-auto shrink-0 text-night-400" />
-                </label>
-                <button
-                  type="submit"
-                  data-testid="join-submit"
-                  disabled={joining}
-                  className="btn-primary w-full shadow-flood disabled:bg-flood disabled:text-flood-ink"
+              ) : (
+                <form
+                  onSubmit={async (e) => {
+                    e.preventDefault();
+                    if (!draftName.trim()) {
+                      setNameError(true);
+                      nameInput.current?.focus();
+                      return;
+                    }
+                    setJoining(true);
+                    await setName(draftName);
+                    await connect(code, remote);
+                  }}
+                  className="hd-rise space-y-3.5"
+                  style={d(360)}
+                  noValidate
                 >
-                  {joining ? (
-                    <>
-                      <Mark size="1.4rem" spin /> Joining…
-                    </>
-                  ) : (
-                    'Join the party'
-                  )}
-                </button>
-              </form>
-            )}
-          </div>
-        </>
-      )}
+                  <div>
+                    <label htmlFor="name" className="block font-head text-lead font-extrabold text-ink">
+                      What should the room call you?
+                    </label>
+                    <input
+                      ref={nameInput}
+                      id="name"
+                      name="nickname"
+                      data-testid="join-name"
+                      value={draftName}
+                      onChange={(e) => {
+                        setDraftName(e.target.value);
+                        setNameError(false);
+                      }}
+                      maxLength={24}
+                      autoComplete="nickname"
+                      autoCapitalize="words"
+                      spellCheck={false}
+                      enterKeyHint="go"
+                      placeholder="Your name…"
+                      aria-invalid={nameError}
+                      aria-describedby={nameError ? 'name-error' : undefined}
+                      className="field mt-2.5 h-14 font-head text-title font-bold"
+                    />
+                    {nameError && (
+                      <p id="name-error" className="hd-rise mt-2 flex items-center gap-2 text-small font-semibold text-hot-600" role="alert">
+                        <Icon name="warn" size={16} /> Type a name first, so everyone knows who called it.
+                      </p>
+                    )}
+                  </div>
+                  <label className="flex min-h-14 cursor-pointer items-center gap-3 rounded-tile bg-card px-4 py-2.5 shadow-lift has-[:focus-visible]:outline has-[:focus-visible]:outline-[3px] has-[:focus-visible]:outline-offset-[3px] has-[:focus-visible]:outline-zap">
+                    <input type="checkbox" name="remote" checked={remote} onChange={(e) => setRemote(e.target.checked)} className="peer sr-only" />
+                    <span
+                      className="grid h-6 w-6 shrink-0 place-items-center rounded-chip bg-card text-transparent ring-2 ring-inset ring-rule-strong transition-[background-color,color,box-shadow,transform] duration-quick peer-checked:scale-110 peer-checked:bg-zap peer-checked:text-white peer-checked:ring-zap"
+                      aria-hidden="true"
+                    >
+                      <Icon name="check" size={16} strokeWidth={3} />
+                    </span>
+                    <span className="min-w-0">
+                      <span className="block text-body font-semibold text-ink">I'm watching from somewhere else</span>
+                      <span className="block text-cap text-ink-muted">We'll line you up with the room's TV.</span>
+                    </span>
+                    <Icon name="globe" size={20} className="ml-auto shrink-0 text-zap" />
+                  </label>
+                  <button type="submit" data-testid="join-submit" disabled={joining} className="btn-prime w-full disabled:bg-prime disabled:text-white">
+                    {joining ? (
+                      <>
+                        <Mark size="1.4rem" spin lit={3} className="text-white/50" /> Joining…
+                      </>
+                    ) : (
+                      'Join the party'
+                    )}
+                  </button>
+                </form>
+              )}
+            </div>
+          </>
+        )}
+      </div>
     </div>
   );
 }

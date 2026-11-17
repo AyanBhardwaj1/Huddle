@@ -1,5 +1,22 @@
 import { payoutPerDollar, type Market } from '@huddle/shared';
-import { Icon, LockRing, MarkerShape, Pct, Roll, SplitBar, SplitMarkers, pctLabel, pctText, payoutText, useReplayClass } from '@huddle/ui';
+import {
+  Burst,
+  Icon,
+  Kinetic,
+  LockRing,
+  MarkerShape,
+  Pct,
+  Roll,
+  Sparkline,
+  SplitBar,
+  SplitMarkers,
+  pctLabel,
+  pctText,
+  payoutText,
+  toneFor,
+  useReplayClass,
+  useSeries,
+} from '@huddle/ui';
 import { useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import {
   ago,
@@ -13,6 +30,7 @@ import {
   poolPayoutPerDollar,
   poolPreview,
   poolTotal,
+  priceHistory,
   prosRow,
   roomProb,
   stakeChips,
@@ -39,24 +57,25 @@ export interface CardFlow {
 // ------------------------------------------------------------------ card
 
 export function MarketCard({ market }: { market: Market }) {
-  const { snap, client } = useParty();
+  const { snap, client, points } = useParty();
   const now = useNow(250);
   const cd = market.state === 'open' ? countdown(market, now) : null;
   const viewOnly = market.kind === 'moment' && snap.you?.momentMarketsAllowed === false;
   const lockingNow = market.state === 'open' && !!cd && cd.remainingMs === 0;
   const live = market.state === 'open' && !lockingNow;
+  const locked = market.state === 'locked' || lockingNow;
   // A running clock on a moment gets the ring (ring-drain, last-call); everything else says it in words.
   const ring = live && !!cd && market.kind === 'moment' && cd.remainingMs < 100_000;
-  // takeover-wipe: only for a moment that opened in the last few seconds (not on every tab switch).
-  const [fresh] = useState(
-    () => market.kind === 'moment' && market.state === 'open' && client.now() - Date.parse(market.openedAt ?? market.createdAt) < 6000,
-  );
-  // lock-snap: a one-off flash the moment this card locks.
-  const lockFlash = useReplayClass(market.state === 'locked' || lockingNow, 'x');
+  const urgent = ring && !!cd?.urgent;
+  const moment = market.kind === 'moment';
+  // takeover: only for a moment that opened in the last few seconds (not on every tab switch).
+  const [fresh] = useState(() => moment && market.state === 'open' && client.now() - Date.parse(market.openedAt ?? market.createdAt) < 6000);
+  // lock-snap: a one-off violet flash the moment this card locks.
+  const lockFlash = useReplayClass(locked, 'x');
   const split = useRef<HTMLDivElement>(null);
   const [coins, fireCoins] = useCoins();
-  const flow: CardFlow = { fire: (from) => fireCoins(from, split.current, 5) };
-  const step = (i: number) => (fresh ? vars({ '--d': `${120 + i * 80}ms` }) : undefined);
+  const flow: CardFlow = { fire: (from) => fireCoins(from, split.current, 3) };
+  const step = (i: number) => (fresh ? vars({ '--d': `${160 + i * 80}ms` }) : undefined);
 
   return (
     <article
@@ -64,45 +83,64 @@ export function MarketCard({ market }: { market: Market }) {
       data-market-id={market.id}
       data-market-state={market.state}
       aria-labelledby={`q-${market.id}`}
-      className={cx('relative overflow-hidden rounded-panel bg-night-900 p-4', fresh && 'hd-fade')}
+      className={cx('card relative overflow-hidden p-4', moment && 'pt-5', fresh && 'hd-zoom', locked && 'is-locked')}
     >
+      {moment && <div className="absolute inset-x-0 top-0 h-1 bg-prime" aria-hidden="true" />}
       {fresh && <div className="hd-wipe" aria-hidden="true" />}
-      {lockFlash && (market.state === 'locked' || lockingNow) && (
-        <div key={lockFlash} className="hd-flashout absolute inset-0 z-10 bg-chalk/25" aria-hidden="true" />
-      )}
+      {urgent && <div className="urgent-edge" aria-hidden="true" />}
+      {lockFlash && locked && <div key={lockFlash} className="hd-flashout absolute inset-0 z-10 bg-zap/25" aria-hidden="true" />}
 
       <header className="flex items-start gap-3">
         <div className="min-w-0 flex-1">
-          <div className="flex items-start justify-between gap-3">
-            <p className="min-w-0 text-small text-night-400">
-              {MODE_LABEL[market.mode]}
-              {market.mode === 'pool' && poolTotal(market) > 0 && (
-                <>
-                  {' · Pot '}
-                  <Money value={poolTotal(market)} points={snap.party.config.settlement === 'points'} className="text-night-200" flash={false} />
-                </>
+          <div className="flex min-h-6 items-center justify-between gap-3">
+            <p className="flex min-w-0 items-center gap-2 text-small text-ink-muted">
+              {moment ? (
+                <span className="hd-pop shrink-0 rounded-full bg-prime-deep px-2.5 py-0.5 text-cap font-bold text-white" style={step(0)}>
+                  Moment market
+                </span>
+              ) : (
+                <span className="flex shrink-0 items-center gap-1.5 font-semibold text-ink-2">
+                  <span className="h-2 w-2 rounded-full bg-zap" aria-hidden="true" /> All game
+                </span>
               )}
+              <span className="truncate">
+                {MODE_LABEL[market.mode]}
+                {market.mode === 'pool' && poolTotal(market) > 0 && (
+                  <>
+                    {' · Pot '}
+                    <Money value={poolTotal(market)} points={points} className="font-semibold text-ink-2" flash={false} duration={700} />
+                  </>
+                )}
+              </span>
             </p>
             {!ring && <Status market={market} cd={cd} lockingNow={lockingNow} />}
           </div>
-          <h3
+          <Kinetic
+            as="h3"
             id={`q-${market.id}`}
-            className={cx('mt-1 text-balance font-display text-title font-bold stretch-semi text-chalk', fresh && 'hd-rise')}
-            style={step(0)}
-          >
-            {market.question}
-          </h3>
+            text={market.question}
+            className="q mt-1.5 block text-title text-ink"
+            delay={fresh ? 200 : 0}
+            stagger={fresh ? 45 : 28}
+          />
         </div>
         {ring && cd && (
-          <LockRing fraction={cd.fraction} label={String(cd.secs)} state={cd.urgent ? 'urgent' : 'open'} size="3.5rem" className="-mr-1 -mt-1 text-chalk" />
+          <LockRing
+            compact
+            fraction={cd.fraction}
+            label={String(cd.secs)}
+            state={cd.urgent ? 'urgent' : 'open'}
+            size="3.25rem"
+            className="-mr-1 shrink-0 text-ink"
+          />
         )}
       </header>
 
-      <div ref={split} className={cx('mt-4', fresh && 'hd-rise')} style={step(1)}>
+      <div ref={split} className={cx('mt-4', fresh && 'hd-rise')} style={step(3)}>
         <Split market={market} />
       </div>
 
-      <div className={cx('mt-3', fresh && 'hd-rise')} style={step(2)}>
+      <div className={cx('relative mt-3', fresh && 'hd-rise')} style={step(4)}>
         {market.mode === 'bet' ? (
           <BetBody market={market} live={live && !viewOnly} flow={flow} />
         ) : (
@@ -111,8 +149,8 @@ export function MarketCard({ market }: { market: Market }) {
       </div>
 
       {viewOnly && market.state === 'open' && (
-        <p className="mt-3 flex items-start gap-2 text-small text-night-200">
-          <Icon name="hourglass" size={18} className="mt-px shrink-0 text-night-400" />
+        <p className="mt-3 flex items-start gap-2 rounded-tile bg-canvas px-3 py-2.5 text-small text-ink-2">
+          <Icon name="hourglass" size={18} className="mt-px shrink-0 text-ink-muted" />
           <span className="text-pretty">You're behind the room's TV, so quick bets are view-only. Game-long questions are still open.</span>
         </p>
       )}
@@ -124,37 +162,32 @@ export function MarketCard({ market }: { market: Market }) {
   );
 }
 
-/** Lock status at the top right: the ring for a running clock, words otherwise. State always in text. */
+/** Lock status at the top right: words for anything without a running clock. State always in text. */
 function Status({ market, cd, lockingNow }: { market: Market; cd: Countdown | null; lockingNow: boolean }) {
   const snapped = useReplayClass(market.state, 'x');
   if (market.state === 'open' && !lockingNow) {
+    return <span className="shrink-0 text-right text-small text-ink-muted">{lockText(market, cd?.remainingMs ?? null)}</span>;
+  }
+  if (lockingNow || market.state === 'locked')
     return (
-      <span className="flex shrink-0 items-center gap-1.5 text-small text-night-200">
-        <span className="h-1.5 w-1.5 rounded-full bg-flood" aria-hidden="true" />
-        <span>
-          <span className="font-semibold text-chalk">Open</span> · {lockText(market, cd?.remainingMs ?? null).replace(/^Locks/, 'locks')}
-        </span>
+      <span key="locked" className={cx('flex shrink-0 items-center gap-1.5 rounded-full bg-ink px-2.5 py-1 text-cap font-bold text-white', snapped && 'hd-snap')}>
+        <Icon name="lock" size={14} /> {lockingNow ? 'Locking…' : 'Locked'}
       </span>
     );
-  }
-  const [icon, text] =
-    lockingNow
-      ? (['lock', 'Locking…'] as const)
-      : market.state === 'locked'
-        ? (['lock', 'Locked'] as const)
-        : market.state === 'disputed'
-          ? (['flag', 'Under review'] as const)
-          : market.state === 'voided'
-            ? (['refresh', 'Voided'] as const)
-            : (['check', 'Settled'] as const);
+  const [icon, text, cls] =
+    market.state === 'disputed'
+      ? (['flag', 'Under review', 'bg-hot-50 text-hot-600 ring-1 ring-inset ring-hot'] as const)
+      : market.state === 'voided'
+        ? (['refresh', 'Voided', 'bg-well text-ink-2'] as const)
+        : (['check', 'Settled', 'bg-well text-ink-2'] as const);
   return (
-    <span key={text} className={cx('flex shrink-0 items-center gap-1.5 text-small font-semibold text-night-200', snapped && 'hd-snap')}>
-      <Icon name={icon} size={16} /> {text}
+    <span key={text} className={cx('flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-cap font-bold', cls, snapped && 'hd-snap')}>
+      <Icon name={icon} size={14} /> {text}
     </span>
   );
 }
 
-/** The split, the pros' notches and their legend. Settled markets flood with the winner. */
+/** The split, the pros' notches and legend, and the price history. Settled markets flood with the winner. */
 function Split({ market }: { market: Market }) {
   const { client } = useParty();
   const n = market.outcomes.length;
@@ -162,7 +195,7 @@ function Split({ market }: { market: Market }) {
   const parts = market.outcomes.map((o) => ({
     id: o.id,
     label: o.label,
-    // result-flood: the winner's share goes to 1 and the seam glides to the edge (700ms).
+    // result-flood: the winner's share goes to 1 and the seam glides to the edge on the spring.
     p: settled ? (o.id === market.outcome ? 1 : 0) : roomProb(market, o.id),
   }));
   const row = SETTLED.has(market.state) || market.state === 'voided' ? null : prosRow(market);
@@ -176,41 +209,66 @@ function Split({ market }: { market: Market }) {
     <div>
       {row && (
         <SplitMarkers
-          className="mb-0.5 text-[1.0625rem] text-night-300"
+          className="mb-0.5 text-[1.0625rem] text-ink"
           markers={[
             { id: 'model', label: 'Model', p: axis(row.model), shape: 'solid' },
             { id: 'gemini', label: 'Gemini', p: axis(row.gemini), shape: 'hollow' },
           ]}
         />
       )}
-      <SplitBar
-        parts={parts}
-        className={cx('h-2.5 rounded-full', (market.state === 'locked' || market.state === 'voided') && 'pl-dim', market.state === 'voided' && 'opacity-50')}
-      />
+      <SplitBar parts={parts} className={cx('h-3 rounded-full', market.state === 'voided' && 'opacity-40')} />
       {row && (
-        <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-small text-night-400">
-          <span>
-            {row.label}: room <span className="font-display font-bold text-chalk tnum">{pctText(row.room)}%</span>
+        <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-small text-ink-muted">
+          <span className="flex items-center gap-1">
+            <span className="h-2 w-2 rounded-full bg-zap" aria-hidden="true" />
+            Room on {row.label} <Pct p={row.room} className="num text-body text-zap" duration={700} />
           </span>
           <span className="flex items-center gap-1">
-            <MarkerShape shape="solid" className="text-night-300" /> Model{' '}
-            <span className="font-display font-bold text-night-200 tnum">{pctText(row.model)}%</span>
+            <MarkerShape shape="solid" className="text-ink" /> Model <span className="num text-body text-ink">{pctText(row.model)}%</span>
           </span>
           {row.gemini != null && (
             <span className="flex items-center gap-1">
-              <MarkerShape shape="hollow" className="text-night-300" /> Gemini{' '}
-              <span className="font-display font-bold text-night-200 tnum">{pctText(row.gemini)}%</span>
+              <MarkerShape shape="hollow" className="text-ink" /> Gemini <span className="num text-body text-ink">{pctText(row.gemini)}%</span>
               <span className="text-cap">{ago(row.geminiAsOf, client.now())}</span>
             </span>
           )}
         </p>
       )}
+      {(market.state === 'open' || market.state === 'locked') && <PriceChart market={market} />}
       {settled && winner >= 0 && (
-        <p className="mt-2 text-small text-night-400">
-          <span className={cx('font-bold', tone(winner, n).text)}>{market.outcomes[winner]!.label}</span>
+        <p className="mt-2 text-small text-ink-muted">
+          <span key={market.outcome} className={cx('hd-stamp inline-block font-head font-extrabold', tone(winner, n).text)}>
+            {market.outcomes[winner]!.label}
+          </span>
           {atLock != null ? ` won. The room had it at ${pctText(atLock)}%.` : ' won.'}
         </p>
       )}
+    </div>
+  );
+}
+
+/** price-draw: the first outcome's price since the market opened, drawn on as trades land. */
+function PriceChart({ market }: { market: Market }) {
+  const { snap } = useParty();
+  const first = market.outcomes[0];
+  const nowP = first ? roomProb(market, first.id) : null;
+  const pts = useSeries(market.id, nowP, first ? priceHistory(market, snap.fills) : []);
+  if (!first) return null;
+  const start = pts[0]?.p ?? nowP ?? 0;
+  const diff = Math.round(((nowP ?? start) - start) * 100);
+  const line = tone(0, market.outcomes.length).line;
+  return (
+    <div className="mt-3">
+      <p className="flex items-baseline justify-between gap-2 text-small text-ink-2">
+        <span className="truncate">
+          {first.label} price since it opened at <span className="num text-ink">{pctText(start)}%</span>
+        </span>
+        <span className={cx('num flex shrink-0 items-center gap-0.5 text-body', diff > 0 ? 'text-yes-600' : diff < 0 ? 'text-no-600' : 'text-ink-muted')}>
+          {diff !== 0 && <Icon name={diff > 0 ? 'up' : 'down'} size="0.6em" />}
+          {diff === 0 ? 'Flat' : `${diff > 0 ? '+' : '−'}${Math.abs(diff)} pts`}
+        </span>
+      </p>
+      <Sparkline points={pts} className="mt-1 h-8 w-full" stroke={line.stroke} fill={line.fill} />
     </div>
   );
 }
@@ -226,7 +284,7 @@ function OutcomeTrader({ market, live, flow }: { market: Market; live: boolean; 
 
   return (
     <div>
-      <div className={cx('gap-2', n === 2 ? 'grid grid-cols-2' : 'flex flex-col')}>
+      <div className={cx('relative gap-2', n === 2 ? 'grid grid-cols-2' : 'flex flex-col')}>
         {market.outcomes.map((o, i) => {
           const p = roomProb(market, o.id);
           const per = isAmm ? payoutPerDollar(p) : poolPayoutPerDollar(market, o.id);
@@ -240,12 +298,14 @@ function OutcomeTrader({ market, live, flow }: { market: Market; live: boolean; 
               selected={pick === o.id}
               disabled={!live}
               onClick={() => setPick(pick === o.id ? null : o.id)}
-              figure={<Pct p={p} className="font-display text-title font-extrabold leading-none stretch-condensed" />}
+              kickOn={pctText(p)}
+              figure={<Pct p={p} arrow className="num text-head leading-none" duration={640} />}
               figureLabel={pctLabel(p)}
               note={payoutText(per > 0 ? 1 / per : null, { points })}
             />
           );
         })}
+        {market.state === 'locked' && <div className="lock-veil" aria-hidden="true" />}
       </div>
       {pick && live && (
         <StakeTray
@@ -257,9 +317,9 @@ function OutcomeTrader({ market, live, flow }: { market: Market; live: boolean; 
           preview={(stake) => {
             if (isAmm) {
               const q = ammBuyPreview(market, pick, stake);
-              return q ? `pays ${moneyShort(q.payout, points)}` : '';
+              return q ? moneyShort(q.payout, points) : '–';
             }
-            return `pays ${moneyShort(poolPreview(market, pick, stake), points)}`;
+            return moneyShort(poolPreview(market, pick, stake), points);
           }}
           send={(stake) => ({ type: 'place_bet', marketId: market.id, outcome: pick, stake })}
         />
@@ -269,8 +329,10 @@ function OutcomeTrader({ market, live, flow }: { market: Market; live: boolean; 
 }
 
 /**
- * The phone's outcome button: the tone as a 4px rule on a deep tint, label then the number.
- * Selected = solid tone with ink text and a check. Labels wrap; 3+ outcomes stack.
+ * The phone's outcome tile: a solid game tile like the box (YES blue with white text, NO tangerine
+ * with ink text, sun/lilac hatched for the middle ones), label then the rolling number, the exact
+ * payout under it. It kicks when its price moves; selected gets a ✓ that pops and an ink ring.
+ * Labels wrap; 3+ outcomes stack.
  */
 export function OutcomeButton({
   testId,
@@ -284,6 +346,7 @@ export function OutcomeButton({
   figure,
   figureLabel,
   note,
+  kickOn,
 }: {
   testId?: string;
   label: string;
@@ -296,8 +359,15 @@ export function OutcomeButton({
   figure: ReactNode;
   figureLabel: string;
   note: ReactNode;
+  /** Changes when the price moves: the tile kicks. */
+  kickOn?: unknown;
 }) {
   const t = tone(index, count);
+  const kick = useReplayClass(kickOn, 'tile-kick');
+  const hatched = toneFor(index, Math.max(2, count)).startsWith('other');
+  // Two outcomes sit side by side, so the label gets its own line above the number; stacked
+  // (3+) tiles have the width to put the number on the right.
+  const stacked = count > 2;
   return (
     <button
       data-testid={testId}
@@ -306,33 +376,44 @@ export function OutcomeButton({
       aria-pressed={selected}
       aria-label={`${prefix ? `${prefix} ` : ''}${label}, ${figureLabel}`}
       className={cx(
-        'relative flex min-h-[4.25rem] w-full min-w-0 flex-col justify-center gap-0.5 overflow-hidden rounded-tile py-2.5 pl-4 pr-3 text-left',
-        'transition-[transform,background-color,color] duration-quick ease-out active:scale-[0.98] disabled:active:scale-100',
-        selected ? cx(t.solid, t.ink) : cx(t.deep, 'text-chalk'),
-        disabled && !selected && 'pl-dim',
+        'hd-press on-fill relative flex w-full min-w-0 flex-col overflow-hidden rounded-panel py-3 pl-4 pr-3 text-left',
+        stacked ? 'min-h-[4.5rem] justify-center' : 'min-h-[7.25rem] justify-between',
+        t.solid,
+        t.ink,
+        !disabled && t.shadow,
+        selected && 'ring-4 ring-ink ring-offset-2 ring-offset-card',
+        disabled && 'cursor-not-allowed',
+        kick,
       )}
     >
-      {!selected && <span className={cx('absolute inset-y-0 left-0 w-1', t.rule)} aria-hidden="true" />}
-      <span className="flex items-start justify-between gap-2">
-        <span className="flex min-w-0 items-start gap-1.5 break-words font-sans text-body font-bold leading-tight">
-          {selected && <Icon name="check" size={18} strokeWidth={2.6} className="mt-px shrink-0" />}
-          <span className="min-w-0">
-            {prefix && <span className={cx('font-semibold', selected ? 'opacity-80' : 'text-night-400')}>{prefix} </span>}
-            <span className={selected ? undefined : t.text}>{label}</span>
+      {hatched && <span className={cx('absolute inset-y-0 right-0 w-3', t.rule)} aria-hidden="true" />}
+      <span className={cx('flex gap-2', stacked ? 'items-center justify-between pr-3' : 'flex-col')}>
+        <span className="flex min-w-0 items-start gap-1.5 font-head text-lead font-extrabold leading-tight [overflow-wrap:anywhere]">
+          {selected && (
+            <span className="hd-pop mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-card text-ink">
+              <Icon name="check" size={14} strokeWidth={3} />
+            </span>
+          )}
+          <span className="min-w-0 hyphens-auto">
+            {prefix && <span className="font-sans text-body font-bold">{prefix} </span>}
+            {label}
           </span>
         </span>
         <span className="shrink-0" aria-hidden="true">
           {figure}
         </span>
       </span>
-      <span className={cx('text-cap tnum', selected ? 'opacity-80' : 'text-night-400')} aria-hidden="true">
+      <span className="mt-1 text-small font-semibold tnum" aria-hidden="true">
         {note}
       </span>
     </button>
   );
 }
 
-/** Quick stake chips: one tap places, coins fly to the pot. Shared by every mode. */
+/**
+ * Quick stake chips: one tap places, gold coins fly to the split. The money stays exact: each chip
+ * says what you pay and what you get back if that outcome wins.
+ */
 export function StakeTray({
   market,
   outcome,
@@ -346,6 +427,7 @@ export function StakeTray({
   market: Market;
   outcome: string;
   onClose: () => void;
+  /** What a stake returns if it wins ("2.74 pts"). */
   preview: (stake: number) => string;
   send: (stake: number) => Parameters<typeof act>[1];
   flow?: CardFlow;
@@ -374,37 +456,38 @@ export function StakeTray({
   };
 
   return (
-    <div className="hd-rise mt-2 rounded-tile bg-night-850 p-3" role="group" aria-label={`Stake on ${label}`}>
+    <div className="hd-rise mt-3 rounded-tile bg-canvas p-3" role="group" aria-label={`Stake on ${label}`}>
       <div className="flex items-center justify-between gap-2">
-        <span className="text-small text-night-200">
-          How much {verb === 'on' ? 'on' : verb} <span className={cx('font-bold', t.text)}>{label}</span>?
+        <span className="text-small text-ink-2">
+          You pay, you get back if <span className={cx('font-bold', t.text)}>{label}</span> wins
         </span>
-        <button onClick={onClose} className="btn-quiet -my-1 -mr-1.5 w-11 px-0" aria-label="Cancel">
+        <button onClick={onClose} className="btn-quiet -my-1 -mr-1.5 min-h-11 w-11 px-0" aria-label="Cancel">
           <Icon name="x" size={20} />
         </button>
       </div>
       {chips.length ? (
         <div className={cx('mt-2 grid gap-2', chips.length >= 4 ? 'grid-cols-4' : chips.length === 3 ? 'grid-cols-3' : 'grid-cols-2')}>
-          {chips.map((c) => (
+          {chips.map((c, i) => (
             <button
               key={c.amount}
               data-testid="stake-chip"
               data-stake={c.amount}
               disabled={busy !== null}
               onClick={(e) => place(c.amount, e.currentTarget)}
-              aria-label={`Stake ${money(c.amount, points)}${c.isMax ? ', the most you can' : ''}, ${preview(c.amount)}`}
+              aria-label={`Pay ${money(c.amount, points)}${c.isMax ? ', the most you can' : ''}, get ${preview(c.amount)} if ${label} wins`}
+              style={vars({ '--d': `${i * 50}ms` })}
               className={cx(
-                'flex min-h-14 flex-col items-center justify-center rounded-tile px-1 transition-[transform,background-color] duration-quick ease-out active:scale-[0.97]',
-                busy === c.amount ? 'bg-flood text-flood-ink' : 'bg-night-800 text-chalk ring-1 ring-inset ring-night-600 hover:bg-night-700',
+                'hd-pop hd-press flex min-h-14 flex-col items-center justify-center rounded-tile px-1 shadow-lift',
+                busy === c.amount ? 'bg-zap text-zap-ink shadow-zap' : 'bg-card text-ink ring-1 ring-inset ring-rule',
                 busy !== null && busy !== c.amount && 'opacity-50',
               )}
             >
-              <span className="flex items-baseline gap-1 font-display text-lead font-extrabold leading-tight stretch-condensed tnum">
+              <span className="num flex items-baseline gap-1 text-lead leading-tight">
                 {moneyShort(c.amount, points)}
-                {c.isMax && <span className="font-sans text-cap font-semibold opacity-70">max</span>}
+                {c.isMax && <span className="font-sans text-cap font-bold">max</span>}
               </span>
-              <span className={cx('text-cap leading-tight tnum', busy === c.amount ? 'opacity-80' : 'text-night-400')}>
-                {busy === c.amount ? 'Placing…' : preview(c.amount)}
+              <span className={cx('text-cap font-semibold leading-tight tnum', busy === c.amount ? 'text-zap-ink' : 'text-ink-2')}>
+                {busy === c.amount ? 'Placing…' : `get ${preview(c.amount)}`}
               </span>
             </button>
           ))}
@@ -445,26 +528,25 @@ function PositionBlock({ market, live }: { market: Market; live: boolean }) {
           const raw = value != null ? value - h.stake : 0;
           const gain = Math.abs(raw) < 5_000 ? 0 : raw;
           return (
-            <div key={h.outcome} className="relative overflow-hidden rounded-tile bg-night-850 py-3 pl-4 pr-3">
+            <div key={h.outcome} className="relative overflow-hidden rounded-tile bg-canvas py-3 pl-4 pr-3">
               <span className={cx('absolute inset-y-0 left-0 w-1', t.rule)} aria-hidden="true" />
               <div className="flex items-baseline justify-between gap-3">
-                <span className="min-w-0 text-small text-night-200">
-                  You hold <span className="font-display font-bold text-chalk tnum">{formatShares(h.shares)}</span>{' '}
-                  <span className={cx('font-bold', t.text)}>{label}</span> shares
+                <span className="min-w-0 text-small text-ink-2">
+                  You hold <span className="num text-body text-ink">{formatShares(h.shares)}</span> <span className={cx('font-bold', t.text)}>{label}</span> shares
                 </span>
                 {value != null &&
                   (gain === 0 ? (
-                    <span className="shrink-0 text-cap text-night-400">Even so far</span>
+                    <span className="shrink-0 text-cap text-ink-muted">Even so far</span>
                   ) : (
-                    <span className={cx('flex shrink-0 items-center gap-1 font-display text-body font-bold tnum', gain > 0 ? 'text-yes' : 'text-no')}>
+                    <span className={cx('num flex shrink-0 items-center gap-1 text-body', gain > 0 ? 'text-yes-600' : 'text-no-600')}>
                       <Icon name={gain > 0 ? 'up' : 'down'} size={11} />
-                      {pnl(gain, points)}
+                      <Roll text={pnl(gain, points)} value={gain} />
                     </span>
                   ))}
               </div>
-              <p className="mt-0.5 text-cap text-night-400">
-                Cost <span className="tnum text-night-200">{money(h.stake, points)}</span> · pays{' '}
-                <span className="tnum text-night-200">{money(h.potential, points)}</span> if it hits
+              <p className="mt-0.5 text-cap text-ink-muted">
+                Cost <span className="tnum text-ink-2">{money(h.stake, points)}</span> · pays{' '}
+                <span className="tnum text-ink-2">{money(h.potential, points)}</span> if it hits
               </p>
               {live && value != null && (
                 <button
@@ -478,13 +560,13 @@ function PositionBlock({ market, live }: { market: Market; live: boolean }) {
                     else notify(`Cashed out ${money(value, points)}`, 'win');
                   }}
                   aria-label={`Cash out now: ${money(value, points)}`}
-                  className="btn-secondary mt-3 min-h-12 w-full"
+                  className={cx(gain > 0 ? 'btn-prime' : 'btn-secondary min-h-12', 'mt-3 w-full')}
                 >
                   {busy === h.outcome ? (
                     'Cashing out…'
                   ) : (
                     <>
-                      Cash out now: <Money value={value} points={points} className="text-lead font-extrabold stretch-condensed" />
+                      Cash out now: <Money value={value} points={points} className="num text-lead" duration={500} />
                     </>
                   )}
                 </button>
@@ -499,7 +581,7 @@ function PositionBlock({ market, live }: { market: Market; live: boolean }) {
   );
 }
 
-/** "Your stake $2 on Yes · pays about $2.85": stamps when it changes. */
+/** "Your stake 2 pts on Yes · pays about 2.85 pts": stamps when it changes. */
 export function StakeRow({
   stake,
   potential,
@@ -521,17 +603,17 @@ export function StakeRow({
   const t = tone(toneIndex, count);
   const stamp = useReplayClass(stake, 'x');
   return (
-    <div className="relative flex items-center justify-between gap-3 overflow-hidden rounded-tile bg-night-850 py-2.5 pl-4 pr-3">
+    <div className="relative flex items-center justify-between gap-3 overflow-hidden rounded-tile bg-canvas py-2.5 pl-4 pr-3">
       <span className={cx('absolute inset-y-0 left-0 w-1', t.rule)} aria-hidden="true" />
-      <span className="min-w-0 text-small text-night-200">
+      <span className="min-w-0 text-small text-ink-2">
         {lead}{' '}
-        <span key={stamp} className={cx('inline-block font-display text-body font-bold text-chalk tnum', stamp && 'hd-stamp')}>
+        <span key={stamp} className={cx('num inline-block text-body text-ink', stamp && 'hd-stamp')}>
           {money(stake, points)}
         </span>{' '}
         on <span className={cx('font-bold', t.text)}>{label}</span>
       </span>
-      <span className="shrink-0 text-right text-cap text-night-400">
-        {payLabel} <Roll text={money(potential, points)} className="font-display text-small font-bold text-chalk" />
+      <span className="shrink-0 text-right text-cap text-ink-muted">
+        {payLabel} <Roll text={money(potential, points)} className="num text-small text-ink" duration={640} />
       </span>
     </div>
   );
@@ -550,29 +632,31 @@ function ResultRow({ market, now }: { market: Market; now: number }) {
   if (s === 'locked')
     return (
       <Line icon="hourglass">
-        <span className="text-night-200">Locked. Waiting for the result…</span>
+        <span className="text-ink-2">Locked. Waiting for the result…</span>
       </Line>
     );
   const res = marketResult(market, positions, snap.fills, me);
   if (s === 'voided')
     return (
       <Line icon="refresh">
-        <span className="text-night-200">
+        <span className="text-ink-2">
           Voided. {res.kind === 'refunded' ? `Your ${money(res.amount, points)} is back.` : 'Every stake is refunded.'}
         </span>
       </Line>
     );
   const disputeLeft = market.disputeEndsAt ? Math.ceil((Date.parse(market.disputeEndsAt) - now) / 1000) : 0;
+  const celebrate = !!landed && s === 'resolved';
   return (
-    <div className="mt-3 border-t border-night-700 pt-3">
+    <div className="relative mt-3 border-t border-rule pt-3">
       {res.kind === 'none' ? (
-        <p className="text-small text-night-400">No stake from you on this one.</p>
+        <p className="text-small text-ink-muted">No stake from you on this one.</p>
       ) : (
-        <ResultBadge res={res} points={points} animate={!!landed && s === 'resolved'} big />
+        <ResultBadge res={res} points={points} animate={celebrate} big />
       )}
+      {celebrate && res.kind === 'won' && <Burst count={14} seed={market.id.length + 7} x="4rem" y="1.2rem" spread={8} />}
       {s === 'disputed' && (
-        <p className="mt-2 flex items-center gap-2 text-small text-night-200">
-          <Icon name="flag" size={16} className="text-night-400" /> Flagged. The host is checking the result.
+        <p className="mt-2 flex items-center gap-2 text-small text-ink-2">
+          <Icon name="flag" size={16} className="text-hot-600" /> Flagged. The host is checking the result.
         </p>
       )}
       {s === 'resolved' && disputeLeft > 0 && !flagged && (
@@ -588,18 +672,21 @@ function ResultRow({ market, now }: { market: Market; now: number }) {
           className="btn-quiet -ml-3 mt-1 text-small"
         >
           <Icon name="flag" size={16} /> {busy ? 'Flagging…' : 'Wrong result? Flag it'}
-          <span className="font-display font-bold text-night-400 tnum">{disputeLeft}&nbsp;s</span>
+          <span className="num text-ink-muted">
+            <Roll text={String(disputeLeft)} duration={300} flash={false} />
+            &nbsp;s
+          </span>
         </button>
       )}
-      {flagged && s === 'resolved' && <p className="mt-2 text-small text-night-200">Thanks. The host will take a look.</p>}
+      {flagged && s === 'resolved' && <p className="mt-2 text-small text-ink-2">Thanks. The host will take a look.</p>}
       {error && <InlineError text={error} />}
     </div>
   );
 }
 
 /**
- * Your result on a settled market: "Called it +$0.60" (blue, check), "Cooked −$1.00" (orange, cross),
- * "Refunded". The win gets the floodlight shine when it lands.
+ * Your result on a settled market: "Called it +0.60 pts" (a solid YES pill with ✓), "Cooked
+ * −1.00 pts" (a tangerine tint with ✕, no confetti), "Refunded". A win glints when it lands.
  */
 export function ResultBadge({
   res,
@@ -613,23 +700,24 @@ export function ResultBadge({
   big?: boolean;
 }) {
   const size = big ? 'text-lead' : 'text-body';
+  const pill = 'inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-bold';
   if (res.kind === 'won')
     return (
-      <span className={cx('inline-flex items-center gap-1.5 rounded-chip font-bold text-yes', animate && 'hd-shine hd-stamp')}>
-        <Icon name="check" size={18} strokeWidth={2.6} />
-        Called it <span className={cx('font-display font-extrabold stretch-condensed tnum', size)}>{pnl(res.amount, points)}</span>
+      <span className={cx(pill, 'bg-yes text-yes-on shadow-yes', animate && 'hd-shine hd-stamp')}>
+        <Icon name="check" size={16} strokeWidth={2.8} />
+        Called it <span className={cx('num', size)}>{pnl(res.amount, points)}</span>
       </span>
     );
   if (res.kind === 'lost')
     return (
-      <span className={cx('inline-flex items-center gap-1.5 font-bold text-no', animate && 'hd-stamp')}>
-        <Icon name="x" size={18} strokeWidth={2.6} />
-        Cooked <span className={cx('font-display font-extrabold stretch-condensed tnum', size)}>{pnl(-res.amount, points)}</span>
+      <span className={cx(pill, 'bg-no-50 text-no-600', animate && 'hd-stamp')}>
+        <Icon name="x" size={16} strokeWidth={2.8} />
+        Cooked <span className={cx('num', size)}>{pnl(-res.amount, points)}</span>
       </span>
     );
   if (res.kind === 'refunded')
     return (
-      <span className="inline-flex items-center gap-1.5 font-semibold text-night-200">
+      <span className={cx(pill, 'bg-well text-ink-2')}>
         <Icon name="refresh" size={16} /> Refunded {money(res.amount, points)}
       </span>
     );
@@ -638,8 +726,8 @@ export function ResultBadge({
 
 function Line({ icon, children }: { icon: 'hourglass' | 'refresh'; children: ReactNode }) {
   return (
-    <p className="mt-3 flex items-center gap-2 border-t border-night-700 pt-3 text-small">
-      <Icon name={icon} size={16} className="shrink-0 text-night-400" />
+    <p className="mt-3 flex items-center gap-2 border-t border-rule pt-3 text-small">
+      <Icon name={icon} size={16} className="shrink-0 text-ink-muted" />
       {children}
     </p>
   );

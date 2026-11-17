@@ -4,7 +4,7 @@ import { CaptionHistory, Captions, useAnnouncer } from '../components/Captions';
 import { act, cx, useParty } from '../components/ctx';
 import { Header } from '../components/Header';
 import { MarketCard } from '../components/MarketCard';
-import { Empty, SectionTitle } from '../components/primitives';
+import { Backdrop, Empty, SectionTitle } from '../components/primitives';
 import { DraftSheet, SyncCheck, TopUpSheet } from '../components/Sheets';
 import { Leaderboard, MyBets, ScorecardView } from '../components/Tabs';
 import { TalkButton } from '../components/TalkButton';
@@ -47,15 +47,18 @@ export function Live() {
     setSpeaker(!speakerOn);
   };
   const active = TABS.findIndex((t) => t.id === tab);
+  // During an open moment market the canvas behind turns to the two team colours (as on the box).
+  const momentOpen = !ended && snap.markets.some((m) => m.kind === 'moment' && m.state === 'open');
 
   return (
-    <div className="min-h-[100dvh] pb-[calc(env(safe-area-inset-bottom)+10.5rem)]" data-testid="party-status" data-status={snap.party.status}>
-      <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-gate focus:rounded-tile focus:bg-flood focus:px-4 focus:py-3 focus:text-flood-ink">
+    <div className="relative min-h-[100dvh] pb-[calc(env(safe-area-inset-bottom)+11rem)]" data-testid="party-status" data-status={snap.party.status}>
+      <Backdrop teams={momentOpen ? [snap.party.game.home.color, snap.party.game.away.color] : undefined} />
+      <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-gate focus:rounded-tile focus:bg-zap focus:px-4 focus:py-3 focus:text-zap-ink">
         Skip to the questions
       </a>
       <Header speakerOn={speakerOn} onSpeaker={toggleSpeaker} />
       <Banners />
-      <main id="main" className="mx-auto max-w-xl px-4 pt-5">
+      <main id="main" className="relative z-[1] mx-auto max-w-xl px-4 pt-4">
         {/* No AnimatePresence mode="wait" here: its exit sometimes never completed, which left the
             markets list on screen after the final whistle instead of the payout screen (found by e2e).
             Swap by key with a CSS entrance only. */}
@@ -67,19 +70,19 @@ export function Live() {
         </div>
       </main>
 
-      <div className="fixed inset-x-0 bottom-0 z-rail border-t border-night-700 bg-night-950">
-        <div className="mx-auto flex max-w-xl items-center gap-3 px-4 py-2">
+      <div className="fixed inset-x-0 bottom-0 z-rail">
+        <div className="mx-auto flex max-w-xl items-center gap-3 px-3 pb-2">
           <Captions speaking={speaking} />
           {!ended && <TalkButton fixture={fixture} />}
         </div>
-        <nav className="pb-safe" aria-label="Party">
-          <div className="relative mx-auto grid max-w-xl grid-cols-4">
+        <nav className="mx-auto max-w-xl rounded-t-blob bg-card pb-safe shadow-pop" aria-label="Party">
+          <div className="relative grid grid-cols-4 px-1">
             <span
-              className="absolute left-0 top-0 h-0.5 w-1/4 transition-transform duration-base ease-out"
+              className="absolute bottom-2 left-1 h-1 w-[calc((100%-0.5rem)/4)] transition-transform duration-[480ms] ease-spring"
               style={{ transform: `translateX(${active * 100}%)` }}
               aria-hidden="true"
             >
-              <span className="mx-auto block h-full w-8 rounded-b-full bg-flood" />
+              <span className="mx-auto block h-full w-6 rounded-full bg-zap" />
             </span>
             {TABS.map((t) => (
               <button
@@ -89,12 +92,12 @@ export function Live() {
                   window.scrollTo({ top: 0 });
                 }}
                 className={cx(
-                  'flex min-h-16 flex-col items-center justify-center gap-1 text-cap font-semibold transition-colors duration-quick',
-                  tab === t.id ? 'text-flood' : 'text-night-400 hover:text-night-200',
+                  'hd-press flex min-h-16 flex-col items-center justify-center gap-1 pb-2 text-cap font-bold',
+                  tab === t.id ? 'text-zap' : 'text-ink-muted hover:text-ink-2',
                 )}
                 aria-current={tab === t.id ? 'page' : undefined}
               >
-                <Icon name={t.icon} size={22} />
+                <Icon name={t.icon} size={22} strokeWidth={tab === t.id ? 2.4 : 2} />
                 {ended && t.id === 'markets' ? 'Final' : t.label}
               </button>
             ))}
@@ -174,20 +177,20 @@ function Banners() {
   return (
     <>
       {reconnecting && (
-        <div className="hd-drop border-b border-night-700 bg-night-900" role="status">
-          <div className="mx-auto flex max-w-xl items-center gap-2.5 px-4 py-2 text-small text-night-200">
-            <Mark size="1.1rem" spin className="text-night-500" />
+        <div className="relative z-[1] mx-auto max-w-xl px-4 pt-3" role="status">
+          <div className="hd-drop flex items-center gap-2.5 rounded-full bg-ink px-4 py-2.5 text-small font-semibold text-white shadow-pop">
+            <Mark size="1.1rem" spin lit={3} className="text-white/40" />
             Reconnecting… your bets are safe.
           </div>
         </div>
       )}
       {mismatch && (
-        <div className="mx-auto max-w-xl px-4 pt-4">
-          <div className="hd-rise rounded-panel bg-no-deep p-4" role="alert">
-            <p className="flex items-center gap-2 font-bold text-chalk">
-              <Icon name="warn" size={20} className="text-no" /> Your balance doesn't match
+        <div className="relative z-[1] mx-auto max-w-xl px-4 pt-4">
+          <div className="hd-rise rounded-panel bg-hot-50 p-4 shadow-lift ring-1 ring-inset ring-hot" role="alert">
+            <p className="flex items-center gap-2 font-head text-lead font-extrabold text-ink">
+              <Icon name="warn" size={20} className="text-hot-600" /> Your balance doesn't match
             </p>
-            <p className="mt-1 text-pretty text-small text-night-200">
+            <p className="mt-1 text-pretty text-small text-ink-2">
               The box sent a balance your phone couldn't check, so your phone didn't approve it. Your last good balance is kept. Flag it so the host can
               take a look.
             </p>

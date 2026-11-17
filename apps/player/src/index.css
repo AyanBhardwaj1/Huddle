@@ -3,19 +3,20 @@
 @tailwind utilities;
 
 /*
- * Player app on the Floodlight system (DESIGN.md). Tokens come from the shared preset, motion and
- * shared component styles from `@huddle/ui/styles.css`. Only phone-specific patterns live here.
+ * Player app on the Kickoff system (DESIGN.md sections 9 and 10). Tokens come from the shared
+ * preset, motion and shared component styles from `@huddle/ui/styles.css`. The buttons match the
+ * box (`apps/box/src/index.css`): chunky, they lift on hover, squish on press, spring back.
  */
 
 @layer base {
   html {
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
-    color-scheme: dark;
-    background-color: theme('colors.night.950');
-    /* Sticky scorebug on top, tab bar + caption slot at the bottom: keep focused controls clear. */
+    color-scheme: light;
+    background-color: #f4f3fa;
+    /* Sticky scorebug on top, caption dock + tab bar at the bottom: keep focused controls clear. */
     scroll-padding-top: 8.5rem;
-    scroll-padding-bottom: 10rem;
+    scroll-padding-bottom: 11rem;
   }
   @media (pointer: fine) {
     html {
@@ -23,7 +24,7 @@
     }
   }
   body {
-    @apply bg-night-950 font-sans text-body text-chalk antialiased;
+    @apply bg-canvas font-sans text-body text-ink antialiased;
     min-height: 100dvh;
     -webkit-tap-highlight-color: transparent;
   }
@@ -43,66 +44,111 @@
     user-select: none;
   }
   :focus-visible {
-    outline: 3px solid theme('colors.flood.DEFAULT');
+    outline: 3px solid #6c2bff;
     outline-offset: 3px;
   }
   ::selection {
-    background: theme('colors.flood.DEFAULT');
-    color: theme('colors.flood.ink');
+    background: #e4d8ff;
+    color: #14123a;
   }
 }
 
 @layer components {
-  /* Primary: the one lit thing to do. 56px on the phone, sentence case, says what happens. */
+  .btn {
+    @apply inline-flex min-h-11 select-none items-center justify-center gap-2 rounded-tile px-5 font-sans text-body font-bold leading-none;
+    transition:
+      transform var(--t-spring) var(--ease-bounce),
+      background-color var(--t-quick) var(--ease-out),
+      box-shadow var(--t-quick) var(--ease-out),
+      color var(--t-quick) var(--ease-out);
+  }
+  @media (hover: hover) {
+    .btn:hover:not(:disabled) {
+      transform: translateY(-2px);
+    }
+  }
+  .btn:active:not(:disabled) {
+    transform: translateY(1px) scale(0.95);
+    transition-duration: var(--t-instant);
+    transition-timing-function: var(--ease-out);
+  }
+  .btn:disabled {
+    @apply cursor-not-allowed bg-control text-ink-faint shadow-none ring-0;
+    background-image: none;
+  }
+  /* The one action of a view: zap, white text, 56px on the phone. */
   .btn-primary {
-    @apply inline-flex min-h-14 items-center justify-center gap-2 rounded-tile bg-flood px-5 font-sans text-lead font-bold text-flood-ink;
-    transition:
-      background-color var(--t-quick) var(--ease-out),
-      transform var(--t-instant) var(--ease-out);
-  }
-  .btn-secondary {
-    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-tile bg-night-800 px-4 font-sans font-bold text-chalk ring-1 ring-inset ring-night-600;
-    transition:
-      background-color var(--t-quick) var(--ease-out),
-      transform var(--t-instant) var(--ease-out);
-  }
-  .btn-quiet {
-    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-tile px-3 font-sans font-semibold text-night-200;
-    transition:
-      color var(--t-quick) var(--ease-out),
-      background-color var(--t-quick) var(--ease-out);
+    @apply btn min-h-14 bg-zap text-lead text-zap-ink shadow-zap;
   }
   @media (hover: hover) {
     .btn-primary:hover:not(:disabled) {
-      @apply bg-flood-bright;
+      @apply bg-zap-bright;
     }
+  }
+  /* The hero action of a screen (Join, Buy in, a winning Cash out): the brand gradient with a sheen. */
+  .btn-prime {
+    @apply btn relative min-h-14 overflow-hidden bg-prime text-lead text-white shadow-zap;
+  }
+  .btn-prime::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(100deg, transparent 20%, rgba(255, 255, 255, 0.35) 50%, transparent 80%);
+    transform: translateX(-110%);
+    transition: transform 700ms cubic-bezier(0.22, 1, 0.36, 1);
+    pointer-events: none;
+  }
+  @media (hover: hover) {
+    .btn-prime:hover:not(:disabled)::after {
+      transform: translateX(110%);
+    }
+  }
+  .btn-secondary {
+    @apply btn bg-card text-ink shadow-lift ring-1 ring-inset ring-rule;
+  }
+  @media (hover: hover) {
     .btn-secondary:hover:not(:disabled) {
-      @apply bg-night-700;
+      @apply ring-rule-strong;
     }
+  }
+  .btn-quiet {
+    @apply btn bg-transparent px-3 font-semibold text-ink-2;
+  }
+  @media (hover: hover) {
     .btn-quiet:hover:not(:disabled) {
-      @apply bg-night-800 text-chalk;
+      @apply bg-control text-ink;
     }
   }
-  .btn-primary:active:not(:disabled),
-  .btn-secondary:active:not(:disabled) {
-    transform: scale(0.98);
-  }
-  .btn-primary:disabled {
-    @apply bg-night-700 text-night-500;
-  }
-  .btn-secondary:disabled,
   .btn-quiet:disabled {
-    @apply text-night-500;
+    @apply bg-transparent;
   }
 
-  /* Text field: tone, not borders; a flood hairline when focused. */
+  /* Text field: white, a rule ring, zap when focused. */
   .field {
-    @apply w-full rounded-tile bg-night-800 px-4 text-chalk ring-1 ring-inset ring-night-700 placeholder:text-night-500;
+    @apply w-full rounded-tile bg-card px-4 text-ink shadow-lift ring-1 ring-inset ring-rule-strong placeholder:text-ink-faint;
     transition: box-shadow var(--t-quick) var(--ease-out);
   }
   .field:focus-visible {
     outline: none;
-    @apply ring-2 ring-flood;
+    @apply ring-2 ring-zap;
+  }
+
+  /* Big numbers: Archivo condensed, heavy, tabular. Questions: Bricolage, heavy, balanced. */
+  .num {
+    @apply font-num font-extrabold tnum;
+    font-stretch: 75%;
+  }
+  .q {
+    @apply font-head font-extrabold text-balance;
+    letter-spacing: -0.025em;
+  }
+  .card {
+    @apply rounded-panel bg-card shadow-lift;
+  }
+  /* Arrows and flashes inside a solid outcome fill follow the fill's text colour. */
+  .on-fill {
+    --hd-up: currentColor;
+    --hd-down: currentColor;
   }
 }
 
@@ -117,41 +163,41 @@
 
 /* ------------------------------------------------------------ player motions */
 
-/* Sheets rise from the bottom edge (CSS: finishes in background tabs; the resting style is open). */
+/* Sheets rise from the bottom edge on the spring (CSS: finishes in background tabs). */
 @keyframes pl-sheet {
   from {
     transform: translateY(100%);
   }
 }
 .pl-sheet {
-  animation: pl-sheet var(--t-slow) var(--ease-out);
+  animation: pl-sheet var(--t-spring) var(--ease-spring);
 }
 .pl-sheet[data-dragging='true'] {
   transition: none;
 }
 .pl-sheet[data-dragging='false'] {
-  transition: transform var(--t-base) var(--ease-out);
+  transition: transform var(--t-spring) var(--ease-spring);
 }
 
-/* Caption slot: the new line replaces the old one with a short crossfade-rise. */
+/* Caption slot: the new line replaces the old one with a short rise. */
 @keyframes pl-caption {
   from {
     opacity: 0;
-    transform: translateY(0.4rem);
+    transform: translateY(0.5rem) scale(0.98);
   }
 }
 .pl-caption {
-  animation: pl-caption var(--t-base) var(--ease-out);
+  animation: pl-caption var(--t-spring) var(--ease-spring);
 }
 
-/* Hold-to-talk: two rings breathe out of the mic while it listens. */
+/* Hold-to-talk: two zap rings ping out of the mic while it listens. */
 @keyframes pl-listen {
   from {
     transform: scale(1);
-    opacity: 0.7;
+    opacity: 0.8;
   }
   to {
-    transform: scale(1.75);
+    transform: scale(1.8);
     opacity: 0;
   }
 }
@@ -160,7 +206,7 @@
   animation-delay: var(--d, 0ms);
 }
 
-/* Draft expiry and the stake tray's "placing" bar: a scaleX drain (transform only). */
+/* Draft expiry: a scaleX drain (transform only). */
 @keyframes pl-drain {
   from {
     transform: scaleX(var(--from, 1));
@@ -177,23 +223,119 @@
 /* Settlement rail: the filled part grows to the current step. */
 .pl-rail {
   transform-origin: left center;
-  transition: transform var(--t-linger) var(--ease-out);
+  transition: transform var(--t-linger) var(--ease-spring);
 }
 
-/* Market locked: the split desaturates (static filter, no transition) */
-.pl-dim {
-  filter: saturate(0.6) brightness(0.8);
+/* A price moved: the outcome tile gives a little kick (same as the box). */
+@keyframes tile-kick-a {
+  0% {
+    transform: scale(1.035);
+  }
+}
+@keyframes tile-kick-b {
+  0% {
+    transform: scale(1.035);
+  }
+}
+.tile-kick-a {
+  animation: tile-kick-a 520ms var(--ease-bounce);
+}
+.tile-kick-b {
+  animation: tile-kick-b 520ms var(--ease-bounce);
+}
+
+/* Locked: a white veil settles over the tiles and the split so "no more bets" reads at a glance. */
+.lock-veil {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: rgba(255, 255, 255, 0.55);
+  animation: hd-fade 420ms var(--ease-out) both;
+  pointer-events: none;
+}
+.is-locked .hd-split::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 7;
+  background: rgba(255, 255, 255, 0.5);
+}
+
+/* Last five seconds: the card edge pulses hot once a second (opacity only). */
+.urgent-edge {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow:
+    inset 0 0 0 3px #ff2e63,
+    inset 0 0 2rem -0.5rem rgba(255, 46, 99, 0.45);
+  pointer-events: none;
+  animation: urgent-edge 1s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+  z-index: 15;
+}
+@keyframes urgent-edge {
+  0% {
+    opacity: 1;
+  }
+  70%,
+  100% {
+    opacity: 0.25;
+  }
+}
+
+/* Live dot: a ring pings out of it. */
+.live-dot {
+  position: relative;
+}
+.live-dot::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: inherit;
+  animation: hd-ping 1.6s var(--ease-out) infinite;
+}
+
+/* Board: a climber's row flashes a zap ring. */
+@keyframes pl-climb {
+  from {
+    box-shadow: 0 0 0 3px #6c2bff;
+  }
+}
+.pl-climb {
+  animation: pl-climb 1.1s var(--ease-out);
 }
 
 @media (prefers-reduced-motion: reduce) {
   .pl-sheet,
   .pl-caption,
   .pl-drain,
-  .pl-rail {
+  .pl-rail,
+  .tile-kick-a,
+  .tile-kick-b,
+  .lock-veil,
+  .pl-climb {
     animation: none !important;
     transition: none !important;
   }
-  .pl-listen {
+  .pl-listen,
+  .live-dot::after {
     display: none !important;
+  }
+  .urgent-edge {
+    animation: none !important;
+    opacity: 0.8;
+  }
+  .btn {
+    transition-duration: 0ms !important;
+  }
+  .btn:hover:not(:disabled) {
+    transform: none;
+  }
+  .btn:active:not(:disabled) {
+    transform: scale(0.97);
+  }
+  .btn-prime::after {
+    display: none;
   }
 }
