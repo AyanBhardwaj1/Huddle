@@ -43,7 +43,8 @@ export function BetBody({ market, live, flow }: { market: Market; live: boolean;
                 selected={pick === o.id}
                 disabled={!live}
                 onClick={() => setPick(pick === o.id ? null : o.id)}
-                figure={<Roll text={odds2(q.odds)} className="font-display text-title font-extrabold leading-none stretch-condensed" />}
+                kickOn={odds2(q.odds)}
+                figure={<Roll text={odds2(q.odds)} arrow className="num text-head leading-none" duration={640} />}
                 figureLabel={`odds ${odds2(q.odds)}${q.matchesOffer ? `, against ${q.makerName ?? 'a friend'}` : ', fair odds'}`}
                 note={q.matchesOffer ? `Matches ${q.makerName ?? 'a friend'}` : 'Fair odds'}
               />
@@ -81,14 +82,14 @@ export function BetBody({ market, live, flow }: { market: Market; live: boolean;
               const t = tone(idxOf(o.side), n);
               return (
                 <li key={o.id} className="hd-fade flex items-center gap-3 py-2.5">
-                  <Avatar name={o.makerName ?? '?'} />
+                  <Avatar name={o.makerName ?? '?'} size="2.25rem" />
                   <div className="min-w-0 flex-1 leading-snug">
                     <p className="text-small text-ink">
                       <b>{o.makerName ?? 'A friend'}</b> backs <span className={cx('font-bold', t.text)}>{label(o.side)}</span> at{' '}
-                      <span className="font-display font-bold tnum">{odds2(o.odds)}</span>
+                      <span className="num">{odds2(o.odds)}</span>
                     </p>
                     <p className="text-cap text-ink-muted">
-                      You'd back {other(o.side)} at <span className="font-display font-bold text-ink-2 tnum">{odds2(takerOdds(o.odds))}</span>, up to{' '}
+                      You'd back {other(o.side)} at <span className="num text-ink-2">{odds2(takerOdds(o.odds))}</span>, up to{' '}
                       <span className="tnum">{money(remainingTakerCapacity(o), points)}</span>
                     </p>
                   </div>
@@ -102,11 +103,11 @@ export function BetBody({ market, live, flow }: { market: Market; live: boolean;
               const t = tone(idxOf(o.side), n);
               return (
                 <li key={o.id} className="flex items-center gap-3 py-2.5">
-                  <Avatar name="You" className="bg-canvas text-zap" />
+                  <Avatar name="You" size="2.25rem" />
                   <div className="min-w-0 flex-1 leading-snug">
                     <p className="text-small text-ink">
-                      Your offer: <span className="font-display font-bold tnum">{money(o.makerStake, points)}</span> on{' '}
-                      <span className={cx('font-bold', t.text)}>{label(o.side)}</span> at <span className="font-display font-bold tnum">{odds2(o.odds)}</span>
+                      Your offer: <span className="num">{money(o.makerStake, points)}</span> on{' '}
+                      <span className={cx('font-bold', t.text)}>{label(o.side)}</span> at <span className="num">{odds2(o.odds)}</span>
                     </p>
                     <p className="text-cap text-ink-muted tnum">
                       {o.filled ? `${money(o.filled, points)} matched, ` : ''}waiting for a taker
@@ -131,7 +132,7 @@ export function BetBody({ market, live, flow }: { market: Market; live: boolean;
       )}
 
       {live && (
-        <button onClick={() => setOffering(true)} className="btn-quiet mt-2 w-full bg-canvas">
+        <button onClick={() => setOffering(true)} className="btn-secondary mt-3 w-full">
           <Icon name="plus" size={18} /> Offer your own odds
         </button>
       )}
@@ -154,8 +155,8 @@ function Chips({ amounts, chosen, onPick, points }: { amounts: { amount: number;
           aria-checked={chosen === c.amount}
           onClick={() => onPick(c.amount)}
           className={cx(
-            'flex min-h-12 flex-col items-center justify-center rounded-tile font-display text-lead font-extrabold leading-tight stretch-condensed tnum transition-colors duration-quick',
-            chosen === c.amount ? 'bg-zap text-zap-ink' : 'bg-well text-ink ring-1 ring-inset ring-rule hover:bg-control',
+            'num hd-press flex min-h-12 flex-col items-center justify-center rounded-tile text-lead leading-tight',
+            chosen === c.amount ? 'bg-zap text-zap-ink shadow-zap' : 'bg-card text-ink shadow-lift ring-1 ring-inset ring-rule',
           )}
         >
           {moneyShort(c.amount, points)}
@@ -191,8 +192,8 @@ function TakeSheet({ market, offer, onClose, sideLabel }: { market: Market; offe
             <p className="text-small text-ink-muted">{market.question}</p>
             <p className="mt-1 text-body text-ink-2">
               <b className="text-ink">{offer.makerName ?? 'A friend'}</b> backs {market.outcomes.find((o) => o.id === offer.side)?.label} at{' '}
-              <span className="font-display font-bold tnum">{odds2(offer.odds)}</span>. You take <b className="text-ink">{sideLabel}</b> at{' '}
-              <span className="font-display font-bold tnum">{odds2(takerOdds(offer.odds))}</span>.
+              <span className="num">{odds2(offer.odds)}</span>. You take <b className="text-ink">{sideLabel}</b> at{' '}
+              <span className="num">{odds2(takerOdds(offer.odds))}</span>.
             </p>
           </div>
           {chips.length ? (
@@ -203,11 +204,11 @@ function TakeSheet({ market, offer, onClose, sideLabel }: { market: Market; offe
           <div className="grid grid-cols-2 divide-x divide-rule rounded-tile bg-canvas py-3">
             <div className="px-4">
               <div className="text-cap text-ink-muted">You stake</div>
-              <Roll text={money(chosen, points)} className="font-display text-title font-extrabold stretch-condensed" />
+              <Roll text={money(chosen, points)} className="num text-title" duration={420} />
             </div>
             <div className="px-4">
               <div className="text-cap text-ink-muted">You win</div>
-              <Roll text={money(win, points)} className="font-display text-title font-extrabold text-yes-600 stretch-condensed" />
+              <Roll text={money(win, points)} className="num text-title text-yes-600" duration={420} />
             </div>
           </div>
           <button
@@ -221,7 +222,7 @@ function TakeSheet({ market, offer, onClose, sideLabel }: { market: Market; offe
               notify(`Bet's on: ${money(chosen, points)} to win ${money(win, points)}`, 'win');
               close();
             }}
-            className="btn-primary w-full shadow-zap"
+            className="btn-primary w-full"
           >
             {busy ? 'Taking it…' : `Take it for ${moneyShort(chosen, points)}`}
           </button>
@@ -287,7 +288,7 @@ function OfferSheet({ market, open, onClose }: { market: Market; open: boolean; 
               <Icon name="minus" size={20} />
             </button>
             <div className="text-center">
-              <Roll text={odds2(theOdds)} className="font-display text-head font-extrabold stretch-condensed" />
+              <Roll text={odds2(theOdds)} className="num text-head" duration={320} />
               <div className="text-cap text-ink-muted">
                 Fair is <span className="tnum">{odds2(fair)}</span>
               </div>
@@ -298,8 +299,8 @@ function OfferSheet({ market, open, onClose }: { market: Market; open: boolean; 
           </div>
         </div>
         <p className="text-pretty text-small text-ink-2">
-          If <b className="text-ink">{sideLabel}</b> hits you get <b className="font-display text-yes-600 tnum">{money(returnAt(theStake, theOdds), points)}</b> back. A
-          friend puts in <b className="font-display text-ink tnum">{money(takerStakeFor(theStake, theOdds), points)}</b> to take it.
+          If <b className="text-ink">{sideLabel}</b> hits you get <b className="num text-yes-600">{money(returnAt(theStake, theOdds), points)}</b> back. A
+          friend puts in <b className="num text-ink">{money(takerStakeFor(theStake, theOdds), points)}</b> to take it.
         </p>
         <button
           disabled={busy || theStake <= 0}
@@ -312,7 +313,7 @@ function OfferSheet({ market, open, onClose }: { market: Market; open: boolean; 
             notify(`Offer posted: ${moneyShort(theStake, points)} on ${sideLabel} at ${odds2(theOdds)}`, 'info');
             onClose();
           }}
-          className="btn-primary w-full shadow-zap"
+          className="btn-primary w-full"
         >
           {busy ? 'Posting…' : `Post ${moneyShort(theStake, points)} at ${odds2(theOdds)}`}
         </button>

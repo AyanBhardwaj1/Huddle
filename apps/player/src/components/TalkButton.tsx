@@ -214,9 +214,9 @@ export function TalkButton({ fixture }: { fixture: boolean }) {
         onKeyUp={keyUp}
         onContextMenu={(e) => e.preventDefault()}
         className={cx(
-          'relative grid h-14 w-14 shrink-0 select-none place-items-center rounded-full shadow-pop [-webkit-touch-callout:none]',
-          'transition-[transform,background-color,color] duration-quick ease-out',
-          holding ? 'scale-110 bg-zap text-zap-ink' : 'bg-well text-zap ring-1 ring-inset ring-rule hover:bg-control',
+          'relative grid h-16 w-16 shrink-0 select-none place-items-center rounded-full bg-prime text-white shadow-zap [-webkit-touch-callout:none]',
+          'transition-transform duration-[480ms] ease-spring',
+          holding ? 'scale-[1.06]' : 'hover:-translate-y-0.5 active:scale-95',
         )}
         style={{ touchAction: 'none' }}
         aria-label={mode === 'text' ? 'Ask the announcer' : 'Hold to talk to the announcer'}
@@ -228,7 +228,7 @@ export function TalkButton({ fixture }: { fixture: boolean }) {
             <span className="pl-listen absolute inset-0 rounded-full border-2 border-zap" style={{ ['--d' as string]: '700ms' }} aria-hidden="true" />
           </>
         )}
-        {busy ? <Mark size="1.6rem" spin /> : <Icon name="mic" size={26} />}
+        {busy ? <Mark size="1.7rem" spin lit={3} className="text-white/50" /> : <Icon name="mic" size={28} />}
       </button>
       <TextAsk open={textOpen} onClose={() => setTextOpen(false)} onSend={send} />
     </>
