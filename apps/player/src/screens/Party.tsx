@@ -177,7 +177,14 @@ export function PartyShell({ client, view, remote }: { client: PartyClient; view
   );
   const pass = useCallback(() => setPassed(true), []);
   const open = snap.party.status === 'live' || snap.party.status === 'lobby';
-  const needsBuyIn = open && !passed && (meP ? meP.deposited === 0 : !snap.you?.state);
+  const unfunded = open && (meP ? meP.deposited === 0 : !snap.you?.state);
+  // Once the buy-in screen is up it stays until the player moves on, so the "You're in!" confirmation
+  // shows after the deposit lands (before, the credit itself unmounted the screen mid-flow).
+  const [buyInShown, setBuyInShown] = useState(false);
+  useEffect(() => {
+    if (unfunded && !passed) setBuyInShown(true);
+  }, [unfunded, passed]);
+  const needsBuyIn = open && !passed && (unfunded || buyInShown);
 
   return <PartyCtx.Provider value={value}>{needsBuyIn ? <BuyIn onDone={pass} onSkip={pass} /> : <Live />}</PartyCtx.Provider>;
 }

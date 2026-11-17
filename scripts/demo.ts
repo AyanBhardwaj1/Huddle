@@ -14,7 +14,7 @@
  *             [--no-open] [--no-bridge] [--no-build] [--keep-data]
  *   PORT=8080 BRIDGE_PORT=7777 DATA_DIR=<dir> also apply.
  */
-import { spawn, spawnSync, type ChildProcess } from 'node:child_process';
+import { spawn, type ChildProcess } from 'node:child_process';
 import fs from 'node:fs';
 import net from 'node:net';
 import os from 'node:os';
@@ -22,9 +22,10 @@ import path from 'node:path';
 import { Writable } from 'node:stream';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
-import { runBots, startEngine, type BotsHandle, type EngineHandle } from '../apps/engine/src/lib';
+import { runBots, startEngine, type BotsHandle, type EngineHandle, type EngineOptions } from '@huddle/engine';
 
-const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+type EngineLogger = Exclude<EngineOptions['logger'], false | undefined>;
+import { ROOT, buildStaleUis, needsBuild } from './lib/build';
 
 // ───────────────────────── args ─────────────────────────
 
@@ -171,36 +172,6 @@ function loadDotEnv(file: string): void {
   }
 }
 
-function newestMtime(dir: string): number {
-  let newest = 0;
-  const walk = (d: string): void => {
-    let entries: fs.Dirent[];
-    try {
-      entries = fs.readdirSync(d, { withFileTypes: true });
-    } catch {
-      return;
-    }
-    for (const e of entries) {
-      if (e.name === 'node_modules' || e.name === 'dist' || e.name.startsWith('.')) continue;
-      const p = path.join(d, e.name);
-      if (e.isDirectory()) walk(p);
-      else newest = Math.max(newest, fs.statSync(p).mtimeMs);
-    }
-  };
-  walk(dir);
-  return newest;
-}
-
-/** dist/ is stale when any source file of the app (or of @huddle/shared) is newer than its index.html. */
-export function needsBuild(app: 'box' | 'player', root = ROOT): boolean {
-  const index = path.join(root, 'apps', app, 'dist', 'index.html');
-  if (!fs.existsSync(index)) return true;
-  const built = fs.statSync(index).mtimeMs;
-  const sources = [path.join(root, 'apps', app, 'src'), path.join(root, 'apps', app, 'index.html'), path.join(root, 'packages', 'shared', 'src')];
-  if (app === 'player') sources.push(path.join(root, 'apps', app, 'public'));
-  return sources.some((s) => (fs.existsSync(s) ? (fs.statSync(s).isDirectory() ? newestMtime(s) : fs.statSync(s).mtimeMs) > built : false));
-}
-
 function portFree(port: number): Promise<boolean> {
   return new Promise((resolve) => {
     const srv = net.createServer();
@@ -334,13 +305,9 @@ async function main(): Promise<void> {
     }
 
     // 2. UIs.
+    if (args.build) buildStaleUis(ROOT, (l) => say('demo', l));
     const stale = (['box', 'player'] as const).filter((app) => needsBuild(app));
-    if (stale.length && args.build) {
-      say('demo', `building ${stale.join(' + ')} UI (dist missing or older than the source)…`);
-      const filters = stale.flatMap((app) => ['--filter', `@huddle/${app}`]);
-      const r = spawnSync('pnpm', [...filters, 'build'], { cwd: ROOT, stdio: 'inherit', shell: process.platform === 'win32' });
-      if (r.status !== 0) throw new Error('UI build failed (see above)');
-    } else if (stale.length) {
+    if (stale.length) {
       say('demo', `warning: ${stale.join(' + ')} UI is missing or stale and --no-build was given`);
     }
 
@@ -378,7 +345,8 @@ async function main(): Promise<void> {
       const lan = lanAddress();
       if (lan) process.env.PUBLIC_ENGINE_URL = `http://${lan}:${port}`;
     }
-    const pino = createRequire(path.join(ROOT, 'apps/engine/package.json'))('pino') as typeof import('pino').default;
+    // pino is the engine's dependency, not the root's: load it from there.
+    const pino = createRequire(path.join(ROOT, 'apps/engine/package.json'))('pino') as (opts: object, dest: Writable) => EngineLogger;
     const logger = pino({ level: process.env.LOG_LEVEL ?? 'info', redact: ['secretKey', '*.secretKey', 'hostToken', '*.hostToken'] }, engineLogStream());
     engine = await startEngine({
       port,
