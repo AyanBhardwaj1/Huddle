@@ -259,6 +259,10 @@ function snapshot(kind: FixtureKind): PartySnapshot {
           fill(4, 1, 'Jake', 'm-pen', 'amm_buy', 'no', 8, 0.29),
           fill(5, 2, 'Priya', 'm-pen', 'amm_buy', 'yes', 5, 0.71),
           fill(6, 5, 'Leo', 'm-pen', 'amm_buy', 'yes', 2, 0.73),
+          // Settlement: the engine's payout fills for the penalty winners (shares pay 1 pt each).
+          ...(kind === 'result'
+            ? [fill(7, 2, 'Priya', 'm-pen', 'payout', 'yes', 7.04), fill(8, 5, 'Leo', 'm-pen', 'payout', 'yes', 2.74)]
+            : []),
         ];
 
   const scorecard = buildScorecard([

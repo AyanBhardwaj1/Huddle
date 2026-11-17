@@ -549,7 +549,9 @@ export function ResultReveal({ market, summary, party, onDone }: { market: Marke
                 <p key={w.name} className="hd-shine flex items-center gap-2.5 py-0.5 text-title font-bold" style={delay(1000 + i * 180)}>
                   <Avatar name={w.name} size="1.9rem" />
                   <span className="min-w-0 flex-1 truncate">{w.name}</span>
-                  <span className="num text-title text-ink-2">{moneyShort(w.amount, party)} in</span>
+                  <span className="num text-title text-ink-2">
+                    {w.profit !== undefined ? `+${moneyShort(Math.max(0, w.profit), party)} won` : `${moneyShort(w.amount, party)} in`}
+                  </span>
                 </p>
               ))}
               {summary.winners.length === 0 && <p className="text-lead text-ink-2">Nobody. Brutal.</p>}

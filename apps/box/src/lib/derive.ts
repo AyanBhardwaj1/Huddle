@@ -135,7 +135,10 @@ export function detectSettled(prev: ReadonlyMap<string, MarketState>, markets: M
 
 export interface Backer {
   name: string;
+  /** Stake on the side in question (base units). */
   amount: number;
+  /** Winners only: profit (payout minus stake) once the engine's payout fill has arrived. */
+  profit?: number;
 }
 export interface ResultSummary {
   winnerLabel: string | null;
@@ -151,8 +154,10 @@ const STAKE_KINDS = new Set<Fill['kind']>(['pool_bet', 'amm_buy', 'offer_taken']
  */
 export function resultSummary(m: Market, fills: Fill[]): ResultSummary {
   const net = new Map<string, { name: string; byOutcome: Map<string, number> }>();
+  const paid = new Map<string, number>();
   for (const f of fills) {
     if (f.marketId !== m.id) continue;
+    if (f.kind === 'payout') paid.set(f.playerName, (paid.get(f.playerName) ?? 0) + f.amount);
     const sign = STAKE_KINDS.has(f.kind) ? 1 : f.kind === 'amm_sell' ? -1 : 0;
     if (!sign) continue;
     const p = net.get(f.player) ?? { name: f.playerName, byOutcome: new Map() };
@@ -169,13 +174,17 @@ export function resultSummary(m: Market, fills: Fill[]): ResultSummary {
       if (o === m.outcome) won += amt;
       else lost += amt;
     }
-    if (won > 0) winners.push({ name, amount: won });
+    if (won > 0) {
+      const payout = paid.get(name);
+      winners.push(payout !== undefined ? { name, amount: won, profit: payout - won } : { name, amount: won });
+    }
     if (lost > 0) losers.push({ name, amount: lost });
   }
   const by = (a: Backer, b: Backer) => b.amount - a.amount || a.name.localeCompare(b.name);
+  const byProfit = (a: Backer, b: Backer) => (b.profit ?? b.amount) - (a.profit ?? a.amount) || a.name.localeCompare(b.name);
   return {
     winnerLabel: m.outcomes.find((o) => o.id === m.outcome)?.label ?? null,
-    winners: winners.sort(by),
+    winners: winners.sort(byProfit),
     losers: losers.sort(by),
   };
 }

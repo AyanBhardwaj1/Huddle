@@ -162,8 +162,9 @@ describe('result reveal', () => {
       f('priya', 'payout', 'yes', 12),
     ]);
     expect(s.winnerLabel).toBe('Yes');
+    // Priya's payout fill (12) has landed, so her line shows profit (12 - 5); Mia's has not yet.
     expect(s.winners).toEqual([
-      { name: 'PRIYA', amount: 5 * USDC },
+      { name: 'PRIYA', amount: 5 * USDC, profit: 7 * USDC },
       { name: 'MIA', amount: 1 * USDC },
     ]);
     expect(s.losers).toEqual([
