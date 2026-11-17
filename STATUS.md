@@ -48,7 +48,7 @@ _Last updated: Mon Nov 16 2026 (A7 integration pass). Workstreams A1 to A6 are m
 - [~] Gaps (A2.md):
   - restarting the engine during close is untested;
   - the 60 s wait for a disputed market at close is untested;
-  - "box offline 60 s voids markets" is not implemented;
+  - "box offline 60 s voids markets": implemented for moment markets (D20), proven by `apps/engine/src/restart.test.ts` "voids open moment markets ... after the box was offline";
   - webhook deposits are not re-read from RPC.
 
 ### A3 Data and AI (`packages/sports`, `packages/models`, `packages/gemini`, `ml/`, `replays/`)

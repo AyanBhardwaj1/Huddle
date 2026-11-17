@@ -1,4 +1,5 @@
 import crypto from 'node:crypto';
+import fs from 'node:fs';
 import path from 'node:path';
 import { createAnnouncer, createLlmClient } from '@huddle/announcer';
 import { createGeminiClient } from '@huddle/gemini';
@@ -61,6 +62,9 @@ export function isSettlementMode(s: string | undefined): s is SettlementMode {
   return s === 'vault' || s === 'trusted' || s === 'points';
 }
 
+const HEARTBEAT_MS = 5_000;
+const OUTAGE_VOID_MS = 60_000;
+
 export class Engine {
   readonly parties = new Map<string, PartyRuntime>();
   readonly env: Env;
@@ -82,6 +86,9 @@ export class Engine {
   private readonly ownsBridge: boolean;
   private readonly sessionKey: Buffer;
   private tickTimer: ReturnType<typeof setInterval> | null = null;
+  private heartbeatTimer: ReturnType<typeof setInterval> | null = null;
+  /** Wall-clock ms the engine was last known alive (PRD section 12: void moment markets after a 60 s outage). */
+  private readonly heartbeatFile: string | null;
   private geminiTimer: ReturnType<typeof setInterval> | null = null;
   private closed = false;
 
@@ -97,6 +104,7 @@ export class Engine {
     const dataDir = opts.dataDir ?? this.env.DATA_DIR ?? './data';
     const onDisk = dataDir !== ':memory:';
     this.store = new Store(onDisk ? path.resolve(dataDir) : ':memory:');
+    this.heartbeatFile = onDisk ? path.join(path.resolve(dataDir), 'heartbeat') : null;
     this.keys = new KeyStore(onDisk ? path.resolve(dataDir) : null);
     this.boxSigner = this.keys.boxSigner(this.env.BOX_SIGNER_SECRET_KEY);
     this.defaultSettlement = isSettlementMode(this.env.SETTLEMENT) ? this.env.SETTLEMENT : 'points';
@@ -139,6 +147,9 @@ export class Engine {
 
   /** Start the timers. Call once after `restore()`. */
   start(): void {
+    this.beat();
+    this.heartbeatTimer = setInterval(() => this.beat(), HEARTBEAT_MS);
+    this.heartbeatTimer.unref?.();
     this.tickTimer = setInterval(() => {
       for (const rt of this.parties.values()) rt.tick();
     }, this.timing.tickMs);
@@ -335,8 +346,29 @@ export class Engine {
     };
   }
 
+  private beat(): void {
+    if (!this.heartbeatFile) return;
+    try {
+      fs.writeFileSync(this.heartbeatFile, String(Date.now()));
+    } catch {
+      /* best effort */
+    }
+  }
+
+  /** How long the box was down before this start, in ms (0 when unknown or on a fresh data dir). */
+  private downtimeMs(): number {
+    if (!this.heartbeatFile) return 0;
+    try {
+      const last = Number(fs.readFileSync(this.heartbeatFile, 'utf8'));
+      return Number.isFinite(last) && last > 0 ? Math.max(0, Date.now() - last) : 0;
+    } catch {
+      return 0;
+    }
+  }
+
   /** Reload parties after a restart: balances, nonces, signatures, markets and the paused feed. */
   async restore(): Promise<void> {
+    const downMs = this.downtimeMs();
     let persisted: PersistedParty[];
     try {
       persisted = this.store.loadAll(this.now() - 48 * 60 * 60 * 1000);
@@ -381,6 +413,13 @@ export class Engine {
             this.log.warn({ party: code, err: (e as Error).message }, 'could not reopen the sports feed');
           }
           rt.calibrate();
+        }
+        if (downMs > OUTAGE_VOID_MS && p.party.status === 'live') {
+          // PRD section 12: the box was offline for over a minute, so moment results may have been
+          // missed. Void open and locked moment markets (refunded at cost). Game-long markets resolve
+          // from the cumulative game state, so they stay (DECISIONS D20).
+          const n = rt.voidAfterOutage(Math.round(downMs / 1000));
+          if (n > 0) this.log.warn({ party: code, voided: n, downSecs: Math.round(downMs / 1000) }, 'voided moment markets after an outage');
         }
         this.log.info({ party: code, status: p.party.status, members: core.members.size, markets: core.markets.size }, 'party restored');
         if (p.party.status === 'ended' || p.party.status === 'closing') void rt.endParty('resume');
@@ -453,6 +492,8 @@ export class Engine {
     if (this.closed) return;
     this.closed = true;
     if (this.tickTimer) clearInterval(this.tickTimer);
+    if (this.heartbeatTimer) clearInterval(this.heartbeatTimer);
+    // A clean shutdown is still downtime: do not refresh the heartbeat here.
     if (this.geminiTimer) clearInterval(this.geminiTimer);
     for (const u of this.unsubs) {
       try {

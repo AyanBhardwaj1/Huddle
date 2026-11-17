@@ -1085,6 +1085,23 @@ export class PartyRuntime {
     return this.ending;
   }
 
+  /** Void open/locked moment markets after the box was offline (PRD section 12). Returns how many. */
+  voidAfterOutage(downSecs: number): number {
+    const now = this.now();
+    let n = 0;
+    for (const m of this.marketsIn('open', 'locked')) {
+      if (m.kind !== 'moment') continue;
+      try {
+        this.core.voidMarket(m.id, `The box was offline for ${downSecs} s, so this moment could not be called fairly`, now);
+        n++;
+      } catch (e) {
+        this.unexpected(e, `void ${m.id} after outage`);
+      }
+    }
+    if (n > 0) this.flush();
+    return n;
+  }
+
   private marketsIn(...states: string[]): Market[] {
     return [...this.core.markets.values()].map((r) => r.market).filter((m) => states.includes(m.state));
   }

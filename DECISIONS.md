@@ -25,6 +25,7 @@ Where the PRD is silent, we pick the simplest option that keeps the demo working
 | D17 | A phone with no stored last-signed state (cleared storage, new device) accepts the next balance state by chaining from that state's own `prevBalance` / `prevStateHash` instead of showing a mismatch. | Otherwise a cleared browser locks the player out mid-party. The box signature, entry arithmetic and hash are still verified; only the link to a state this device signed is taken on trust. Devnet trade-off. |
 | D18 | Default house budget is 6 USDC per AMM market (PRD suggests 2) and 50 USDC per party. | With D2's tighter `b`, a 2 USDC budget on an 83/17 prior gave `b` of about 1.1, so one 2 USDC bet pushed the price to 99%. 6 USDC keeps prices moving visibly without pinning. The house still cannot lose more than its per-market budget. |
 | D19 | With no `PUBLIC_ENGINE_URL`, the engine advertises its LAN IPv4 address in join links and the QR code (`HUDDLE_NO_LAN=1` turns this off). | A QR code pointing at `localhost` is useless to a phone on the same Wi-Fi. |
+| D20 | After an outage of more than 60 s (heartbeat file in `DATA_DIR`, refreshed every 5 s), restore voids open and locked **moment** markets at cost; game-long markets stay open. | PRD section 12: moment results may have been missed while the box was down. Game-long markets resolve from the cumulative game state (score, totals), so voiding them would refund bets that can still be settled fairly. |
 
 ## Workstreams
 

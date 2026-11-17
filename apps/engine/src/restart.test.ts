@@ -215,4 +215,41 @@ describe('restart', () => {
     h = open = await startTestEngine({ dataDir: dir, env: { ...TEST_ENV, BOX_SIGNER_SECRET_KEY: other } });
     expect(h.handle.engine.party(party.code)).toBeUndefined();
   });
+  it('voids open moment markets (refunded at cost) after the box was offline for over a minute', async () => {
+    dir = fs.mkdtempSync(path.join(os.tmpdir(), 'huddle-outage-'));
+    const opts = { dataDir: dir };
+    let h = (open = await startTestEngine(opts));
+    const { party, hostToken, rt } = await h.createParty({ defaultMode: 'pool', buyIn: 10, houseBudget: 20 });
+    const box = await h.box(party.code, hostToken);
+    const a = await h.player(party.code, 'Ayan', { buyIn: 10 * USDC });
+    const b = await h.player(party.code, 'Jake', { buyIn: 10 * USDC });
+    await h.host(box, { action: 'set_speed', speed: 20 });
+    await h.host(box, { action: 'start_game' });
+    await waitUntil(() => rt.game.status === 'live' && rt.core.markets.size >= 2, 5000, 'kickoff markets');
+    await h.host(box, { action: 'pause_game' });
+    const moment = (await h.host(box, { action: 'create_market', question: 'Next shot on target?', outcomes: ['Yes', 'No'], mode: 'pool', lockInSecs: 7200 })).marketId as string;
+    const game = [...rt.core.markets.values()].map((r) => r.market).find((m) => m.kind === 'game' && m.state === 'open')!;
+    await a.client.request({ type: 'place_bet', marketId: moment, outcome: 'yes', stake: 2 * USDC });
+    await b.client.request({ type: 'place_bet', marketId: moment, outcome: 'no', stake: 1 * USDC });
+    await a.client.request({ type: 'place_bet', marketId: game.id, outcome: game.outcomes[0]!.id, stake: 1 * USDC });
+    await waitUntil(() => rt.core.ledger.balanceOf(a.pubkey) === 7 * USDC, 3000, 'bets placed');
+    await h.close();
+
+    // The box was down for two minutes.
+    fs.writeFileSync(path.join(dir, 'heartbeat'), String(Date.now() - 120_000));
+    h = open = await startTestEngine(opts);
+    const back = h.handle.engine.party(party.code)!;
+    expect(back.core.markets.get(moment)!.market.state).toBe('voided');
+    expect(back.core.markets.get(game.id)!.market.state).toBe('open');
+    // Moment stakes came back at cost; the game-long stake is still in play.
+    expect(back.core.ledger.balanceOf(a.pubkey)).toBe(9 * USDC);
+    expect(back.core.ledger.balanceOf(b.pubkey)).toBe(10 * USDC);
+    expect(back.core.ledger.sumBalances() + back.core.ledger.sumEscrow()).toBe(back.core.ledger.totalDeposits);
+    await h.close();
+
+    // A quick restart (heartbeat fresh) voids nothing.
+    h = open = await startTestEngine(opts);
+    const again = h.handle.engine.party(party.code)!;
+    expect(again.core.markets.get(game.id)!.market.state).toBe('open');
+  });
 });
