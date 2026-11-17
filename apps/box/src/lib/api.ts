@@ -31,7 +31,8 @@ async function json<T>(path: string, init?: RequestInit, timeoutMs = 6000): Prom
 }
 
 export const api = {
-  health: () => json<HealthResponse>('/health', undefined, 3000),
+  // Long enough to ride out a hosted engine waking from sleep (Render free plan: up to ~1 min).
+  health: () => json<HealthResponse>('/health', undefined, 25_000),
   games: (sport?: string) =>
     json<{ games: GameInfo[] }>(`/games${sport ? `?sport=${encodeURIComponent(sport)}` : ''}`).then((r) => r.games ?? []),
   parties: () => json<{ parties: Party[] }>('/parties').then((r) => r.parties ?? []),

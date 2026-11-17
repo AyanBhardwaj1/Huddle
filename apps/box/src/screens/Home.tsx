@@ -2,34 +2,48 @@ import { Aurora, Kinetic, Mark } from '@huddle/ui';
 import { useEffect, useState } from 'react';
 import { Icon, StatusLine, Wordmark } from '../components/ui';
 import { api, type HealthResponse } from '../lib/api';
-import { healthChips } from '../lib/health';
+import { engineBase } from '../lib/config';
+import { WAKING_CHIP, engineIsLocal, healthChips } from '../lib/health';
 import { useBox } from '../store';
 
 export function useHealth(pollMs = 5000) {
   const [health, setHealth] = useState<HealthResponse | null>(null);
   const [offline, setOffline] = useState(false);
+  /** The first answer is slow (a hosted engine waking from sleep): say so instead of "offline". */
+  const [waking, setWaking] = useState(false);
   const [n, setN] = useState(0);
   useEffect(() => {
     let alive = true;
-    const load = () =>
+    let inFlight = false;
+    const load = () => {
+      if (inFlight) return; // one request at a time: a waking engine answers the one already waiting
+      inFlight = true;
+      const slow = setTimeout(() => alive && setWaking(true), 2500);
       api
         .health()
         .then((h) => alive && (setHealth(h), setOffline(false)))
-        .catch(() => alive && setOffline(true));
-    void load();
+        .catch(() => alive && setOffline(true))
+        .finally(() => {
+          inFlight = false;
+          clearTimeout(slow);
+          if (alive) setWaking(false);
+        });
+    };
+    load();
     const t = setInterval(load, pollMs);
     return () => {
       alive = false;
       clearInterval(t);
     };
   }, [pollMs, n]);
-  return { health, offline, retry: () => setN((x) => x + 1) };
+  return { health, offline, waking, retry: () => setN((x) => x + 1) };
 }
 
 export function Home() {
   const setScreen = useBox((s) => s.setScreen);
-  const { health, offline, retry } = useHealth();
-  const chips = health || offline ? healthChips(health, offline) : [];
+  const { health, offline, waking, retry } = useHealth();
+  const local = engineIsLocal(engineBase());
+  const chips = waking && !health ? [WAKING_CHIP] : health || offline ? healthChips(health, offline, local) : [];
   const warn = chips.find((c) => c.tone === 'warn' && c.hint);
   return (
     <main className="relative flex h-full overflow-hidden bg-canvas">

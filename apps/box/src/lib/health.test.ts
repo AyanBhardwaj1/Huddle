@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { healthChips, providerName } from './health';
+import { engineIsLocal, healthChips, providerName } from './health';
 import { loadSession, saveSession } from './session';
 
 describe('health chips', () => {
@@ -53,4 +53,20 @@ describe('session persistence', () => {
     saveSession(null, storage);
     expect(mem.size).toBe(0);
   });
+
+describe('hosted vs local engine', () => {
+  it('tells local engines from hosted ones', () => {
+    expect(engineIsLocal('http://localhost:8080')).toBe(true);
+    expect(engineIsLocal('http://192.168.1.20:8080')).toBe(true);
+    expect(engineIsLocal('https://huddle-engine-p1fc.onrender.com')).toBe(false);
+  });
+
+  it('only suggests port 8080 when the engine is local', () => {
+    expect(healthChips(null, true, true)[0]!.hint).toContain('port 8080');
+    const hosted = healthChips(null, true, false)[0]!;
+    expect(hosted.label).toBe('Engine offline');
+    expect(hosted.hint).not.toContain('8080');
+    expect(hosted.hint).toContain('waking up');
+  });
+});
 });

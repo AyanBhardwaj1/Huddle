@@ -28,9 +28,36 @@ export function providerName(v: unknown): string | null {
 
 const has = (s: string | null, ...needles: string[]) => !!s && needles.some((n) => s.includes(n));
 
-export function healthChips(h: HealthResponse | null, offline = false): StatusChip[] {
+/** True when the engine is on this machine or the local network (so "start it on port 8080" makes sense). */
+export function engineIsLocal(base: string): boolean {
+  try {
+    const h = new URL(base).hostname;
+    return h === 'localhost' || h === '127.0.0.1' || h === '[::1]' || h.endsWith('.local') || /^(10|192\.168|172\.(1[6-9]|2\d|3[01]))\./.test(h);
+  } catch {
+    return true;
+  }
+}
+
+/** Chip while a hosted engine is still answering its first request (it may be waking from sleep). */
+export const WAKING_CHIP: StatusChip = {
+  id: 'engine',
+  label: 'Waking up the engine…',
+  tone: 'info',
+  hint: 'The engine sleeps when nobody is playing. The first visit can take up to a minute.',
+};
+
+export function healthChips(h: HealthResponse | null, offline = false, local = true): StatusChip[] {
   if (offline || !h) {
-    return [{ id: 'engine', label: 'Engine offline', tone: 'warn', hint: 'Start the engine on port 8080, then tap retry.' }];
+    return [
+      {
+        id: 'engine',
+        label: 'Engine offline',
+        tone: 'warn',
+        hint: local
+          ? 'Start the engine on port 8080, then tap retry.'
+          : 'The engine did not answer. It may still be waking up; this page keeps retrying on its own.',
+      },
+    ];
   }
   const chips: StatusChip[] = [{ id: 'engine', label: h.ok ? 'Engine ready' : 'Engine degraded', tone: h.ok ? 'ok' : 'warn' }];
 

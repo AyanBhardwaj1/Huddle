@@ -32,7 +32,7 @@ export function engineBase(): string {
   if (rt) return rt;
   const env = import.meta.env.VITE_ENGINE_URL;
   if (env) return env.replace(/\/$/, '');
-  return window.location.origin;
+  return typeof window !== 'undefined' ? window.location.origin : 'http://localhost:8080';
 }
 
 export function engineWsUrl(): string {
