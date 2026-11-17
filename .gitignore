@@ -24,3 +24,5 @@ __pycache__/
 !programs/**/target/deploy/.gitkeep
 .claude/
 keys/
+.vercel-site/
+.vercel/

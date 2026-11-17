@@ -1,0 +1,22 @@
+# Never upload local secrets, databases or heavy build output to Vercel.
+.env
+.env.*
+!.env.example
+keys/
+data/
+target/
+.anchor/
+test-ledger/
+.claude/
+.ui-improve/
+.playwright-cli/
+.taste-skill/
+.vercel-site/
+ml/.venv/
+ml/data/
+**/node_modules/
+**/dist/
+**/*.sqlite*
+**/*keypair*.json
+playwright-report/
+test-results/
