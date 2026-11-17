@@ -102,14 +102,22 @@ export function Segmented<T extends string | number>({
             aria-checked={on}
             data-testid={testIdPrefix ? `${testIdPrefix}-${String(o.value)}` : undefined}
             onClick={() => onChange(o.value)}
-            className={`flex min-w-0 flex-col items-start justify-center rounded-tile px-3 text-left transition-[background-color,color,box-shadow] duration-quick ease-out active:scale-[0.98] ${
-              size === 'lg' ? 'min-h-[4.25rem] py-2' : 'min-h-[3rem] py-1.5'
+            className={`relative flex min-w-0 flex-col justify-center rounded-tile transition-[background-color,color,box-shadow] duration-quick ease-out active:scale-[0.98] ${
+              size === 'lg' ? 'min-h-[4.25rem] items-start px-3 py-2 text-left' : 'min-h-[3rem] items-center px-2 py-1.5 text-center'
             } ${on ? 'bg-chalk text-night-950' : 'bg-night-800 text-chalk hover:bg-night-700'}`}
           >
-            <span className="flex items-center gap-1.5 text-lead font-bold leading-tight">
-              {on && <Icon name="check" className="h-[0.9em] w-[0.9em] shrink-0" strokeWidth={3} />}
-              {o.label}
-            </span>
+            {size === 'lg' ? (
+              <span className="flex items-center gap-1.5 text-lead font-bold leading-tight">
+                {on && <Icon name="check" className="h-[0.9em] w-[0.9em] shrink-0" strokeWidth={3} />}
+                {o.label}
+              </span>
+            ) : (
+              <>
+                {/* Compact options: the check sits in the corner so it never squeezes a short label. */}
+                {on && <Icon name="check" className="absolute right-1.5 top-1.5 h-[0.7rem] w-[0.7rem]" strokeWidth={3.5} />}
+                <span className="whitespace-nowrap text-body font-bold leading-tight">{o.label}</span>
+              </>
+            )}
             {o.sub && <span className={`mt-0.5 text-small leading-snug ${on ? 'text-night-700' : 'text-night-400'}`}>{o.sub}</span>}
           </button>
         );
