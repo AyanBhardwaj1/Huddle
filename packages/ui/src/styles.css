@@ -117,10 +117,8 @@
   display: inline-block;
   line-height: 1;
   height: 1em;
-  /* Clip the strip vertically only, so wide glyphs keep their side bearings. `overflow-y: clip`
-     is the real clip (clip-path alone let composited strips leak mid-roll in Chrome). */
-  overflow-x: visible;
-  overflow-y: clip;
+  /* clip-path (not overflow) clips the strip: overflow would move the inline-block's baseline to
+     its bottom edge and knock digits off the baseline of the "." and "$" next to them. */
   clip-path: inset(0 -0.2em);
   vertical-align: baseline;
 }

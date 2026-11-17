@@ -122,7 +122,7 @@ function OutcomeTile({ market, index, size, party, d }: { market: Market; index:
     <div className="hd-pop min-w-0" style={delay(d)}>
       <div className={`on-fill relative flex h-full min-w-0 flex-col overflow-hidden rounded-panel px-4 pb-3 pt-3 ${TONE_FILL[tone]} ${kick}`}>
         {(tone === 'other' || tone === 'other-alt') && <span className={`absolute inset-y-0 right-0 w-3 ${TONE_SWATCH[tone]}`} aria-hidden="true" />}
-        <span className="flex min-w-0 items-center gap-2 font-head text-title font-extrabold leading-tight">
+        <span className={`flex min-w-0 items-center gap-2 font-head font-extrabold leading-tight ${market.outcomes.length > 2 ? 'text-lead' : 'text-title'}`}>
           <span className="line-clamp-2 min-w-0 break-words">{o.label}</span>
         </span>
         <span className={`num mt-auto leading-[0.88] ${size === 'hero' ? 'text-hero' : size === 'big' ? 'text-[4.25rem]' : 'text-display'}`}>
@@ -197,8 +197,7 @@ export function PriceChart({ market, className = '', compact = false }: { market
         <span className="truncate">{first.label} price</span>
         <span className={`num flex shrink-0 items-center gap-0.5 text-lead ${diff > 0 ? 'text-yes-600' : diff < 0 ? 'text-no-600' : 'text-ink-muted'}`}>
           {diff !== 0 && <Icon name={diff > 0 ? 'up' : 'down'} className="h-[0.55em] w-[0.55em]" />}
-          {diff > 0 ? '+' : ''}
-          {diff} pts
+          {diff === 0 ? 'Flat' : `${diff > 0 ? '+' : ''}${diff} pts`}
         </span>
       </p>
       <Sparkline points={pts} className={`mt-1 w-full ${compact ? 'h-[2.25rem]' : 'h-[3.25rem]'}`} stroke={TONE_LINE[tone].stroke} fill={TONE_LINE[tone].fill} />
@@ -224,7 +223,7 @@ export function MomentStage({ market, compact = false, tight = false }: { market
   const flash = useReplayClass(locked, 'flash');
   const n = market.outcomes.length;
   const binary = n === 2;
-  const size = compact ? 'display' : tight ? 'big' : 'hero';
+  const size = compact || tight ? 'display' : 'big';
   return (
     <section
       className={`hd-zoom relative flex h-full min-h-0 flex-col overflow-hidden rounded-blob bg-card px-6 pb-4 pt-4 shadow-pop ${locked ? 'is-locked' : ''}`}
@@ -257,10 +256,10 @@ export function MomentStage({ market, compact = false, tight = false }: { market
               </span>
             )}
           </p>
-          <h1 className={`q mt-2.5 line-clamp-3 shrink-0 leading-[1.02] ${compact || tight ? 'text-[2.1rem]' : 'text-[2.6rem]'}`}>
+          <h1 className={`q mt-2 line-clamp-3 shrink-0 leading-[1.02] ${compact || tight ? 'text-[2.05rem]' : 'text-[2.45rem]'}`}>
             <Kinetic text={market.question} delay={140} stagger={45} />
           </h1>
-          <div className="mt-auto flex flex-col gap-2.5 pt-3">
+          <div className="mt-auto flex flex-col gap-2 pt-2.5">
             {binary ? (
               <div className="grid grid-cols-2 gap-3">
                 <OutcomeTile market={market} index={0} size={size} party={p} d={380} />
@@ -315,7 +314,7 @@ function GameCell({ market, big, index }: { market: Market; big: boolean; index:
   const settled = market.state === 'resolved' || market.state === 'final';
   const n = market.outcomes.length;
   return (
-    <article className="hd-rise card flex min-h-0 min-w-0 flex-col gap-2 px-5 py-4" style={delay(index * 90)} aria-label={market.question}>
+    <article className={`hd-rise card flex min-h-0 min-w-0 flex-col overflow-hidden px-5 ${big ? 'gap-2 py-4' : 'gap-1.5 py-3'}`} style={delay(index * 90)} aria-label={market.question}>
       <p className="flex items-center gap-2 text-small font-semibold text-ink-2">
         {market.state === 'open' && (
           <span className="flex items-center gap-1.5 text-zap">
@@ -340,11 +339,11 @@ function GameCell({ market, big, index }: { market: Market; big: boolean; index:
         )}
         <span className="tnum ml-auto font-normal text-ink-muted">{moneyShort(market.volume, p)} traded</span>
       </p>
-      <h2 className={`q line-clamp-2 leading-[1.05] ${big ? 'text-head' : 'text-title'}`}>
+      <h2 className={`q line-clamp-2 shrink-0 leading-[1.05] ${big ? 'text-head' : 'text-title'}`}>
         <Kinetic text={market.question} delay={index * 90 + 80} stagger={35} />
       </h2>
       <SplitBar className={`mt-1 shrink-0 rounded-full ${big ? 'h-3.5' : 'h-2.5'}`} parts={marketSplit(market)} />
-      <ul className={`flex flex-col gap-1 ${big ? 'my-auto' : 'mt-1'}`}>
+      <ul className={`flex min-h-0 flex-col overflow-hidden ${big ? 'my-auto gap-1' : 'mt-0.5 gap-0'}`}>
         {market.outcomes.slice(0, 4).map((o, i) => {
           const tone = toneFor(i, n);
           const won = settled && market.outcome === o.id;
@@ -355,7 +354,7 @@ function GameCell({ market, big, index }: { market: Market; big: boolean; index:
                 {o.label}
                 {won && <Icon name="check" className="ml-1.5 inline h-[0.9em] w-[0.9em] text-zap" title="Winner" />}
               </span>
-              <span className={`num ${big ? 'text-display' : 'text-[2.1rem]'} leading-none ${TONE_TEXT[tone]}`}>
+              <span className={`num ${big ? 'text-display' : 'text-[1.75rem]'} leading-none ${TONE_TEXT[tone]}`}>
                 <Pct p={roomProb(market, o.id)} arrow />
               </span>
             </li>
@@ -463,7 +462,7 @@ export function CaptionBar({ lines }: { lines: AnnouncerLine[] }) {
           <Icon name="speaker" className="relative h-5 w-5" />
         </span>
         {line ? (
-          <p className="line-clamp-2 min-w-0 text-lead font-semibold leading-snug">
+          <p className="line-clamp-2 min-w-0 text-lead font-semibold leading-[1.18]">
             <Kinetic text={line.text} replay={line.id} stagger={28} />
           </p>
         ) : (

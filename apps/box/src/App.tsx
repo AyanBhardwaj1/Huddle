@@ -90,10 +90,10 @@ export function PartyScreens() {
       </div>
       {s && view.status === 'reconnecting' && (
         <div
-          className="hd-drop fixed left-1/2 top-2 z-toast flex -translate-x-1/2 items-center gap-2 rounded-full bg-ink py-2 pl-2 pr-5 text-body font-semibold text-white shadow-pop"
+          className="hd-drop fixed left-1/2 top-[0.85rem] z-toast flex -translate-x-1/2 items-center gap-2 whitespace-nowrap rounded-full bg-ink py-1.5 pl-1.5 pr-4 text-small font-semibold text-white shadow-pop"
           role="status"
         >
-          <Mark size="1.5rem" lit={3} spin className="text-white/40" /> Reconnecting… bets and balances are safe on the engine.
+          <Mark size="1.5rem" lit={3} spin className="text-white/40" /> Reconnecting… bets are safe
         </div>
       )}
       <LedRing led={view.led} />

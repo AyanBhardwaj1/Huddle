@@ -111,8 +111,8 @@ export function LiveBoard() {
   let stage;
   if (boardView === 'scorecard') {
     stage = (
-      <section className="hd-zoom card h-full overflow-hidden rounded-blob px-8 py-6 shadow-pop">
-        <ScorecardPanel scorecard={s.scorecard} />
+      <section className="hd-zoom card h-full overflow-hidden rounded-blob px-7 py-5 shadow-pop">
+        <ScorecardPanel scorecard={s.scorecard} stage />
       </section>
     );
   } else if (takeover) stage = <MomentStage key={takeover.id} market={takeover} compact={docked} tight={ds.length > 0} />;
