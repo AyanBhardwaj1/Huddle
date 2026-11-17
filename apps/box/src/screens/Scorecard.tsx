@@ -31,12 +31,12 @@ export function ScorecardPanel({ scorecard, compact = false }: { scorecard: Scor
     <div className={`flex h-full min-h-0 flex-col ${compact ? 'gap-3' : 'gap-5'}`}>
       {compact ? (
         <div className="flex items-baseline justify-between gap-3">
-          <h2 className="q text-title leading-none">Who's smarter?</h2>
+          <h2 className="q text-title leading-none">Who’s smarter?</h2>
           <p className="text-small text-night-400">Brier score, shorter bar wins</p>
         </div>
       ) : (
         <div>
-          <h2 className="q text-display leading-none">Who's smarter?</h2>
+          <h2 className="q text-display leading-none">Who’s smarter?</h2>
           <p className="mt-1 text-lead text-night-400">
             Friends vs. the model vs. Gemini, over {scorecard.n} {scorecard.n === 1 ? 'question' : 'questions'}
           </p>

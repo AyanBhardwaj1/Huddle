@@ -1,3 +1,4 @@
+import { MotionConfig } from 'framer-motion';
 import { useEffect } from 'react';
 import { SoundGate, TalkOverlay, useBoxInputs } from './components/controls';
 import { HostPanel } from './components/HostPanel';
@@ -119,6 +120,8 @@ export function App() {
   const fixture = fixtureParam();
   if (fixture === 'kit') return <Kit />;
   return (
+    // reducedMotion="user": framer layout springs (leaderboard, lobby) honour prefers-reduced-motion.
+    <MotionConfig reducedMotion="user">
     <div className="relative h-full w-full overflow-hidden bg-night-950">
       {fixture ? (
         <FixtureApp kind={fixture} />
@@ -133,5 +136,6 @@ export function App() {
       )}
       <ToastHost />
     </div>
+    </MotionConfig>
   );
 }

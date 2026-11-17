@@ -60,7 +60,7 @@ describe('box screens render from fixtures', () => {
   });
   it('scorecard overlay', () => {
     const html = renderToString(<ScorecardPanel scorecard={fixtureView('scorecard').snapshot!.scorecard} />);
-    expect(html).toContain('Who&#x27;s smarter?');
+    expect(html).toContain('Who’s smarter?');
     expect(html).toContain('Brier score');
   });
   it('lobby: QR, code and players', () => {

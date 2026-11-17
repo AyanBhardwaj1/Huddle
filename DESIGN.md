@@ -160,7 +160,10 @@ Tokens (CSS variables in `@huddle/ui/styles.css`, Tailwind `duration-*` / `ease-
    confirmation (`buy-in-done`) stays until the player moves on (fixed on main in
    `apps/player/src/screens/Party.tsx`).
 4. `prefers-reduced-motion`: every `hd-*` class has a reduced variant (instant, or hidden if purely
-   decorative). framer: use `useReducedMotion()` from `@huddle/ui` and drop `layout` springs.
+   decorative). framer: wrap the app in `<MotionConfig reducedMotion="user">` (the box does) and use
+   `useReducedMotion()` from `@huddle/ui` for anything custom.
+7. Celebrations never cover live betting: the box drops queued result reveals the moment a new
+   moment market opens, and holds at most two. The phone should do the same with its result sheets.
 5. Animate `transform` and `opacity` only (the variable-font width of the countdown is the one
    deliberate exception, on a single element). List transition properties; never `transition: all`.
 6. Motion never blocks input. Nothing waits for an animation before accepting a tap.

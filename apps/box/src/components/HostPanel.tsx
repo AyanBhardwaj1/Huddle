@@ -163,7 +163,7 @@ function CustomMarket() {
               name={`outcome-${i + 1}`}
               autoComplete="off"
               onChange={(e) => setOutcomes(outcomes.map((x, j) => (j === i ? e.target.value.slice(0, 40) : x)))}
-              className="h-11 w-[7rem] bg-transparent px-3 text-body text-chalk focus:outline-none"
+              className="h-11 w-[7rem] bg-transparent px-3 text-body text-chalk focus-visible:outline-none"
               aria-label={`Outcome ${i + 1}`}
             />
             {outcomes.length > 2 && (
