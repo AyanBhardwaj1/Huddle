@@ -1,12 +1,13 @@
 import type { AnnouncerLine } from '@huddle/shared';
-import { AnimatePresence, motion } from 'framer-motion';
+import { Icon } from '@huddle/ui';
 import { useEffect, useRef, useState } from 'react';
 import { createAnnouncerQueue, stopAnnouncer, unlockAudio } from '../lib/audio';
 import { useApp } from '../lib/session';
-import { cx, useNow, useParty } from './ctx';
-import { Icon } from './Icon';
+import { cx, useNow, useParty, useUi } from './ctx';
+import { Empty, Sheet } from './primitives';
 
 const CAPTION_MS = 7000;
+const TIME = new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' });
 
 /** Plays new announcer lines when the speaker is on; returns the line currently speaking. */
 export function useAnnouncer(speakerOn: boolean): AnnouncerLine | null {
@@ -57,65 +58,112 @@ export function useAnnouncer(speakerOn: boolean): AnnouncerLine | null {
   return speaking;
 }
 
-/** Caption toasts (every announcer line, PRD section 13) plus app notices, above the tab bar. */
+type Slot =
+  | { key: string; kind: 'talk'; text: string; listening: boolean }
+  | { key: string; kind: 'notice'; text: string; tone: 'info' | 'win' | 'loss' | 'error'; id: number }
+  | { key: string; kind: 'line'; text: string; fresh: boolean; speaking: boolean };
+
+/**
+ * The caption slot: one line at a time, in a fixed place above the tab bar, left of the mic.
+ * Talk > your notices > the announcer. The latest announcer line rests there dimmed; tap it for
+ * everything said tonight. Nothing ever stacks over the cards or the mic.
+ */
 export function Captions({ speaking }: { speaking: AnnouncerLine | null }) {
   const { snap } = useParty();
   const now = useNow(500);
   const notices = useApp((s) => s.notices);
   const dismiss = useApp((s) => s.dismiss);
-  const [hidden, setHidden] = useState<Set<string>>(new Set());
-  const lines = snap.announcer
-    .filter((l) => !hidden.has(l.id) && (l.id === speaking?.id || now - Date.parse(l.createdAt) < CAPTION_MS))
-    .slice(-2);
+  const talk = useUi((s) => s.talk);
+  const setHistory = useUi((s) => s.setHistory);
+  const last = speaking ?? snap.announcer[snap.announcer.length - 1];
+  const notice = notices[notices.length - 1];
+
+  let slot: Slot | null = null;
+  if (talk) slot = { key: `t${talk.listening ? 'l' : talk.text}`, kind: 'talk', ...talk };
+  else if (notice) slot = { key: `n${notice.id}`, kind: 'notice', text: notice.text, tone: notice.tone, id: notice.id };
+  else if (last)
+    slot = {
+      key: `a${last.id}`,
+      kind: 'line',
+      text: last.text,
+      speaking: last.id === speaking?.id,
+      fresh: last.id === speaking?.id || now - Date.parse(last.createdAt) < CAPTION_MS,
+    };
 
   return (
-    <div className="pointer-events-none fixed inset-x-0 bottom-[calc(env(safe-area-inset-bottom)+76px)] z-30 mx-auto flex max-w-xl flex-col gap-2 pl-3 pr-[88px]">
-      <AnimatePresence initial={false}>
-        {lines.map((l) => (
-          <motion.button
-            layout
-            key={l.id}
-            initial={{ opacity: 0, y: 16, scale: 0.97 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 8 }}
-            onClick={() => setHidden(new Set(hidden).add(l.id))}
+    <div className="min-w-0 flex-1" aria-live="polite" aria-atomic="true">
+      {!slot && (
+        <p className="flex h-14 items-center px-1 text-small text-night-400">The announcer's lines show up here. Hold the mic to ask anything.</p>
+      )}
+      {slot?.kind === 'talk' && (
+        <div key={slot.key} className="pl-caption flex h-14 items-center gap-3 rounded-tile bg-night-800 px-3.5">
+          <Icon name="mic" size={18} className="shrink-0 text-flood" />
+          <span className="line-clamp-2 min-w-0 text-small leading-snug text-chalk">{slot.listening ? 'Listening… let go to send' : slot.text}</span>
+        </div>
+      )}
+      {slot?.kind === 'notice' && (
+        <button
+          key={slot.key}
+          onClick={() => dismiss(slot.id)}
+          className={cx(
+            'pl-caption flex h-14 w-full items-center gap-3 rounded-tile px-3.5 text-left',
+            slot.tone === 'error' ? 'bg-no-deep' : 'bg-night-800',
+          )}
+        >
+          <Icon
+            name={slot.tone === 'error' ? 'warn' : 'check'}
+            size={18}
+            strokeWidth={2.4}
+            className={cx('shrink-0', slot.tone === 'error' ? 'text-no' : slot.tone === 'loss' ? 'text-no' : 'text-flood')}
+          />
+          <span className="line-clamp-2 min-w-0 text-small font-semibold leading-snug text-chalk">{slot.text}</span>
+          <span className="hd-sr">Dismiss</span>
+        </button>
+      )}
+      {slot?.kind === 'line' && (
+        <button
+          key={slot.key}
+          onClick={() => setHistory(true)}
+          className="pl-caption flex h-14 w-full items-center gap-3 rounded-tile bg-night-900 px-3.5 text-left transition-colors duration-quick hover:bg-night-850"
+          aria-label={`Announcer: ${slot.text}. Show everything the announcer said`}
+        >
+          <Icon name="speaker" size={18} className={cx('shrink-0 transition-colors duration-base', slot.speaking ? 'text-flood' : 'text-night-400')} />
+          <span
             className={cx(
-              'pointer-events-auto flex items-start gap-2.5 rounded-2xl border bg-pitch-900/95 px-3 py-2.5 text-left shadow-card backdrop-blur',
-              l.id === speaking?.id ? 'border-volt/50' : 'border-pitch-700',
+              'line-clamp-2 min-w-0 text-small leading-snug transition-colors duration-linger',
+              slot.fresh ? 'text-chalk' : 'text-night-400',
             )}
-            aria-live="polite"
           >
-            <span className={cx('mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-full', l.id === speaking?.id ? 'bg-volt text-volt-ink' : 'bg-pitch-700 text-pitch-200')}>
-              <Icon name="speaker" size={15} />
-            </span>
-            <span className="min-w-0">
-              <span className="block text-[10px] font-semibold uppercase tracking-[0.14em] text-pitch-400">Announcer</span>
-              <span className="block text-[15px] leading-snug text-pitch-50">{l.text}</span>
-            </span>
-          </motion.button>
-        ))}
-        {notices.map((n) => (
-          <motion.button
-            layout
-            key={`n${n.id}`}
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 8 }}
-            onClick={() => dismiss(n.id)}
-            className={cx(
-              'pointer-events-auto flex items-center gap-2 self-start rounded-full px-4 py-2.5 text-sm font-semibold shadow-card',
-              n.tone === 'win' && 'bg-volt text-volt-ink',
-              n.tone === 'loss' && 'bg-down text-down-ink',
-              n.tone === 'error' && 'bg-pitch-700 text-down',
-              n.tone === 'info' && 'bg-pitch-700 text-pitch-50',
-            )}
-            role="status"
-          >
-            <Icon name={n.tone === 'error' ? 'x' : 'check'} size={16} />
-            {n.text}
-          </motion.button>
-        ))}
-      </AnimatePresence>
+            {slot.text}
+          </span>
+        </button>
+      )}
     </div>
+  );
+}
+
+/** Everything the announcer said tonight, newest first (opened from the caption slot). */
+export function CaptionHistory() {
+  const { snap } = useParty();
+  const open = useUi((s) => s.historyOpen);
+  const setOpen = useUi((s) => s.setHistory);
+  const lines = [...snap.announcer].reverse();
+  return (
+    <Sheet open={open} onClose={() => setOpen(false)} title="The announcer">
+      {lines.length ? (
+        <ol className="divide-y divide-night-700">
+          {lines.map((l) => (
+            <li key={l.id} className="flex gap-3 py-3">
+              <time className="w-12 shrink-0 pt-0.5 text-cap text-night-400 tnum" dateTime={l.createdAt}>
+                {TIME.format(new Date(l.createdAt))}
+              </time>
+              <p className="min-w-0 text-pretty text-body text-chalk">{l.text}</p>
+            </li>
+          ))}
+        </ol>
+      ) : (
+        <Empty>The announcer calls every question, result and big trade. Their lines show up here.</Empty>
+      )}
+    </Sheet>
   );
 }

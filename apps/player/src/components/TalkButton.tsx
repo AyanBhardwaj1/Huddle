@@ -1,12 +1,11 @@
 import type { AgentSession } from '@huddle/shared';
-import { AnimatePresence, motion } from 'framer-motion';
-import { useEffect, useRef, useState } from 'react';
+import { Icon, Mark } from '@huddle/ui';
+import { useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from 'react';
+import { fixtureVariant } from '../fixture';
 import { getAgentSession } from '../lib/api';
 import { buzz, HAPTIC } from '../lib/haptics';
-import { act, cx, useParty } from './ctx';
-import { Icon, Spinner } from './Icon';
-import { InlineError } from './MarketCard';
-import { Sheet } from './primitives';
+import { act, cx, useParty, useUi } from './ctx';
+import { InlineError, Sheet } from './primitives';
 
 /**
  * TALK (PRD Flow E, D12): hold to talk.
@@ -37,13 +36,16 @@ function speechCtor(): SRCtor | null {
 type Mode = 'agent' | 'speech' | 'text';
 type VoiceConv = { setMicMuted(m: boolean): void; endSession(): Promise<void> };
 
+const LISTENING = 'Listening…';
+
 export function TalkButton({ fixture }: { fixture: boolean }) {
   const { client, snap, me } = useParty();
   const [mode, setMode] = useState<Mode | null>(null);
   const [agent, setAgent] = useState<AgentSession | null>(null);
   const [holding, setHolding] = useState(false);
   const [busy, setBusy] = useState(false);
-  const [bubble, setBubble] = useState<string | null>(null);
+  const setTalk = useUi((st) => st.setTalk);
+  const setBubble = (text: string | null) => setTalk(text === null ? null : { text, listening: text === LISTENING });
   const [textOpen, setTextOpen] = useState(false);
   const held = useRef(false);
   const rec = useRef<SpeechRecognitionLike | null>(null);
@@ -55,7 +57,7 @@ export function TalkButton({ fixture }: { fixture: boolean }) {
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const session = fixture ? null : await getAgentSession(snap.party.code, me);
+      const session = fixture || fixtureVariant() ? null : await getAgentSession(snap.party.code, me);
       if (cancelled) return;
       setAgent(session);
       setMode(session ? 'agent' : speechCtor() ? 'speech' : 'text');
@@ -70,6 +72,8 @@ export function TalkButton({ fixture }: { fixture: boolean }) {
       rec.current?.abort();
       void conv.current?.endSession().catch(() => {});
       if (idle.current) clearTimeout(idle.current);
+      if (bubbleTimer.current) clearTimeout(bubbleTimer.current);
+      useUi.getState().setTalk(null);
     },
     [],
   );
@@ -101,7 +105,7 @@ export function TalkButton({ fixture }: { fixture: boolean }) {
       let s = '';
       for (let i = 0; i < e.results.length; i++) s += e.results[i]![0]!.transcript;
       transcript.current = s;
-      setBubble(s || 'Listening…');
+      setBubble(s || LISTENING);
     };
     r.onerror = (e) => {
       if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
@@ -118,7 +122,7 @@ export function TalkButton({ fixture }: { fixture: boolean }) {
     rec.current = r;
     try {
       r.start();
-      setBubble('Listening…');
+      setBubble(LISTENING);
     } catch {
       rec.current = null;
     }
@@ -129,7 +133,7 @@ export function TalkButton({ fixture }: { fixture: boolean }) {
     if (idle.current) clearTimeout(idle.current);
     if (conv.current) {
       conv.current.setMicMuted(false);
-      setBubble('Listening…');
+      setBubble(LISTENING);
       return;
     }
     if (!agent) return;
@@ -149,7 +153,7 @@ export function TalkButton({ fixture }: { fixture: boolean }) {
         onError: () => flash("The announcer couldn't hear you. Try again."),
       } as Parameters<typeof Conversation.startSession>[0])) as unknown as VoiceConv;
       conv.current = c;
-      if (held.current) setBubble('Listening…');
+      if (held.current) setBubble(LISTENING);
       else muteAndIdle();
     } catch {
       // No mic permission or no network: fall back to on-device recognition.
@@ -187,42 +191,45 @@ export function TalkButton({ fixture }: { fixture: boolean }) {
     if (mode === 'agent' && conv.current) muteAndIdle();
   };
 
+  const keyDown = (e: ReactKeyboardEvent) => {
+    if ((e.key === ' ' || e.key === 'Enter') && !e.repeat) {
+      e.preventDefault();
+      press();
+    }
+  };
+  const keyUp = (e: ReactKeyboardEvent) => {
+    if (e.key === ' ' || e.key === 'Enter') release();
+  };
+
   return (
     <>
-      <div className="fixed bottom-[calc(env(safe-area-inset-bottom)+76px)] right-0 z-30 w-full">
-        <div className="relative mx-auto max-w-xl">
-          <AnimatePresence>
-            {bubble && (
-              <motion.div
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0 }}
-                className="absolute bottom-[74px] right-4 max-w-[78%] rounded-2xl rounded-br-sm bg-pitch-50 px-3.5 py-2 text-[15px] text-pitch-950 shadow-card"
-              >
-                {bubble}
-              </motion.div>
-            )}
-          </AnimatePresence>
-          <button
-            onPointerDown={(e) => {
-              (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId);
-              press();
-            }}
-            onPointerUp={release}
-            onPointerCancel={release}
-            onContextMenu={(e) => e.preventDefault()}
-            className={cx(
-              'absolute bottom-0 right-4 grid h-16 w-16 select-none place-items-center rounded-full shadow-card transition-transform [-webkit-touch-callout:none]',
-              holding ? 'scale-110 bg-volt text-volt-ink' : 'bg-pitch-800 text-volt ring-1 ring-volt/40',
-            )}
-            style={{ touchAction: 'none' }}
-            aria-label={mode === 'text' ? 'Ask the announcer' : 'Hold to talk to the announcer'}
-          >
-            {holding && <span className="absolute inset-0 rounded-full border-2 border-volt animate-pulse-ring" />}
-            {busy ? <Spinner size={24} /> : <Icon name="mic" size={28} />}
-          </button>
-        </div>
-      </div>
+      <button
+        onPointerDown={(e) => {
+          (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId);
+          press();
+        }}
+        onPointerUp={release}
+        onPointerCancel={release}
+        onKeyDown={keyDown}
+        onKeyUp={keyUp}
+        onContextMenu={(e) => e.preventDefault()}
+        className={cx(
+          'relative grid h-14 w-14 shrink-0 select-none place-items-center rounded-full shadow-float [-webkit-touch-callout:none]',
+          'transition-[transform,background-color,color] duration-quick ease-out',
+          holding ? 'scale-110 bg-flood text-flood-ink' : 'bg-night-800 text-flood ring-1 ring-inset ring-night-600 hover:bg-night-700',
+        )}
+        style={{ touchAction: 'none' }}
+        aria-label={mode === 'text' ? 'Ask the announcer' : 'Hold to talk to the announcer'}
+        aria-pressed={mode === 'text' ? undefined : holding}
+      >
+        {holding && (
+          <>
+            <span className="pl-listen absolute inset-0 rounded-full border-2 border-flood" aria-hidden="true" />
+            <span className="pl-listen absolute inset-0 rounded-full border-2 border-flood" style={{ ['--d' as string]: '700ms' }} aria-hidden="true" />
+          </>
+        )}
+        {busy ? <Mark size="1.6rem" spin /> : <Icon name="mic" size={26} />}
+      </button>
       <TextAsk open={textOpen} onClose={() => setTextOpen(false)} onSend={send} />
     </>
   );
@@ -250,14 +257,16 @@ function TextAsk({ open, onClose, onSend }: { open: boolean; onClose: () => void
             setError(null);
           }}
           maxLength={300}
-          placeholder="What are the odds Portugal hits seven?"
-          className="h-14 w-full rounded-2xl border border-pitch-700 bg-pitch-800 px-4 text-base text-pitch-50 placeholder:text-pitch-400 focus:border-volt focus:outline-none"
+          placeholder="What are the odds Portugal scores again?"
+          className="field h-14"
+          aria-label="Your question"
+          name="question"
+          autoComplete="off"
           enterKeyHint="send"
-          autoFocus
         />
-        <p className="text-xs text-pitch-400">Try “put 5 on yes”: the announcer drafts it and you confirm.</p>
-        <button type="submit" className="flex min-h-[52px] w-full items-center justify-center gap-2 rounded-2xl bg-volt font-display text-xl font-bold uppercase text-volt-ink">
-          <Icon name="send" size={18} /> Ask
+        <p className="text-small text-night-400">Try “put 5 on yes”: the announcer drafts it and you confirm.</p>
+        <button type="submit" className="btn-primary w-full">
+          <Icon name="send" size={18} /> Ask the announcer
         </button>
         {error && <InlineError text={error} />}
       </form>

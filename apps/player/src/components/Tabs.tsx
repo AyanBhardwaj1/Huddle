@@ -1,60 +1,117 @@
-import { formatPct } from '@huddle/shared';
-import type { ReactNode } from 'react';
+import type { PlayerPublic } from '@huddle/shared';
+import { Icon, MarkerShape, SPRING, pctText, useReducedMotion } from '@huddle/ui';
 import { motion } from 'framer-motion';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { ammCashOutValue, holdingsFor, marketResult, rankPlayers } from '../lib/markets';
-import { money, pnl } from '../lib/money';
+import { money } from '../lib/money';
 import { cx, useParty } from './ctx';
-import { Icon } from './Icon';
-import { ResultBadge, toneFor } from './MarketCard';
-import { Pill, Ticker } from './primitives';
+import { ResultBadge } from './MarketCard';
+import { Avatar, Empty, Money, SectionTitle } from './primitives';
+import { tone } from './tones';
 
-export function Leaderboard({ title = 'Leaderboard' }: { title?: string }) {
+/** Rank changes since the last render: pubkey -> places gained (board-reorder's ▲). */
+function useClimbers(ranked: PlayerPublic[]): Map<string, number> {
+  const prev = useRef<Map<string, number> | null>(null);
+  const [climbers, setClimbers] = useState<Map<string, number>>(new Map());
+  const order = ranked.map((p) => p.pubkey).join(',');
+  useEffect(() => {
+    const now = new Map(ranked.map((p, i) => [p.pubkey, i]));
+    const before = prev.current;
+    prev.current = now;
+    if (!before) return;
+    const up = new Map<string, number>();
+    now.forEach((i, k) => {
+      const was = before.get(k);
+      if (was != null && was > i) up.set(k, was - i);
+    });
+    if (!up.size) return;
+    setClimbers(up);
+    const t = setTimeout(() => setClimbers(new Map()), 1600);
+    return () => clearTimeout(t);
+  }, [order]);
+  return climbers;
+}
+
+/** The leaderboard: rows reorder on a spring (board-reorder); whoever climbs flashes ▲. */
+export function Leaderboard({ title = 'Leaders' }: { title?: string }) {
   const { snap, me, points } = useParty();
+  const reduce = useReducedMotion();
   const ranked = rankPlayers(snap.players);
+  const climbers = useClimbers(ranked);
   return (
-    <section>
-      <SectionTitle>{title}</SectionTitle>
-      <ol className="space-y-2">
-        {ranked.map((p, i) => (
-          <motion.li
-            layout
-            key={p.pubkey}
-            className={cx(
-              'flex items-center gap-3 rounded-2xl border px-3 py-3',
-              p.pubkey === me ? 'border-volt/40 bg-volt/[0.06]' : 'border-pitch-700 bg-pitch-900',
-            )}
-          >
-            <span className={cx('w-7 text-center font-display text-2xl font-bold tnum', i === 0 ? 'text-volt' : 'text-pitch-400')}>{i + 1}</span>
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-1.5">
-                <span className="truncate font-semibold text-pitch-50">{p.name}</span>
-                {p.pubkey === me && <Pill className="bg-volt/20 text-volt">You</Pill>}
-                {!p.connected && <span className="h-1.5 w-1.5 rounded-full bg-pitch-600" title="Offline" />}
-              </div>
-              <div className="mt-0.5 flex items-center gap-1.5 text-xs text-pitch-400">
-                {p.remote && (
-                  <span className="flex items-center gap-1 text-gemini">
-                    <Icon name="globe" size={12} /> Remote
-                  </span>
-                )}
-                {p.streak != null && Math.abs(p.streak) >= 2 && (
-                  <span className={cx('font-semibold', p.streak > 0 ? 'text-up' : 'text-down')}>
-                    {p.streak > 0 ? `${p.streak} wins in a row` : `${-p.streak} losses in a row`}
-                  </span>
-                )}
-                {!p.remote && (p.streak == null || Math.abs(p.streak) < 2) && <span>in {money(p.deposited, points)}</span>}
-              </div>
-            </div>
-            <div className={cx('flex items-center gap-1 font-display text-xl font-bold tnum', p.pnl > 0 ? 'text-up' : p.pnl < 0 ? 'text-down' : 'text-pitch-200')}>
-              {p.pnl !== 0 && <Icon name={p.pnl > 0 ? 'up' : 'down'} size={14} />}
-              <Ticker value={p.pnl} format={(v) => pnl(Math.round(v), points)} flash={false} />
-            </div>
-          </motion.li>
-        ))}
-      </ol>
-      {!ranked.length && <Empty>No players yet.</Empty>}
+    <section aria-labelledby="board-title">
+      <SectionTitle id="board-title">{title}</SectionTitle>
+      {ranked.length ? (
+        <ol className="overflow-hidden rounded-panel bg-night-900">
+          {ranked.map((p, i) => {
+            const mine = p.pubkey === me;
+            const climbed = climbers.get(p.pubkey);
+            return (
+              <motion.li
+                layout={reduce ? false : 'position'}
+                transition={SPRING.reorder}
+                key={p.pubkey}
+                className={cx('relative flex min-h-16 items-center gap-3 px-4 py-3', i > 0 && 'border-t border-night-700', mine && 'bg-night-850')}
+              >
+                {mine && <span className="absolute inset-y-0 left-0 w-1 bg-flood" aria-hidden="true" />}
+                <span
+                  className={cx(
+                    'w-7 shrink-0 text-center font-display text-title font-extrabold stretch-condensed tnum',
+                    i === 0 ? 'text-chalk' : 'text-night-400',
+                  )}
+                >
+                  {i + 1}
+                </span>
+                <Avatar name={p.name} />
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="truncate font-bold text-chalk">{p.name}</span>
+                    {mine && <span className="text-small text-night-400">you</span>}
+                    {i === 0 && <Icon name="crown" size={16} className="shrink-0 text-night-200" title="Leading" />}
+                    {climbed && (
+                      <span className="hd-pop flex items-center gap-0.5 text-cap font-bold text-yes" style={{ ['--d' as string]: '200ms' }}>
+                        <Icon name="up" size={10} /> {climbed}
+                      </span>
+                    )}
+                  </div>
+                  <div className="mt-0.5 flex flex-wrap items-center gap-x-2 text-cap text-night-400">
+                    {p.remote && (
+                      <span className="flex items-center gap-1">
+                        <Icon name="globe" size={12} /> Remote
+                      </span>
+                    )}
+                    {!p.connected && <span>Away</span>}
+                    {p.streak != null && Math.abs(p.streak) >= 2 ? (
+                      <span className={cx('font-semibold', p.streak > 0 ? 'text-yes' : 'text-no')}>
+                        {p.streak > 0 ? `${p.streak} wins in a row` : `${-p.streak} losses in a row`}
+                      </span>
+                    ) : (
+                      <span className="tnum">in for {money(p.deposited, points)}</span>
+                    )}
+                  </div>
+                </div>
+                <span
+                  className={cx(
+                    'flex shrink-0 items-center gap-1 font-display text-lead font-extrabold stretch-condensed',
+                    p.pnl > 0 ? 'text-yes' : p.pnl < 0 ? 'text-no' : 'text-night-200',
+                  )}
+                >
+                  {p.pnl !== 0 && <Icon name={p.pnl > 0 ? 'up' : 'down'} size={11} />}
+                  <Money value={p.pnl} points={points} signed flash={false} />
+                </span>
+              </motion.li>
+            );
+          })}
+        </ol>
+      ) : (
+        <Empty mark>Nobody's in yet. Share the code and the board fills up.</Empty>
+      )}
     </section>
   );
+}
+
+function Panel({ children, className }: { children: ReactNode; className?: string }) {
+  return <div className={cx('overflow-hidden rounded-panel bg-night-900', className)}>{children}</div>;
 }
 
 export function MyBets() {
@@ -67,71 +124,88 @@ export function MyBets() {
     .filter((x) => x.res.kind !== 'none')
     .sort((a, b) => Date.parse(b.m.resolvedAt ?? b.m.createdAt) - Date.parse(a.m.resolvedAt ?? a.m.createdAt));
   const offers = snap.offers.filter((o) => o.maker === me && o.open && o.filled < o.makerStake);
+  const openRows = open.flatMap((m) => holdingsFor(m, positions).map((h) => ({ m, h })));
 
   return (
-    <div className="space-y-6">
-      <section>
-        <SectionTitle>Open</SectionTitle>
-        <div className="space-y-2">
-          {open.map((m) =>
-            holdingsFor(m, positions).map((h) => {
+    <div className="space-y-8">
+      <section aria-labelledby="open-title">
+        <SectionTitle id="open-title" count={openRows.length + offers.length}>
+          In play
+        </SectionTitle>
+        {openRows.length || offers.length ? (
+          <Panel>
+            {openRows.map(({ m, h }, i) => {
               const idx = m.outcomes.findIndex((o) => o.id === h.outcome);
+              const t = tone(idx, m.outcomes.length);
               const value = m.mode === 'amm' ? ammCashOutValue(m, h.shares, h.outcome) : null;
               return (
-                <div key={m.id + h.outcome} className="rounded-2xl border border-pitch-700 bg-pitch-900 p-3">
-                  <div className="text-sm text-pitch-200">{m.question}</div>
-                  <div className="mt-1.5 flex items-baseline justify-between gap-2">
-                    <span className="font-display text-xl font-bold">
-                      <span className="tnum">{money(h.stake, points)}</span> on <span className={toneFor(idx).text}>{m.outcomes[idx]?.label}</span>
+                <div key={m.id + h.outcome} className={cx('relative py-3 pl-5 pr-4', i > 0 && 'border-t border-night-700')}>
+                  <span className={cx('absolute inset-y-3 left-0 w-1 rounded-r-full', t.rule)} aria-hidden="true" />
+                  <p className="text-small text-night-200">{m.question}</p>
+                  <div className="mt-1 flex items-baseline justify-between gap-3">
+                    <span className="font-display text-lead font-bold stretch-semi">
+                      <span className="tnum">{money(h.stake, points)}</span> on <span className={t.text}>{m.outcomes[idx]?.label}</span>
                     </span>
-                    <span className="text-xs text-pitch-400 tnum">
-                      {value != null ? `worth ${money(value, points)}` : `pays ≈ ${money(h.potential, points)}`}
+                    <span className="shrink-0 text-cap text-night-400">
+                      {value != null ? 'worth ' : 'pays about '}
+                      <Money value={value ?? h.potential} points={points} className="text-small font-bold text-chalk" />
                     </span>
                   </div>
                   {m.state === 'locked' && (
-                    <div className="mt-1 flex items-center gap-1 text-xs text-pitch-400">
-                      <Icon name="lock" size={12} /> Locked, waiting for the result
-                    </div>
+                    <p className="mt-1 flex items-center gap-1.5 text-cap text-night-400">
+                      <Icon name="lock" size={13} /> Locked, waiting for the result
+                    </p>
                   )}
                 </div>
               );
-            }),
-          )}
-          {offers.map((o) => {
-            const m = snap.markets.find((x) => x.id === o.marketId);
-            return (
-              <div key={o.id} className="rounded-2xl border border-dashed border-pitch-600 p-3 text-sm">
-                <div className="text-pitch-200">{m?.question}</div>
-                <div className="mt-1 text-pitch-50">
-                  Your offer: {money(o.makerStake - o.filled, points)} unmatched at <span className="tnum">{o.odds.toFixed(2)}</span>
+            })}
+            {offers.map((o, i) => {
+              const m = snap.markets.find((x) => x.id === o.marketId);
+              return (
+                <div key={o.id} className={cx('py-3 pl-5 pr-4', (i > 0 || openRows.length > 0) && 'border-t border-night-700')}>
+                  <p className="text-small text-night-200">{m?.question}</p>
+                  <p className="mt-1 text-body text-chalk">
+                    Your offer: <span className="font-display font-bold tnum">{money(o.makerStake - o.filled, points)}</span> unmatched at{' '}
+                    <span className="font-display font-bold tnum">{o.odds.toFixed(2)}</span>
+                  </p>
                 </div>
-              </div>
-            );
-          })}
-          {!open.length && !offers.length && <Empty>No open bets. Tap a question to get in.</Empty>}
-        </div>
+              );
+            })}
+          </Panel>
+        ) : (
+          <Empty>Nothing in play. Pick a side on a question and it shows up here.</Empty>
+        )}
       </section>
-      <section>
-        <SectionTitle>History</SectionTitle>
-        <div className="space-y-2">
-          {history.map(({ m, res }) => (
-            <div key={m.id} className="flex items-center justify-between gap-3 rounded-2xl border border-pitch-700 bg-pitch-900 p-3">
-              <div className="min-w-0">
-                <div className="truncate text-sm text-pitch-200">{m.question}</div>
-                <div className="text-xs text-pitch-400">
-                  {m.state === 'voided' ? 'Voided' : `Result: ${m.outcomes.find((o) => o.id === m.outcome)?.label ?? '—'}`}
+      <section aria-labelledby="history-title">
+        <SectionTitle id="history-title" count={history.length}>
+          Settled
+        </SectionTitle>
+        {history.length ? (
+          <Panel>
+            {history.map(({ m, res }, i) => (
+              <div key={m.id} className={cx('flex items-center justify-between gap-3 px-4 py-3', i > 0 && 'border-t border-night-700')}>
+                <div className="min-w-0">
+                  <p className="text-small text-night-200">{m.question}</p>
+                  <p className="text-cap text-night-400">
+                    {m.state === 'voided' ? 'Voided' : `Result: ${m.outcomes.find((o) => o.id === m.outcome)?.label ?? '–'}`}
+                    {m.state === 'disputed' && ', under review'}
+                  </p>
                 </div>
+                <span className="shrink-0 text-small">
+                  <ResultBadge res={res} points={points} />
+                </span>
               </div>
-              <ResultBadge res={res} points={points} />
-            </div>
-          ))}
-          {!history.length && <Empty>Settled bets show up here.</Empty>}
-        </div>
+            ))}
+          </Panel>
+        ) : (
+          <Empty>Results land here the moment a question settles.</Empty>
+        )}
       </section>
     </div>
   );
 }
 
+/** Friends vs. Model vs. Gemini: Brier scores, and each question on one 0 to 100 axis. */
 export function ScorecardView() {
   const { snap } = useParty();
   const sc = snap.scorecard;
@@ -144,48 +218,82 @@ export function ScorecardView() {
     .filter((x) => x.v != null)
     .sort((x, y) => x.v! - y.v!)[0]?.k;
   const tiles = [
-    { k: 'room', label: 'Friends', v: b.room, color: 'text-volt', ring: 'border-volt/40' },
-    { k: 'model', label: 'Model', v: b.model, color: 'text-model', ring: 'border-model/40' },
-    { k: 'gemini', label: 'Gemini', v: b.gemini, color: 'text-gemini', ring: 'border-gemini/40' },
+    { k: 'room', label: 'Friends', v: b.room, mark: <span className="h-2.5 w-2.5 rounded-full bg-flood" />, num: 'text-flood' },
+    { k: 'model', label: 'Model', v: b.model, mark: <MarkerShape shape="solid" className="text-night-300" />, num: 'text-chalk' },
+    { k: 'gemini', label: 'Gemini', v: b.gemini, mark: <MarkerShape shape="hollow" className="text-night-300" />, num: 'text-chalk' },
   ];
   return (
-    <section className="space-y-4">
-      <SectionTitle>Friends vs. Model vs. Gemini</SectionTitle>
-      <div className="grid grid-cols-3 gap-2">
+    <section className="space-y-5" aria-labelledby="score-title">
+      <div>
+        <SectionTitle id="score-title">Friends vs. Model vs. Gemini</SectionTitle>
+        <p className="-mt-2 text-pretty text-small text-night-400">
+          Who called tonight best. Brier score: lower is better. {sc.n} {sc.n === 1 ? 'question' : 'questions'} settled
+          {sc.nGemini ? `, ${sc.nGemini} with a Gemini price` : ''}.
+        </p>
+      </div>
+      <dl className="grid grid-cols-3 divide-x divide-night-700 rounded-panel bg-night-900 py-4">
         {tiles.map((t) => (
-          <div key={t.k} className={cx('rounded-2xl border bg-pitch-900 px-2 py-3 text-center', best === t.k ? t.ring : 'border-pitch-700')}>
-            <div className={cx('font-display text-sm font-bold uppercase tracking-wider', t.color)}>{t.label}</div>
-            <div className="font-display text-3xl font-bold tnum">{t.v == null ? '—' : t.v.toFixed(3)}</div>
-            {best === t.k && <div className="text-[10px] font-semibold uppercase tracking-wider text-pitch-200">Leading</div>}
+          <div key={t.k} className="px-3 text-center">
+            <dt className="flex items-center justify-center gap-1.5 text-small font-semibold text-night-200">
+              {t.mark}
+              {t.label}
+            </dt>
+            <dd className={cx('mt-1 font-display text-head font-extrabold stretch-condensed tnum', t.v == null ? 'text-night-500' : t.num)}>
+              {t.v == null ? '–' : t.v.toFixed(3)}
+            </dd>
+            <dd className={cx('mt-0.5 flex h-5 items-center justify-center gap-1 text-cap', best === t.k ? 'text-chalk' : 'invisible')}>
+              <Icon name="crown" size={13} /> Leading
+            </dd>
           </div>
         ))}
-      </div>
-      <p className="text-xs text-pitch-400">
-        Brier score: lower is better. {sc.n} questions settled{sc.nGemini ? `, ${sc.nGemini} with a Gemini price` : ''}.
-      </p>
-      {sc.verdict && <p className="rounded-2xl bg-pitch-800 p-4 font-display text-xl font-semibold leading-snug">{sc.verdict}</p>}
-      <div className="space-y-2">
-        {sc.entries.map((e) => (
-          <div key={e.marketId} className="rounded-2xl border border-pitch-700 bg-pitch-900 p-3">
-            <div className="text-sm text-pitch-200">{e.question}</div>
-            <div className="mt-1.5 grid grid-cols-3 text-center font-display text-lg font-bold tnum">
-              <span className="text-volt">{formatPct(e.room)}</span>
-              <span className="text-model">{formatPct(e.model)}</span>
-              <span className={e.gemini == null ? 'text-pitch-600' : 'text-gemini'}>{e.gemini == null ? '—' : formatPct(e.gemini)}</span>
+      </dl>
+      {sc.verdict && <p className="text-balance font-display text-title font-bold stretch-semi">{sc.verdict}</p>}
+      {sc.entries.length ? (
+        <Panel>
+          <p className="border-b border-night-700 px-4 py-2.5 text-cap text-night-400">Chance each gave to what actually happened. Further right is better.</p>
+          {sc.entries.map((e, i) => (
+            <div key={e.marketId} className={cx('px-4 py-3.5', i > 0 && 'border-t border-night-700')}>
+              <p className="text-small text-chalk">{e.question}</p>
+              <p className="text-cap text-night-400">Happened: {e.outcome}</p>
+              <Axis room={e.room} model={e.model} gemini={e.gemini} />
             </div>
-            <div className="text-center text-[11px] text-pitch-400">chance each gave to what happened ({e.outcome})</div>
-          </div>
-        ))}
-        {!sc.entries.length && <Empty>The scorecard fills in as questions settle.</Empty>}
-      </div>
+          ))}
+        </Panel>
+      ) : (
+        <Empty mark>The scorecard fills in as questions settle.</Empty>
+      )}
     </section>
   );
 }
 
-export function SectionTitle({ children }: { children: ReactNode }) {
-  return <h2 className="mb-2.5 font-display text-sm font-bold uppercase tracking-[0.16em] text-pitch-400">{children}</h2>;
-}
-
-export function Empty({ children }: { children: ReactNode }) {
-  return <p className="rounded-2xl border border-dashed border-pitch-700 px-4 py-6 text-center text-sm text-pitch-400">{children}</p>;
+/** One question's forecasts on a 0 to 100 axis: the room's dot, Model ▼, Gemini ▽, with numbers. */
+function Axis({ room, model, gemini }: { room: number; model: number; gemini?: number }) {
+  const pos = (p: number) => ({ left: `${Math.min(100, Math.max(0, p * 100))}%` });
+  return (
+    <div className="mt-2">
+      <div className="relative mx-1.5 h-5" aria-hidden="true">
+        <div className="absolute inset-x-0 top-1/2 h-px bg-night-700" />
+        <span className="absolute top-0 -translate-x-1/2 text-night-300" style={pos(model)}>
+          <MarkerShape shape="solid" />
+        </span>
+        {gemini != null && (
+          <span className="absolute top-0 -translate-x-1/2 text-night-300" style={pos(gemini)}>
+            <MarkerShape shape="hollow" />
+          </span>
+        )}
+        <span className="absolute top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-flood ring-2 ring-night-900" style={pos(room)} />
+      </div>
+      <p className="mt-1 flex flex-wrap gap-x-3 text-cap text-night-400">
+        <span>
+          Friends <b className="font-display text-flood tnum">{pctText(room)}%</b>
+        </span>
+        <span>
+          Model <b className="font-display text-night-200 tnum">{pctText(model)}%</b>
+        </span>
+        <span>
+          Gemini <b className="font-display text-night-200 tnum">{gemini == null ? '–' : `${pctText(gemini)}%`}</b>
+        </span>
+      </p>
+    </div>
+  );
 }
