@@ -18,7 +18,7 @@ concurrency:
 
 jobs:
   ping:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 4
     env:
       ENGINE_URL: ${{ vars.ENGINE_URL || 'https://huddle-engine-p1fc.onrender.com' }}
