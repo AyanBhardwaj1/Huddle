@@ -22,6 +22,15 @@ export default defineConfig({
     headless: true,
     actionTimeout: 15_000,
     trace: 'retain-on-failure',
-    launchOptions: { args: ['--autoplay-policy=no-user-gesture-required'] },
+    // Several phones and the box share one headless browser: keep background pages running at full
+    // speed (timers and animation frames), like the foreground page on each real device.
+    launchOptions: {
+      args: [
+        '--autoplay-policy=no-user-gesture-required',
+        '--disable-background-timer-throttling',
+        '--disable-backgrounding-occluded-windows',
+        '--disable-renderer-backgrounding',
+      ],
+    },
   },
 });

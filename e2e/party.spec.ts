@@ -136,7 +136,11 @@ for (const modeLabel of ['Pool', 'Market'] as const) {
     // AnimatePresence waits for an exit animation before showing the end screen).
     for (const p of [ayan.page, priya.page]) {
       await p.bringToFront();
-      console.log('DEBUG', (await p.locator('body').innerText()).slice(0, 600).replace(/\n/g, '|'));
+      console.log('DEBUG anims', JSON.stringify(await p.evaluate(() => document.getAnimations().map((a) => [a.playState, String(a.currentTime), (a.effect as KeyframeEffect | null)?.target?.tagName]))));
+      console.log('DEBUG visibility', await p.evaluate(() => [document.visibilityState, document.hasFocus()]));
+      await p.getByRole('button', { name: /Leaders/ }).click();
+      await p.getByRole('button', { name: /^Final/ }).click();
+      console.log('DEBUG after tab', (await p.locator('main').innerText()).slice(0, 200).replace(/\n/g, '|'));
       await expect(p.getByText('Final points')).toBeVisible();
     }
     const final = await getParty(engine.url, code);

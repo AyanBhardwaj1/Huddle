@@ -1,4 +1,4 @@
-import { AnimatePresence, motion } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useState, type ReactNode } from 'react';
 import { Captions, useAnnouncer } from '../components/Captions';
 import { act, cx, useParty } from '../components/ctx';
@@ -42,14 +42,14 @@ export function Live() {
       <Header speakerOn={speakerOn} onSpeaker={toggleSpeaker} />
       <Banners />
       <main className="mx-auto max-w-xl px-4 pt-4">
-        <AnimatePresence mode="wait" initial={false}>
-          <motion.div key={ended && tab === 'markets' ? 'end' : tab} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }}>
+        {/* No AnimatePresence mode="wait" here: its exit sometimes never completed, which left the
+            markets list on screen after the final whistle instead of the payout screen (found by e2e). */}
+          <motion.div key={ended && tab === 'markets' ? 'end' : tab} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.15 }}>
             {tab === 'markets' && (ended ? <EndOfGame /> : <MarketsTab />)}
             {tab === 'bets' && <MyBets />}
             {tab === 'board' && <Leaderboard />}
             {tab === 'score' && <ScorecardView />}
           </motion.div>
-        </AnimatePresence>
       </main>
       <Captions speaking={speaking} />
       {!ended && <TalkButton fixture={fixture} />}
