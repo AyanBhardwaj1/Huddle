@@ -35,6 +35,22 @@ const logger = pino({
 
 try {
   const handle = await startEngine({ dataDir, logger });
+
+  // Render's free plan sleeps a service after ~15 min without inbound traffic, and the next visitor
+  // waits up to a minute. Pinging our own public URL goes through Render's edge, so it counts as
+  // traffic and keeps the engine awake. Off when not on Render, or with KEEPALIVE_MS=0.
+  const selfUrl = (process.env.RENDER_EXTERNAL_URL ?? '').trim().replace(/\/+$/, '');
+  const keepAliveMs = Number(process.env.KEEPALIVE_MS ?? 10 * 60 * 1000);
+  if (selfUrl && keepAliveMs > 0) {
+    const ping = (): void => {
+      fetch(`${selfUrl}/health`, { signal: AbortSignal.timeout(30_000) })
+        .then((r) => logger.debug({ status: r.status }, 'keep-alive ping'))
+        .catch((e: unknown) => logger.warn({ err: (e as Error).message }, 'keep-alive ping failed'));
+    };
+    setInterval(ping, keepAliveMs).unref();
+    logger.info({ everySecs: Math.round(keepAliveMs / 1000) }, 'keep-alive self-ping on');
+  }
+
   let stopping = false;
   const stop = (signal: string): void => {
     if (stopping) return;
