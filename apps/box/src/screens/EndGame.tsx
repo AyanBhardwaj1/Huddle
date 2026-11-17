@@ -28,7 +28,7 @@ function pnlTone(pnl: number) {
 
 function Pnl({ pnl, party, className }: { pnl: number; party: Party; className: string }) {
   return (
-    <span className={`num flex items-center gap-1 leading-none ${pnlTone(pnl)} ${className}`}>
+    <span className={`num flex items-center gap-1 whitespace-nowrap leading-none ${pnlTone(pnl)} ${className}`}>
       {pnl !== 0 && <Icon name={pnl > 0 ? 'up' : 'down'} className="h-[0.45em] w-[0.45em]" />}
       {moneyShort(pnl, party, { sign: true })}
     </span>
@@ -46,12 +46,12 @@ function Podium({ ranked, party }: { ranked: PlayerPublic[]; party: Party }) {
           <div key={p.pubkey} className="hd-rise flex w-[10rem] min-w-0 flex-col items-center" style={{ ['--d' as string]: `${(2 - idx) * 220}ms` } as CSSProperties}>
             {first && <Icon name="crown" className="mb-1 h-7 w-7 text-flood" title="Winner" />}
             <span
-              className={`max-w-full truncate px-1 font-bold leading-tight ${first ? 'hd-shine text-head' : 'text-title'}`}
+              className={`max-w-full truncate px-1 font-bold leading-tight ${first && p.name.length <= 8 ? 'hd-shine text-head' : first ? 'hd-shine text-title' : 'text-lead'}`}
               style={{ ['--d' as string]: '900ms' } as CSSProperties}
             >
               {p.name}
             </span>
-            <Pnl pnl={p.pnl} party={party} className={first ? 'text-display' : 'text-head'} />
+            <Pnl pnl={p.pnl} party={party} className={first ? (moneyShort(p.pnl, party, { sign: true }).length > 7 ? 'text-head' : 'text-display') : 'text-title'} />
             <div
               className={`mt-2 flex w-full items-start justify-center rounded-t-tile pt-1.5 ${PODIUM_H[idx]} ${first ? 'bg-flood text-flood-ink' : 'bg-night-800 text-night-200'}`}
             >
@@ -161,16 +161,16 @@ export function EndGame() {
                 ? 'Everyone has been paid out automatically.'
                 : 'Balances are co-signed, so payouts land automatically when the window closes.'}
           </p>
-          {!points && (
+          {(
             <div>
-              <ul className="flex flex-col" aria-label="Payouts" aria-live="polite">
-                {ranked.slice(0, 3).map((p) => {
+              <ul className="flex flex-col" aria-label={points ? "Final scores" : "Payouts"} aria-live="polite">
+                {ranked.slice(0, points ? 5 : 3).map((p) => {
                   const w = withdrawals.get(p.pubkey);
                   const fresh = !!w && !seenPaid.current!.has(p.pubkey);
                   return (
                     <li key={p.pubkey} className="relative flex items-baseline gap-3 border-t border-night-700 py-1">
                       <span className="min-w-0 flex-1 truncate text-lead">{p.name}</span>
-                      <span className={`text-small ${w ? 'text-flood' : 'text-night-400'}`}>{w ? CHAIN_LABEL.withdraw : 'Waiting'}</span>
+                      <span className={`text-small ${w || points ? 'text-flood' : 'text-night-400'}`}>{points ? 'Final' : w ? CHAIN_LABEL.withdraw : 'Waiting'}</span>
                       {w?.explorerUrl && (
                         <a
                           href={w.explorerUrl}
@@ -181,7 +181,7 @@ export function EndGame() {
                           receipt
                         </a>
                       )}
-                      <span className={`num text-title ${w ? 'text-chalk' : 'text-night-400'}`}>
+                      <span className={`num text-title ${w || points ? 'text-chalk' : 'text-night-400'}`}>
                         <Roll text={moneyShort(p.payout ?? p.balance, party)} value={p.payout ?? p.balance} />
                       </span>
                       {fresh && (
@@ -193,7 +193,7 @@ export function EndGame() {
               </ul>
             </div>
           )}
-          <div className="mt-auto border-t border-night-700 pt-3">
+          <div className={`border-t border-night-700 pt-3 ${points ? '' : 'mt-auto'}`}>
             <ScorecardPanel scorecard={s.scorecard} compact />
           </div>
         </section>

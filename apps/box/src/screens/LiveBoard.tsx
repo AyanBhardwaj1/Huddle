@@ -9,18 +9,26 @@ import { useParty } from '../party';
 import { useBox } from '../store';
 import { ScorecardPanel } from './Scorecard';
 
-const REVEAL_MS = 6500;
+const REVEAL_MS = 5500;
+/** At most this many reveals wait in line; older ones are dropped (the phones and captions keep them). */
+const MAX_QUEUE = 2;
 
-/** Queue of result reveals for markets that settle while the board is up. */
-function useRevealQueue(markets: Market[]): [Market | null, () => void] {
+/**
+ * Queue of result reveals for markets that settle while the board is up. A reveal never covers a
+ * moment market that is open for bets: when one opens (`openMomentId`), the queue is cleared.
+ */
+function useRevealQueue(markets: Market[], openMomentId: string | null): [Market | null, () => void] {
   const prev = useRef<Map<string, MarketState>>(new Map());
   const [queue, setQueue] = useState<Market[]>([]);
   useEffect(() => {
     const settled = detectSettled(prev.current, markets);
     prev.current = new Map(markets.map((m) => [m.id, m.state]));
-    if (settled.length) setQueue((q) => [...q, ...settled.filter((m) => !q.some((x) => x.id === m.id))]);
+    if (settled.length) setQueue((q) => [...q, ...settled.filter((m) => !q.some((x) => x.id === m.id))].slice(-MAX_QUEUE));
   }, [markets]);
-  const head = queue[0] ?? null;
+  useEffect(() => {
+    if (openMomentId) setQueue([]);
+  }, [openMomentId]);
+  const head = openMomentId ? null : (queue[0] ?? null);
   useEffect(() => {
     if (!head) return;
     const t = setTimeout(() => setQueue((q) => q.slice(1)), REVEAL_MS);
@@ -88,7 +96,7 @@ export function LiveBoard() {
   const takeover = activeMoment(s.markets);
   const tiles = gameTiles(s.markets);
   const ds = disputed(s.markets);
-  const [reveal, dismissReveal] = useRevealQueue(s.markets);
+  const [reveal, dismissReveal] = useRevealQueue(s.markets, takeover?.state === "open" ? takeover.id : null);
 
   let stage;
   if (boardView === 'scorecard') {
