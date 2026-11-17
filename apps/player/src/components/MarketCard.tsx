@@ -441,7 +441,9 @@ function PositionBlock({ market, live }: { market: Market; live: boolean }) {
         const label = market.outcomes[idx]?.label ?? h.outcome;
         if (market.mode === 'amm') {
           const value = ammCashOutValue(market, h.shares, h.outcome);
-          const gain = value != null ? value - h.stake : 0;
+          // Under half a cent either way reads as even, never "−$0.00".
+          const raw = value != null ? value - h.stake : 0;
+          const gain = Math.abs(raw) < 5_000 ? 0 : raw;
           return (
             <div key={h.outcome} className="relative overflow-hidden rounded-tile bg-night-850 py-3 pl-4 pr-3">
               <span className={cx('absolute inset-y-0 left-0 w-1', t.rule)} aria-hidden="true" />
@@ -450,12 +452,15 @@ function PositionBlock({ market, live }: { market: Market; live: boolean }) {
                   You hold <span className="font-display font-bold text-chalk tnum">{formatShares(h.shares)}</span>{' '}
                   <span className={cx('font-bold', t.text)}>{label}</span> shares
                 </span>
-                {value != null && (
-                  <span className={cx('flex shrink-0 items-center gap-1 font-display text-body font-bold tnum', gain >= 0 ? 'text-yes' : 'text-no')}>
-                    <Icon name={gain >= 0 ? 'up' : 'down'} size={11} />
-                    {pnl(gain, points)}
-                  </span>
-                )}
+                {value != null &&
+                  (gain === 0 ? (
+                    <span className="shrink-0 text-cap text-night-400">Even so far</span>
+                  ) : (
+                    <span className={cx('flex shrink-0 items-center gap-1 font-display text-body font-bold tnum', gain > 0 ? 'text-yes' : 'text-no')}>
+                      <Icon name={gain > 0 ? 'up' : 'down'} size={11} />
+                      {pnl(gain, points)}
+                    </span>
+                  ))}
               </div>
               <p className="mt-0.5 text-cap text-night-400">
                 Cost <span className="tnum text-night-200">{money(h.stake, points)}</span> · pays{' '}
@@ -535,7 +540,7 @@ export function StakeRow({
 // ------------------------------------------------------------------ results
 
 function ResultRow({ market, now }: { market: Market; now: number }) {
-  const { client, snap, me, points } = useParty();
+  const { client, snap, me, points, positions } = useParty();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [flagged, setFlagged] = useState(false);
@@ -548,7 +553,7 @@ function ResultRow({ market, now }: { market: Market; now: number }) {
         <span className="text-night-200">Locked. Waiting for the result…</span>
       </Line>
     );
-  const res = marketResult(market, snap.you?.positions ?? [], snap.fills, me);
+  const res = marketResult(market, positions, snap.fills, me);
   if (s === 'voided')
     return (
       <Line icon="refresh">
@@ -560,7 +565,11 @@ function ResultRow({ market, now }: { market: Market; now: number }) {
   const disputeLeft = market.disputeEndsAt ? Math.ceil((Date.parse(market.disputeEndsAt) - now) / 1000) : 0;
   return (
     <div className="mt-3 border-t border-night-700 pt-3">
-      <ResultBadge res={res} points={points} animate={!!landed && s === 'resolved'} big />
+      {res.kind === 'none' ? (
+        <p className="text-small text-night-400">No stake from you on this one.</p>
+      ) : (
+        <ResultBadge res={res} points={points} animate={!!landed && s === 'resolved'} big />
+      )}
       {s === 'disputed' && (
         <p className="mt-2 flex items-center gap-2 text-small text-night-200">
           <Icon name="flag" size={16} className="text-night-400" /> Flagged. The host is checking the result.
@@ -624,7 +633,7 @@ export function ResultBadge({
         <Icon name="refresh" size={16} /> Refunded {money(res.amount, points)}
       </span>
     );
-  return <span className="text-small text-night-400">You sat this one out.</span>;
+  return null;
 }
 
 function Line({ icon, children }: { icon: 'hourglass' | 'refresh'; children: ReactNode }) {

@@ -64,7 +64,7 @@ describe('player screens (fixture)', () => {
     const snap = client.getView().snapshot!;
     snap.party.config.settlement = 'points';
     const html = renderToString(<PartyShell client={client} view={client.getView()} remote={false} />);
-    expect(html).toContain(`Buy in ${10 * USDC / USDC} pts`);
+    expect(html).toContain(`Buy in ${10 * USDC / USDC}\u00a0pts`);
     expect(html).not.toContain('$');
   });
 });

@@ -10,7 +10,7 @@ export function moneyShort(base: number, points: boolean): string {
   const v = Math.abs(base) / USDC;
   const body = Number.isInteger(v) ? String(v) : v.toFixed(2);
   const sign = base < 0 ? '-' : '';
-  return points ? `${sign}${body} pts` : `${sign}$${body}`;
+  return points ? `${sign}${body}\u00a0${v === 1 ? 'pt' : 'pts'}` : `${sign}$${body}`;
 }
 
 /** Signed P&L with a typographic minus, e.g. "+$4.20", "−$3.00". */

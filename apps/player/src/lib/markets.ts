@@ -378,8 +378,8 @@ export function lockText(market: Pick<Market, 'lock' | 'kind'>, remainingMs: num
   if (remainingMs != null && remainingMs > 0) {
     const mins = Math.ceil(remainingMs / 60_000);
     if (remainingMs >= 100_000)
-      return mins >= 60 ? `Locks in ${Math.floor(mins / 60)} h ${mins % 60} min` : `Locks in ${mins} min`;
-    return `Locks in ${Math.ceil(remainingMs / 1000)} s`;
+      return mins >= 60 ? `Locks in ${Math.floor(mins / 60)}\u00a0h ${mins % 60}\u00a0min` : `Locks in ${mins}\u00a0min`;
+    return `Locks in ${Math.ceil(remainingMs / 1000)}\u00a0s`;
   }
   if (type === 'penalty_result') return 'Locks on the kick';
   if (type === 'snap') return 'Locks at the snap';

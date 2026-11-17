@@ -1,4 +1,4 @@
-import type { ClientView } from '@huddle/shared';
+import type { ClientView, Position } from '@huddle/shared';
 import { Icon, Mark, Wordmark } from '@huddle/ui';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { PartyCtx, type PartyCtxValue } from '../components/ctx';
@@ -232,9 +232,32 @@ export function PartyShell({ client, view, remote }: { client: PartyClient; view
   const meP = snap.players.find((p) => p.pubkey === me);
   const [passed, setPassed] = useState(false);
   const balance = snap.you?.state?.balance ?? meP?.balance ?? 0;
+  const memory = useRef(new Map<string, Position[]>());
+  const positions = useMemo(() => {
+    const current = snap.you?.positions ?? [];
+    const merged = [...current];
+    for (const m of snap.markets) {
+      const mine = current.filter((p) => p.marketId === m.id);
+      // While a market trades, remember exactly what you hold (a cash-out empties it); once it
+      // settles, keep that memory if the engine stops sending the position.
+      if (m.state === 'open' || m.state === 'locked') memory.current.set(m.id, mine);
+      else if (!mine.length) merged.push(...(memory.current.get(m.id) ?? []));
+    }
+    return merged;
+  }, [snap.you?.positions, snap.markets]);
   const value: PartyCtxValue = useMemo(
-    () => ({ client, view, snap, me, meP, points: snap.party.config.settlement === 'points', balance, remote: remote || !!meP?.remote }),
-    [client, view, snap, me, meP, balance, remote],
+    () => ({
+      client,
+      view,
+      snap,
+      me,
+      meP,
+      points: snap.party.config.settlement === 'points',
+      balance,
+      remote: remote || !!meP?.remote,
+      positions,
+    }),
+    [client, view, snap, me, meP, balance, remote, positions],
   );
   const pass = useCallback(() => setPassed(true), []);
   const open = snap.party.status === 'live' || snap.party.status === 'lobby';

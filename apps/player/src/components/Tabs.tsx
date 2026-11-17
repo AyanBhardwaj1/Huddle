@@ -115,8 +115,7 @@ function Panel({ children, className }: { children: ReactNode; className?: strin
 }
 
 export function MyBets() {
-  const { snap, me, points } = useParty();
-  const positions = snap.you?.positions ?? [];
+  const { snap, me, points, positions } = useParty();
   const open = snap.markets.filter((m) => (m.state === 'open' || m.state === 'locked') && holdingsFor(m, positions).length);
   const history = snap.markets
     .filter((m) => ['resolved', 'final', 'disputed', 'voided'].includes(m.state))

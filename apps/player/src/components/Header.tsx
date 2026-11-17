@@ -7,7 +7,9 @@ import { Money } from './primitives';
 /** "25 s behind the room" / "In sync with the room". */
 export function delayText(delay: number): string {
   if (Math.abs(delay) < 3000) return 'In sync with the room';
-  return `${Math.round(Math.abs(delay) / 1000)} s ${delay > 0 ? 'behind' : 'ahead of'} the room`;
+  const s = Math.round(Math.abs(delay) / 1000);
+  const amount = s >= 90 ? `${Math.round(s / 60)}\u00a0min` : `${s}\u00a0s`;
+  return `${amount} ${delay > 0 ? 'behind' : 'ahead of'} the room`;
 }
 
 /**

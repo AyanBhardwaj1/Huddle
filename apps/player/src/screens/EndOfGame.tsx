@@ -5,7 +5,7 @@ import { cx, useParty } from '../components/ctx';
 import { Money, useCoins } from '../components/primitives';
 import { Leaderboard } from '../components/Tabs';
 import { ordinal, rankPlayers } from '../lib/markets';
-import { money } from '../lib/money';
+import { money, pnl } from '../lib/money';
 
 const STEPS = [
   { status: 'ended', label: 'Final whistle' },
@@ -63,7 +63,9 @@ export function EndOfGame() {
         <div className="mx-auto my-5 h-px w-16 bg-night-700" />
         <div
           className={cx(
-            'inline-flex items-center gap-1 font-display text-hero font-black stretch-condensed',
+            'inline-flex max-w-full items-center gap-1 font-display font-black stretch-condensed',
+            // "+$4.20" fits the hero size at 360 px; "+12.50 pts" steps down a size.
+            pnl(profit, points).length > 7 ? 'text-display' : 'text-hero',
             profit > 0 ? 'hd-shine text-yes' : profit < 0 ? 'text-no' : 'text-chalk',
           )}
           style={{ ['--d' as string]: '400ms' }}
@@ -122,12 +124,12 @@ export function EndOfGame() {
           {finalized && payout != null && (
             <div className="mt-6 rounded-tile bg-night-850 px-4 py-5 text-center">
               <p className="text-small font-semibold text-night-200">{points ? 'Your final points' : 'Your winnings are in'}</p>
-              <div ref={amount} className="hd-stamp mt-1 inline-block" style={{ ['--d' as string]: '700ms' }}>
+              <div ref={amount} className="hd-stamp mt-1 inline-block" style={{ ['--d' as string]: '150ms' }}>
                 <span
                   className={cx('block font-display text-display font-black stretch-condensed', profit > 0 && 'hd-shine')}
                   data-testid="my-payout"
                   data-amount={payout}
-                  style={{ ['--d' as string]: '1100ms' }}
+                  style={{ ['--d' as string]: '600ms' }}
                 >
                   <Roll text={money(payout, points)} className="tnum" flash={false} />
                 </span>
