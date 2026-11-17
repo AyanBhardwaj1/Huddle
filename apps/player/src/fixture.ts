@@ -47,8 +47,8 @@ function build(variant: string): PartySnapshot {
   const now = Date.now();
   const base = { partyId: 'party-demo', resolver: { type: 'manual', params: {} }, createdBy: 'ai' as const, createdAt: iso(now - 60_000) };
   const yn = [
-    { id: 'yes', label: 'YES' },
-    { id: 'no', label: 'NO' },
+    { id: 'yes', label: 'Yes' },
+    { id: 'no', label: 'No' },
   ];
 
   const ammPrior = { por: 0.58, esp: 0.42 };

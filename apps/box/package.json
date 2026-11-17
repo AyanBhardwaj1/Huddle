@@ -12,8 +12,6 @@
   },
   "dependencies": {
     "@elevenlabs/client": "^1.36.1",
-    "@fontsource-variable/inter": "^5.1.0",
-    "@fontsource/barlow-condensed": "^5.1.0",
     "@huddle/shared": "workspace:*",
     "@huddle/ui": "workspace:^",
     "framer-motion": "^11.11.17",
