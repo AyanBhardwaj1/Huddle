@@ -40,7 +40,9 @@ export function Lobby() {
         <div className="text-[0.9rem] text-pitch-400">or scan · {joinHost}</div>
         <div className="mt-1 flex items-baseline gap-3">
           <span className="kicker">Party code</span>
-          <span className="tabular font-display text-[3.4rem] font-bold leading-none tracking-[0.2em]">{party.code}</span>
+          <span className="tabular font-display text-[3.4rem] font-bold leading-none tracking-[0.2em]" data-testid="party-code">
+            {party.code}
+          </span>
         </div>
       </section>
 
@@ -93,6 +95,8 @@ export function Lobby() {
                 initial={{ scale: 0.3, opacity: 0, rotate: -4 }}
                 animate={{ scale: 1, opacity: 1, rotate: 0 }}
                 transition={{ type: 'spring', stiffness: 380, damping: 18 }}
+                data-testid="lobby-player"
+                data-player-name={p.name}
                 className="join-flash flex items-center gap-3 rounded-xl bg-pitch-800 px-3 ring-1 ring-pitch-600"
               >
                 <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-volt font-display text-[1.6rem] font-bold uppercase text-volt-ink">
@@ -111,7 +115,7 @@ export function Lobby() {
           )}
         </div>
 
-        <button className="btn-volt min-h-[4.6rem] text-[2.3rem]" onClick={() => void act({ action: 'start_game' }, 'Kick off!')}>
+        <button className="btn-volt min-h-[4.6rem] text-[2.3rem]" onClick={() => void act({ action: 'start_game' }, 'Kick off!')} data-testid="start-game">
           Start game <Icon name="play" className="h-8 w-8" />
         </button>
       </section>

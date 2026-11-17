@@ -44,7 +44,11 @@ install -d -m 750 -o "$RUN_USER" -g "$RUN_USER" "$ETC_DIR" "$DATA_DIR"
 
 if [[ ! -f "$ETC_DIR/huddle.env" ]]; then
   echo "==> Creating $ETC_DIR/huddle.env from .env.example (edit it to add keys)"
-  install -m 600 -o "$RUN_USER" -g "$RUN_USER" "$REPO_DIR/.env.example" "$ETC_DIR/huddle.env"
+  install -m 600 -o "$RUN_USER" -g "$RUN_USER" /dev/null "$ETC_DIR/huddle.env"
+  # systemd EnvironmentFile keeps inline "# comments" as part of the value (PORT=8080 # ... would
+  # break the engine), so strip them; whole-line comments stay.
+  sed -E 's/^([A-Za-z_][A-Za-z0-9_]*=[^#]*[^#[:space:]])?[[:space:]]+#.*$/\1/; s/^([A-Za-z_][A-Za-z0-9_]*=)[[:space:]]+#.*$/\1/' \
+    "$REPO_DIR/.env.example" > "$ETC_DIR/huddle.env"
   sed -i "s|^DATA_DIR=.*|DATA_DIR=$DATA_DIR|" "$ETC_DIR/huddle.env"
 fi
 

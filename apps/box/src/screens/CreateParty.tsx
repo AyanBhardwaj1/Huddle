@@ -93,6 +93,8 @@ export function CreateParty() {
                     <button
                       key={x.id}
                       onClick={() => setGameId(x.id)}
+                      data-testid="game-option"
+                      data-game-id={x.id}
                       className={`flex min-h-[3.6rem] items-center gap-3 rounded-xl px-3 text-left ring-1 transition active:scale-[0.99] ${on ? 'bg-volt/10 ring-2 ring-volt' : 'bg-pitch-800 ring-pitch-700'}`}
                     >
                       <span className="flex min-w-0 flex-1 flex-col">
@@ -130,6 +132,7 @@ export function CreateParty() {
               options={(['bet', 'pool', 'amm'] as MarketMode[]).map((m) => ({ value: m, label: MODE_LABEL[m], sub: MODE_BLURB[m] }))}
               value={mode}
               onChange={setMode}
+              testIdPrefix="mode"
             />
           </div>
           <div className="grid grid-cols-2 gap-3">
@@ -164,10 +167,11 @@ export function CreateParty() {
               ]}
               value={effSettlement}
               onChange={setSettlement}
+              testIdPrefix="settlement"
             />
           </div>
           <Toggle on={autoApprove} onChange={setAutoApprove} label="Open AI questions automatically (off = you approve each one)" />
-          <button className="btn-volt mt-auto min-h-[4.2rem] text-[2rem]" disabled={!game || busy} onClick={() => void create()}>
+          <button className="btn-volt mt-auto min-h-[4.2rem] text-[2rem]" disabled={!game || busy} onClick={() => void create()} data-testid="create-party">
             {busy ? 'Setting up…' : 'Create party'}
             {!busy && <Icon name="next" className="h-7 w-7" />}
           </button>

@@ -78,7 +78,9 @@ export function EndOfGame() {
         {finalized && payout != null && (
           <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mt-5 rounded-2xl bg-volt/10 p-4 text-center">
             <div className="text-sm font-semibold text-volt">{points ? 'Final points' : 'Your winnings are in'}</div>
-            <div className="font-display text-5xl font-bold tnum">{money(payout, points)}</div>
+            <div className="font-display text-5xl font-bold tnum" data-testid="my-payout" data-amount={payout}>
+              {money(payout, points)}
+            </div>
             {link && (
               <a href={link} target="_blank" rel="noreferrer" className="mt-2 inline-flex min-h-[44px] items-center gap-1.5 text-sm font-semibold text-pitch-200 underline-offset-4 active:underline">
                 View payout <Icon name="external" size={14} />
@@ -89,7 +91,9 @@ export function EndOfGame() {
         {!points && <p className="mt-3 text-center text-[11px] text-pitch-400">Settled on Solana · devnet test money</p>}
       </section>
 
-      <Leaderboard title="Final leaderboard" />
+      <div data-testid="final-leaderboard">
+        <Leaderboard title="Final leaderboard" />
+      </div>
       {snap.scorecard.verdict && (
         <section className="rounded-card border border-pitch-700 bg-pitch-900 p-4">
           <div className="text-[10px] font-semibold uppercase tracking-[0.14em] text-pitch-400">Friends vs. Model vs. Gemini</div>

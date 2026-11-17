@@ -9,8 +9,8 @@
   },
   "scripts": {
     "build": "turbo run build",
-    "typecheck": "turbo run typecheck",
-    "test": "turbo run test",
+    "typecheck": "turbo run typecheck && tsc --noEmit -p scripts/tsconfig.json",
+    "test": "turbo run test && pnpm test:scripts",
     "lint": "eslint .",
     "dev": "turbo run dev --parallel",
     "demo": "tsx scripts/demo.ts",
@@ -19,10 +19,19 @@
     "solana:test": "sh scripts/solana-test.sh",
     "solana:setup": "tsx scripts/solana-setup.ts",
     "solana:deploy": "sh scripts/solana-deploy.sh",
-    "bots": "pnpm --filter @huddle/engine bots --"
+    "bots": "pnpm --filter @huddle/engine bots --",
+    "e2e": "playwright test -c e2e",
+    "e2e:install": "playwright install --only-shell chromium",
+    "test:scripts": "vitest run --config scripts/vitest.config.ts",
+    "quicknode:stream": "tsx scripts/quicknode/create-stream.ts"
   },
   "devDependencies": {
     "@eslint/js": "^9.14.0",
+    "@huddle/engine": "workspace:^",
+    "@huddle/shared": "workspace:^",
+    "@huddle/solana-client": "workspace:^",
+    "@playwright/test": "1.56.1",
+    "@solana/web3.js": "^1.98.0",
     "@types/node": "^22.9.0",
     "eslint": "^9.14.0",
     "tsx": "^4.19.2",
