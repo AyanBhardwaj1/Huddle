@@ -32,16 +32,26 @@ export function DraftSheet() {
   const now = useNow(1000);
   const [busy, setBusy] = useState<'confirm' | 'reject' | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const draft: DraftBet | undefined = (snap.you?.drafts ?? []).find((d) => Date.parse(d.expiresAt) > now);
+  // Drafts you waved off after their question locked (the engine keeps them until they expire).
+  const [gone, setGone] = useState<Set<string>>(() => new Set());
+  const draft: DraftBet | undefined = (snap.you?.drafts ?? []).find((d) => Date.parse(d.expiresAt) > now && !gone.has(d.id));
   const market = draft ? snap.markets.find((m) => m.id === draft.marketId) : undefined;
   const idx = market?.outcomes.findIndex((o) => o.id === draft?.outcome) ?? 0;
   const t = tone(idx, market?.outcomes.length ?? 2);
   const label = market?.outcomes[idx]?.label ?? draft?.outcome ?? '';
   const total = draft ? Math.max(1, Date.parse(draft.expiresAt) - Date.parse(draft.createdAt)) : 1;
   const left = draft ? Math.max(0, Date.parse(draft.expiresAt) - now) : 0;
+  const closed = !!market && market.state !== 'open';
 
   const run = async (kind: 'confirm' | 'reject') => {
     if (!draft) return;
+    if (kind === 'reject' && closed) {
+      // Nothing can be placed any more: drop it here, and tell the engine without waiting.
+      setGone((g) => new Set(g).add(draft.id));
+      setError(null);
+      void client.request({ type: 'reject_draft', draftId: draft.id }).catch(() => {});
+      return;
+    }
     setBusy(kind);
     setError(null);
     const err = await act(client, kind === 'confirm' ? { type: 'confirm_draft', draftId: draft.id } : { type: 'reject_draft', draftId: draft.id });
@@ -65,8 +75,21 @@ export function DraftSheet() {
             <span className={t.text}>{label}</span>
           </p>
           {market && <p className="mt-2 text-balance text-body text-night-200">{market.question}</p>}
-          <DrainBar key={draft.id} from={left / total} ms={left} />
-          <p className="mt-1.5 text-cap text-night-400 tnum">Expires in {Math.ceil(left / 1000)}&nbsp;s. Nothing moves until you confirm.</p>
+          {closed ? (
+            <p className="mt-5 flex items-center gap-2 rounded-tile bg-night-850 px-3.5 py-3 text-small text-night-200">
+              <Icon name="lock" size={18} className="shrink-0 text-night-400" /> This question locked before you confirmed, so nothing was placed.
+            </p>
+          ) : (
+            <>
+              <DrainBar key={draft.id} from={left / total} ms={left} />
+              <p className="mt-1.5 text-cap text-night-400 tnum">Expires in {Math.ceil(left / 1000)}&nbsp;s. Nothing moves until you confirm.</p>
+            </>
+          )}
+          {closed ? (
+            <button onClick={() => run('reject')} className="btn-secondary mt-5 min-h-14 w-full">
+              Got it
+            </button>
+          ) : (
           <div className="mt-5 grid grid-cols-[1fr_1.6fr] gap-3">
             <button disabled={busy !== null} onClick={() => run('reject')} className="btn-secondary min-h-14">
               {busy === 'reject' ? 'Cancelling…' : 'Cancel'}
@@ -75,7 +98,8 @@ export function DraftSheet() {
               {busy === 'confirm' ? 'Confirming…' : `Confirm ${moneyShort(draft.amount, points)}`}
             </button>
           </div>
-          {error && <InlineError text={error} />}
+          )}
+          {error && !closed && <InlineError text={error} />}
         </div>
       )}
     </Sheet>
