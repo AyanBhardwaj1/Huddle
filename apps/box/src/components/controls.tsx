@@ -184,6 +184,7 @@ export function SoundGate() {
   if (enabled || !checked) return null;
   return (
     <button
+      data-testid="sound-gate"
       className="fixed inset-0 z-[80] flex flex-col items-center justify-center gap-4 bg-pitch-950/80 backdrop-blur-sm"
       onClick={async () => {
         await unlockAudio();

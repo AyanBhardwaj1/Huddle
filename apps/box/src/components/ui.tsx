@@ -229,12 +229,15 @@ export function Segmented<T extends string | number>({
   onChange,
   className = '',
   size = 'md',
+  testIdPrefix,
 }: {
   options: { value: T; label: ReactNode; sub?: ReactNode }[];
   value: T;
   onChange: (v: T) => void;
   className?: string;
   size?: 'md' | 'lg';
+  /** Adds data-testid="<prefix>-<value>" to each option (e2e hooks, see e2e/README.md). */
+  testIdPrefix?: string;
 }) {
   return (
     <div
@@ -249,6 +252,7 @@ export function Segmented<T extends string | number>({
             key={String(o.value)}
             role="radio"
             aria-checked={on}
+            data-testid={testIdPrefix ? `${testIdPrefix}-${String(o.value)}` : undefined}
             onClick={() => onChange(o.value)}
             className={`flex flex-col items-start justify-center rounded-xl px-3 text-left ring-1 transition active:scale-[0.98] ${
               size === 'lg' ? 'min-h-[4.2rem] py-2' : 'min-h-[3rem] py-1.5'

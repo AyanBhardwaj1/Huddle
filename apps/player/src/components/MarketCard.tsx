@@ -45,6 +45,9 @@ export function MarketCard({ market }: { market: Market }) {
 
   return (
     <motion.article
+      data-testid="market-card"
+      data-market-id={market.id}
+      data-market-state={market.state}
       layout="position"
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
@@ -126,6 +129,7 @@ function OutcomeTrader({ market, live }: { market: Market; live: boolean }) {
           return (
             <button
               key={o.id}
+              data-testid={`outcome-${o.id}`}
               disabled={!live}
               onClick={() => setPick(selected ? null : o.id)}
               aria-pressed={selected}
@@ -248,6 +252,8 @@ export function StakeTray({
             {chips.map((c) => (
               <button
                 key={c.amount}
+                data-testid="stake-chip"
+                data-stake={c.amount}
                 disabled={busy !== null}
                 onClick={() => place(c.amount)}
                 className="relative flex min-h-[64px] flex-col items-center justify-center rounded-xl bg-volt px-1 text-volt-ink transition-transform active:scale-95 disabled:opacity-60"

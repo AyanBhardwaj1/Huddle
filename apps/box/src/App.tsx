@@ -51,6 +51,7 @@ export function PartyScreens() {
   else screen = <EndGame />;
   return (
     <>
+      {s && <span hidden data-testid="party-status" data-status={s.party.status} />}
       {screen}
       {s && view.status === 'reconnecting' && (
         <div className="fixed left-1/2 top-2 z-[75] -translate-x-1/2 rounded-full bg-down px-4 py-1 text-[0.9rem] font-bold text-down-ink">
