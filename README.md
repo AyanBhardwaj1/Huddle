@@ -4,6 +4,19 @@
 
 Built for the UBC 2026 Hackathon. **Track:** Consumer Applications. **Chain award:** Best use of Solana. **Bounties:** Gemini Prediction Markets, ElevenLabs, QuickNode Streams.
 
+**Try it live:**
+
+| What | URL |
+| --- | --- |
+| Box screen (host a party) | https://huddle-nu-sooty.vercel.app/box/ |
+| Phone app (join with the code or `/j/CODE`) | https://huddle-nu-sooty.vercel.app |
+| Design tour, no game needed | https://huddle-nu-sooty.vercel.app/box/?fixture=kit and https://huddle-nu-sooty.vercel.app/?fixture=1 |
+| Party engine (Render, also serves both apps) | https://huddle-engine-p1fc.onrender.com |
+
+The engine runs on Render's free plan in points mode: after about 15 idle minutes it sleeps, and the first
+visit then takes up to a minute to wake it. The web apps are static on Vercel (`vercel.json`); the engine
+is the Render Blueprint in `render.yaml`.
+
 > **Status, plainly:** the whole product runs end to end on one laptop in Replay mode with points. On-chain settlement (deposits, signed balances, finalize, payouts) works end to end on a **local** Solana validator. **The program is not deployed to devnet yet.** That is waiting on devnet SOL for the deploy (see [Solana](#how-we-use-solana)). ElevenLabs, Anthropic and QuickNode have only been exercised against mocks so far, because no API keys were available during the build. [What is mocked or unverified](#what-is-mocked-or-unverified) has the full list.
 
 ---
