@@ -9,7 +9,7 @@ export interface HealthResponse {
   providers?: { sports?: unknown; gemini?: unknown; announcer?: unknown; llm?: unknown };
 }
 
-async function json<T>(path: string, init?: RequestInit, timeoutMs = 6000): Promise<T> {
+async function json<T>(path: string, init?: RequestInit, timeoutMs = 30_000): Promise<T> {
   const ctl = new AbortController();
   const t = setTimeout(() => ctl.abort(), timeoutMs);
   try {
@@ -17,6 +17,9 @@ async function json<T>(path: string, init?: RequestInit, timeoutMs = 6000): Prom
       ...init,
       signal: ctl.signal,
       headers: { 'content-type': 'application/json', ...(init?.headers ?? {}) },
+    }).catch((e: unknown) => {
+      if (ctl.signal.aborted) throw new Error('The engine took too long to answer (it may be waking up)');
+      throw e;
     });
     const text = await res.text();
     const body = text ? (JSON.parse(text) as unknown) : {};

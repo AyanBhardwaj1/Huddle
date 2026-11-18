@@ -26,16 +26,21 @@ export function CreateParty() {
   const [autoApprove, setAutoApprove] = useState(true);
   const [busy, setBusy] = useState(false);
   const [n, setN] = useState(0);
+  const [slowGames, setSlowGames] = useState(false);
 
   useEffect(() => {
     setLoadErr(null);
+    setSlowGames(false);
+    const slow = setTimeout(() => setSlowGames(true), 3000);
     api
       .games()
       .then((g) => {
         setGames(g);
         setGameId((cur) => cur ?? g.find((x) => x.status === 'replay')?.id ?? g[0]?.id ?? null);
       })
-      .catch((e: Error) => setLoadErr(e.message));
+      .catch((e: Error) => setLoadErr(e.message))
+      .finally(() => clearTimeout(slow));
+    return () => clearTimeout(slow);
   }, [n]);
 
   // Default the settlement choice to what the engine runs with.
@@ -90,7 +95,7 @@ export function CreateParty() {
           <div className="scroll-thin flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto pr-1">
             {games === null && !loadErr && (
               <p className="flex items-center gap-3 text-lead text-ink-2" role="status">
-                <Mark size="1.5rem" lit={3} spin className="text-rule-strong" /> Loading games…
+                <Mark size="1.5rem" lit={3} spin className="text-rule-strong" /> {slowGames ? 'Waking up the engine… up to a minute' : 'Loading games…'}
               </p>
             )}
             {loadErr && (
@@ -98,7 +103,7 @@ export function CreateParty() {
                 <p className="flex items-center gap-2 text-lead font-bold">
                   <Icon name="warn" className="h-5 w-5 text-hot-600" /> Couldn’t load games
                 </p>
-                <p className="text-body text-ink-2">{loadErr}. Check the engine is running.</p>
+                <p className="text-body text-ink-2">{loadErr}. Tap try again.</p>
                 <button type="button" className="btn-secondary min-h-[2.75rem] text-body" onClick={() => setN((x) => x + 1)}>
                   <Icon name="refresh" className="h-4 w-4" /> Try again
                 </button>

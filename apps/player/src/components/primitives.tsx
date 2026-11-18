@@ -31,10 +31,19 @@ export function Money({
 
 /** The ring spinning with three lit pixels + a line that says what is happening. */
 export function Loading({ children, className }: { children?: ReactNode; className?: string }) {
+  // A hosted engine on a free plan can take up to a minute to wake: say so instead of spinning silently.
+  const [slow, setSlow] = useState(false);
+  useEffect(() => {
+    const t = setTimeout(() => setSlow(true), 3500);
+    return () => clearTimeout(t);
+  }, []);
   return (
     <div className={cx('flex items-center gap-3 text-ink-2', className)} role="status">
       <Mark size="1.6rem" spin lit={3} className="shrink-0 text-rule-strong" />
-      <span>{children}</span>
+      <span>
+        {children}
+        {slow && <span className="block text-small text-ink-muted">Waking up the engine. This can take up to a minute.</span>}
+      </span>
     </div>
   );
 }
